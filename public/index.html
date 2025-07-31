@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Medios Informáticos</title>
+    
+    <!-- Meta tags para SEO y rendimiento -->
+    <meta name="description" content="Sistema de gestión de activos informáticos para empresa de servicios electroenergéticos">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+    
+    <!-- Google Fonts - Optimizado -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS de la aplicación -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/components.css">
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Pantalla de carga -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Cargando Sistema de Gestión</h2>
+            <p>Inicializando aplicación...</p>
+        </div>
+    </div>
+
+    <!-- Página de login -->
+    <div id="login-page" class="login-page" style="display: none;">
+        <div class="login-container">
+            <div class="login-header">
+                <h1><i class="fas fa-server"></i> Sistema de Gestión</h1>
+                <p>Medios Informáticos</p>
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+            
+            <div id="login-error" class="alert alert-error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Aplicación principal -->
+    <div id="app" class="app" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button id="sidebar-toggle" class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>Sistema de Gestión de Medios Informáticos</h1>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="user-name">Usuario</span>
+                        <span id="user-role">Rol</span>
+                    </div>
+                    <button id="logout-btn" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>            
+        </header>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        
+        <!-- Sidebar Flotante -->
+        <aside class="sidebar-floating" id="sidebar-floating">
+            <div class="sidebar-header">
+                <h3>Navegación</h3>
+                <button class="sidebar-close" id="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a></li>
+                    <li><a href="#equipment" class="nav-link">
+                        <i class="fas fa-desktop"></i> Equipos
+                    </a></li>
+                    <li><a href="#assignments" class="nav-link">
+                        <i class="fas fa-users"></i> Asignaciones
+                    </a></li>
+                    <li><a href="#reports" class="nav-link">
+                        <i class="fas fa-chart-bar"></i> Reportes
+                    </a></li>
+                    <li><a href="#security" class="nav-link">
+                        <i class="fas fa-shield-alt"></i> Seguridad
+                    </a></li>
+                    <li><a href="#disposal" class="nav-link">
+                        <i class="fas fa-trash"></i> Propuestas de Baja
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <div id="page-content">
+                <!-- El contenido se cargará dinámicamente -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts de la aplicación -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/equipment.js"></script>
+</body>
+</html> 

@@ -1,0 +1,282 @@
+// Aplicación Principal
+const App = {
+    // Estado de la aplicación
+    currentPage: 'dashboard',
+    isLoading: false,
+    
+    // Inicializar aplicación
+    init: function() {
+        console.log('🚀 Inicializando aplicación...');
+        
+        this.setupEventListeners();
+        this.loadInitialData();
+        this.handleHashChange();
+        
+        console.log('✅ Aplicación inicializada');
+    },
+    
+    // Configurar event listeners
+    setupEventListeners: function() {
+        // Manejar cambios en el hash de la URL
+        window.addEventListener('hashchange', () => {
+            this.handleHashChange();
+        });
+        
+        // Manejar clic en botón de agregar equipo
+        const addEquipmentBtn = document.getElementById('add-equipment-btn');
+        if (addEquipmentBtn) {
+            addEquipmentBtn.addEventListener('click', () => {
+                Equipment.showCreateModal();
+            });
+        }
+        
+        // Manejar filtros de equipos
+        const applyFiltersBtn = document.getElementById('apply-filters-btn');
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', () => {
+                Equipment.loadEquipment();
+            });
+        }
+        
+        // Manejar paginación
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.page-number')) {
+                e.preventDefault();
+                const page = parseInt(e.target.textContent);
+                this.handlePageChange(page);
+            }
+        });
+    },
+    
+    // Cargar datos iniciales
+    loadInitialData: async function() {
+        try {
+            // Cargar estados
+            await this.loadStates();
+            
+            // Cargar datos del dashboard
+            if (this.currentPage === 'dashboard') {
+                await Dashboard.loadDashboard();
+            }
+            
+            // Cargar equipos si estamos en esa página
+            if (this.currentPage === 'equipment') {
+                await Equipment.loadEquipment();
+            }
+            
+        } catch (error) {
+            console.error('Error cargando datos iniciales:', error);
+            ApiUtils.handleError(error);
+        }
+    },
+    
+    // Manejar cambio de hash en URL
+    handleHashChange: function() {
+        const hash = window.location.hash.replace('#', '') || 'dashboard';
+        this.navigateToPage(hash);
+    },
+    
+    // Navegar a página específica
+    navigateToPage: function(pageName) {
+        this.currentPage = pageName;
+        
+        // Actualizar navegación
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('data-page') === pageName) {
+                link.classList.add('active');
+            }
+        });
+        
+        // Mostrar página
+        UI.showPage(pageName);
+        
+        // Cargar datos específicos de la página
+        this.loadPageData(pageName);
+    },
+    
+    // Cargar datos específicos de la página
+    loadPageData: async function(pageName) {
+        try {
+            switch (pageName) {
+                case 'dashboard':
+                    await Dashboard.loadDashboard();
+                    break;
+                case 'equipment':
+                    await Equipment.loadEquipment();
+                    break;
+                case 'assignments':
+                    // TODO: Implementar carga de asignaciones
+                    break;
+                case 'movements':
+                    // TODO: Implementar carga de movimientos
+                    break;
+                case 'security':
+                    // TODO: Implementar carga de seguridad
+                    break;
+                case 'reports':
+                    // TODO: Implementar carga de reportes
+                    break;
+                case 'disposals':
+                    // TODO: Implementar carga de propuestas de baja
+                    break;
+            }
+        } catch (error) {
+            console.error(`Error cargando datos de ${pageName}:`, error);
+            ApiUtils.handleError(error);
+        }
+    },
+    
+    // Cargar estados
+    loadStates: async function() {
+        try {
+            const states = await API.states.getAll();
+            
+            // Llenar select de estados en filtros
+            const stateFilter = document.getElementById('equipment-state-filter');
+            if (stateFilter) {
+                stateFilter.innerHTML = '<option value="">Todos</option>';
+                states.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state.id;
+                    option.textContent = state.name;
+                    stateFilter.appendChild(option);
+                });
+            }
+            
+            // Guardar estados en cache
+            this.cache.states = states;
+            
+        } catch (error) {
+            console.error('Error cargando estados:', error);
+        }
+    },
+    
+    // Manejar cambio de página en paginación
+    handlePageChange: function(page) {
+        switch (this.currentPage) {
+            case 'equipment':
+                Equipment.loadEquipment(page);
+                break;
+            case 'assignments':
+                // TODO: Implementar paginación de asignaciones
+                break;
+            case 'movements':
+                // TODO: Implementar paginación de movimientos
+                break;
+            case 'reports':
+                // TODO: Implementar paginación de reportes
+                break;
+            case 'disposals':
+                // TODO: Implementar paginación de propuestas de baja
+                break;
+        }
+    },
+    
+    // Cache de datos
+    cache: {
+        states: [],
+        equipment: [],
+        users: []
+    },
+    
+    // Utilidades de la aplicación
+    utils: {
+        // Formatear fecha para mostrar
+        formatDate: function(dateString) {
+            if (!dateString) return 'N/A';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        },
+        
+        // Formatear número de inventario
+        formatInventoryNumber: function(number) {
+            return number || 'N/A';
+        },
+        
+        // Obtener texto de tipo de equipo
+        getEquipmentTypeText: function(type) {
+            return CONFIG.EQUIPMENT_TYPES[type] || type;
+        },
+        
+        // Obtener texto de estado de equipo
+        getEquipmentStatusText: function(status) {
+            return CONFIG.EQUIPMENT_STATUS[status] || status;
+        },
+        
+        // Obtener color de estado
+        getStatusColor: function(status) {
+            const colors = {
+                active: 'success',
+                maintenance: 'warning',
+                out_of_service: 'danger',
+                disposed: 'secondary'
+            };
+            return colors[status] || 'secondary';
+        },
+        
+        // Validar formulario
+        validateForm: function(formData) {
+            const errors = {};
+            
+            // Validar campos requeridos
+            Object.keys(formData).forEach(key => {
+                if (formData[key] === '' || formData[key] === null || formData[key] === undefined) {
+                    errors[key] = 'Este campo es requerido';
+                }
+            });
+            
+            // Validaciones específicas
+            if (formData.inventory_number && !ConfigUtils.isValidInventoryNumber(formData.inventory_number)) {
+                errors.inventory_number = 'El número de inventario debe tener al menos 3 caracteres';
+            }
+            
+            if (formData.email && !ConfigUtils.isValidEmail(formData.email)) {
+                errors.email = 'El email no es válido';
+            }
+            
+            return {
+                isValid: Object.keys(errors).length === 0,
+                errors
+            };
+        },
+        
+        // Mostrar errores de formulario
+        showFormErrors: function(errors) {
+            Object.keys(errors).forEach(fieldName => {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    UI.showFieldError(field, errors[fieldName]);
+                }
+            });
+        },
+        
+        // Limpiar errores de formulario
+        clearFormErrors: function() {
+            const errorFields = document.querySelectorAll('.field-error');
+            errorFields.forEach(field => field.remove());
+            
+            const fields = document.querySelectorAll('input, select, textarea');
+            fields.forEach(field => {
+                field.style.borderColor = '';
+            });
+        }
+    }
+};
+
+// Inicializar aplicación cuando esté autenticado
+document.addEventListener('DOMContentLoaded', () => {
+    // La aplicación se inicializará cuando Auth.showApp() sea llamado
+    console.log('📱 Aplicación lista para inicializar');
+});
+
+// Exportar aplicación
+window.App = App; 
