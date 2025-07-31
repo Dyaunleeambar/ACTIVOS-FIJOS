@@ -42,8 +42,8 @@ Sistema web para la gestión de activos informáticos de una empresa de servicio
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/tu-usuario/sistema-gestion-medios-informaticos.git
-cd sistema-gestion-medios-informaticos
+git clone https://github.com/Dyaunleeambar/ACTIVOS-FIJOS.git
+cd ACTIVOS-FIJOS
 ```
 
 2. **Instalar dependencias**
@@ -218,4 +218,4 @@ Para soporte técnico, contactar al departamento de IT.
 ---
 
 **Versión**: 1.0.0  
-**Última actualización**: Diciembre 2024 
+**Última actualización**: Diciembre 2024
