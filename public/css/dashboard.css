@@ -181,49 +181,76 @@
    ======================================== */
 
 .dashboard-grid {
-  display: grid;
-  gap: var(--spacing-4);
+  display: grid !important;
+  gap: var(--spacing-6);
   margin-bottom: var(--spacing-8);
   width: 100%;
+  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+  grid-auto-flow: row !important;
 }
 
-/* Desktop: Grid 5x2 para aprovechar mejor el espacio horizontal */
+/* Desktop: Mantener 3 columnas, 2 filas */
 @media (min-width: 1024px) {
   .dashboard-grid {
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(2, 1fr) !important;
+    grid-auto-flow: row !important;
+    max-width: none !important;
+  }
+  
+  .dashboard-grid .card-stats {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 120px !important;
   }
 }
 
-/* Pantallas muy grandes: 6 columnas */
+/* Pantallas muy grandes: Mantener 3 columnas, 2 filas */
 @media (min-width: 1440px) {
   .dashboard-grid {
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(2, 1fr) !important;
+    grid-auto-flow: row !important;
+    max-width: none !important;
+  }
+  
+  .dashboard-grid .card-stats {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 140px !important;
   }
 }
 
-/* Pantallas ultra-wide: 8 columnas en una fila */
+/* Pantallas ultra-wide: Mantener 3 columnas, 2 filas */
 @media (min-width: 1920px) {
   .dashboard-grid {
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: 1fr;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(2, 1fr) !important;
+    grid-auto-flow: row !important;
+    max-width: none !important;
+  }
+  
+  .dashboard-grid .card-stats {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 160px !important;
   }
 }
 
-/* Tablet: Grid 4x2 */
+/* Tablet: Grid 3x2 */
 @media (min-width: 768px) and (max-width: 1023px) {
   .dashboard-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 1fr);
   }
 }
 
-/* Mobile: Grid 2x4 */
+/* Mobile: Grid 2x3 */
 @media (max-width: 767px) {
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
   }
 }
 
@@ -943,7 +970,8 @@
   }
   
   .dashboard-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
   }
   
   .security-grid {
@@ -963,8 +991,8 @@
   }
   
   .dashboard-grid {
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
   }
   
   .card-stats .card-body {

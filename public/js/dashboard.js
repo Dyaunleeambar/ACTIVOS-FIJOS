@@ -141,9 +141,7 @@ class Dashboard {
         maintenanceEquipment: 3,
         totalAssignments: 18,
         disposalProposals: 2,
-        outOfService: 2,
-        availableEquipment: 5,
-        utilizationRate: 85
+        outOfService: 2
       },
       alerts: [
         {
@@ -189,9 +187,7 @@ class Dashboard {
       'maintenance-equipment': stats.maintenanceEquipment,
       'total-assignments': stats.totalAssignments,
       'disposal-proposals': stats.disposalProposals,
-      'out-of-service': stats.outOfService,
-      'available-equipment': stats.availableEquipment,
-      'utilization-rate': `${stats.utilizationRate}%`
+      'out-of-service': stats.outOfService
     };
 
     Object.entries(elements).forEach(([id, value]) => {
