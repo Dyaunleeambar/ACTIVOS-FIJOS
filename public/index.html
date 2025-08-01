@@ -179,13 +179,20 @@
                     </div>
                 </div>
 
-                <!-- Alertas del Sistema -->
-                <div class="alerts-section">
-                    <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
-                    <div id="alerts-container" class="alerts-container">
-                        <!-- Las alertas se cargarán dinámicamente -->
-                    </div>
-                </div>
+                                 <!-- Alertas del Sistema -->
+                 <div class="alerts-section collapsible-section" data-collapsed="true">
+                     <div class="section-header">
+                         <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
+                         <button class="collapse-toggle" aria-label="Colapsar sección de alertas del sistema">
+                             <i class="fas fa-chevron-down"></i>
+                         </button>
+                     </div>
+                     <div class="section-content">
+                         <div id="alerts-container" class="alerts-container">
+                             <!-- Las alertas se cargarán dinámicamente -->
+                         </div>
+                     </div>
+                 </div>
 
                                  <!-- Estadísticas Principales -->
                  <div class="dashboard-grid">
@@ -298,23 +305,33 @@
                     </div>
                 </div>
 
-                <!-- Gráficos -->
-                <div class="dashboard-charts">
-                    <div class="chart-container">
-                        <h3>Equipos por Tipo</h3>
-                        <canvas id="equipment-type-chart"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <h3>Equipos por Estado</h3>
-                        <canvas id="equipment-state-chart"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <h3>Equipos por Ubicación</h3>
-                        <canvas id="equipment-location-chart"></canvas>
-                    </div>
-                </div>
+                                 <!-- Gráficos -->
+                 <div class="dashboard-charts collapsible-section" data-collapsed="true">
+                     <div class="section-header">
+                         <h3><i class="fas fa-chart-pie"></i> Gráficos y Estadísticas</h3>
+                         <button class="collapse-toggle" aria-label="Colapsar sección de gráficos">
+                             <i class="fas fa-chevron-down"></i>
+                         </button>
+                     </div>
+                     <div class="section-content">
+                         <div class="charts-grid">
+                             <div class="chart-container">
+                                 <h3>Equipos por Tipo</h3>
+                                 <canvas id="equipment-type-chart"></canvas>
+                             </div>
+                             
+                             <div class="chart-container">
+                                 <h3>Equipos por Estado</h3>
+                                 <canvas id="equipment-state-chart"></canvas>
+                             </div>
+                             
+                             <div class="chart-container">
+                                 <h3>Equipos por Ubicación</h3>
+                                 <canvas id="equipment-location-chart"></canvas>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
 
                                  <!-- Métricas de Seguridad -->
                  <div class="security-metrics collapsible-section" data-collapsed="true">
