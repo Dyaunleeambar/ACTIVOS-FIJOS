@@ -71,22 +71,44 @@
     <!-- Aplicación principal -->
     <div id="app" class="app" style="display: none;">
         <!-- Header -->
-        <header class="header">
+        <header class="app-header">
             <div class="header-left">
                 <button id="sidebar-toggle" class="sidebar-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <h1>Sistema de Gestión de Medios Informáticos</h1>
-                <div class="header-right">
-                    <div class="user-info">
-                        <span id="user-name">Usuario</span>
-                        <span id="user-role">Rol</span>
-                    </div>
-                    <button id="logout-btn" class="btn btn-secondary">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                    </button>
+                <div class="logo-small">
+                    <i class="fas fa-server"></i>
+                    <span>Sistema de Gestión</span>
                 </div>
-            </div>            
+            </div>
+            
+            <div class="header-center">
+                <h1 id="page-title">Dashboard</h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-menu">
+                    <button class="user-menu-btn" id="user-menu-btn">
+                        <div class="user-info">
+                            <span id="user-name">Usuario</span>
+                            <span id="user-role">Rol</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="#" id="profile-link">
+                            <i class="fas fa-user"></i> Perfil
+                        </a>
+                        <a href="#" id="settings-link">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a>
+                        <hr>
+                        <a href="#" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <!-- Sidebar Overlay -->
@@ -101,33 +123,327 @@
                 </button>
             </div>
             <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="#dashboard" class="nav-link active">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a></li>
-                    <li><a href="#equipment" class="nav-link">
-                        <i class="fas fa-desktop"></i> Equipos
-                    </a></li>
-                    <li><a href="#assignments" class="nav-link">
-                        <i class="fas fa-users"></i> Asignaciones
-                    </a></li>
-                    <li><a href="#reports" class="nav-link">
-                        <i class="fas fa-chart-bar"></i> Reportes
-                    </a></li>
-                    <li><a href="#security" class="nav-link">
-                        <i class="fas fa-shield-alt"></i> Seguridad
-                    </a></li>
-                    <li><a href="#disposal" class="nav-link">
-                        <i class="fas fa-trash"></i> Propuestas de Baja
-                    </a></li>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#equipment" class="nav-link" data-page="equipment">
+                            <i class="fas fa-desktop"></i> Equipos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#assignments" class="nav-link" data-page="assignments">
+                            <i class="fas fa-users"></i> Asignaciones
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#reports" class="nav-link" data-page="reports">
+                            <i class="fas fa-chart-bar"></i> Reportes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#security" class="nav-link" data-page="security">
+                            <i class="fas fa-shield-alt"></i> Seguridad
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#disposal" class="nav-link" data-page="disposal">
+                            <i class="fas fa-trash"></i> Propuestas de Baja
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
 
         <!-- Contenido principal -->
-        <main class="main-content">
-            <div id="page-content">
-                <!-- El contenido se cargará dinámicamente -->
+        <main class="app-main">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page-content active">
+                <div class="page-header">
+                    <h2>Dashboard</h2>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="Dashboard.refresh()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                        <button class="btn btn-secondary" onclick="Dashboard.exportDashboard('pdf')">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Alertas del Sistema -->
+                <div class="alerts-section">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
+                    <div id="alerts-container" class="alerts-container">
+                        <!-- Las alertas se cargarán dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Estadísticas Principales -->
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Total de Equipos</h3>
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="total-equipment">25</div>
+                            <div class="stat-label">Equipos registrados</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Equipos Activos</h3>
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="active-equipment">20</div>
+                            <div class="stat-label">En operación</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>En Mantenimiento</h3>
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="maintenance-equipment">3</div>
+                            <div class="stat-label">Requieren atención</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Total Asignaciones</h3>
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="total-assignments">18</div>
+                            <div class="stat-label">Equipos asignados</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Propuestas de Baja</h3>
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="disposal-proposals">2</div>
+                            <div class="stat-label">Pendientes de aprobación</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Fuera de Servicio</h3>
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="out-of-service">2</div>
+                            <div class="stat-label">No operativos</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Disponibles</h3>
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="available-equipment">5</div>
+                            <div class="stat-label">Sin asignar</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Tasa de Utilización</h3>
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="stat-number" id="utilization-rate">85%</div>
+                            <div class="stat-label">Equipos en uso</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Métricas de Performance -->
+                <div class="performance-metrics">
+                    <div class="metric-item">
+                        <div class="metric-label">Tasa Operacional</div>
+                        <div class="metric-value" id="operational-rate">92%</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Tasa de Mantenimiento</div>
+                        <div class="metric-value" id="maintenance-rate">8%</div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="dashboard-charts">
+                    <div class="chart-container">
+                        <h3>Equipos por Tipo</h3>
+                        <canvas id="equipment-type-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Equipos por Estado</h3>
+                        <canvas id="equipment-state-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Equipos por Ubicación</h3>
+                        <canvas id="equipment-location-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Métricas de Seguridad -->
+                <div class="security-metrics">
+                    <h3><i class="fas fa-shield-alt"></i> Métricas de Seguridad</h3>
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="security-content">
+                                <div class="security-number" id="security-equipment">15</div>
+                                <div class="security-label">Equipos con datos de seguridad</div>
+                            </div>
+                        </div>
+                        
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="security-content">
+                                <div class="security-number" id="security-access-logs">12</div>
+                                <div class="security-label">Accesos registrados hoy</div>
+                            </div>
+                        </div>
+                        
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                            <div class="security-content">
+                                <div class="security-number" id="security-updated-credentials">3</div>
+                                <div class="security-label">Credenciales actualizadas</div>
+                            </div>
+                        </div>
+                        
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="security-content">
+                                <div class="security-number" id="security-alerts">0</div>
+                                <div class="security-label">Alertas de seguridad</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen por Estados -->
+                <div class="state-summary">
+                    <h3><i class="fas fa-map-marker-alt"></i> Resumen por Estados</h3>
+                    <div id="state-summary-container" class="state-summary-grid">
+                        <!-- El resumen se cargará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Actividad Reciente -->
+                <div class="recent-activity">
+                    <h3><i class="fas fa-history"></i> Actividad Reciente</h3>
+                    <div id="recent-activity-container" class="activity-list">
+                        <!-- La actividad se cargará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Acciones Rápidas -->
+                <div class="quick-actions">
+                    <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
+                    <div class="actions-grid">
+                        <a href="#equipment" class="quick-action-btn" onclick="UI.showPage('equipment')">
+                            <i class="fas fa-plus"></i>
+                            <span>Agregar Equipo</span>
+                        </a>
+                        <a href="#assignments" class="quick-action-btn" onclick="UI.showPage('assignments')">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Asignar Equipo</span>
+                        </a>
+                        <a href="#reports" class="quick-action-btn" onclick="UI.showPage('reports')">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Generar Reporte</span>
+                        </a>
+                        <a href="#disposal" class="quick-action-btn" onclick="UI.showPage('disposal')">
+                            <i class="fas fa-trash"></i>
+                            <span>Propuestas de Baja</span>
+                        </a>
+                        <a href="#security" class="quick-action-btn" onclick="UI.showPage('security')">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Control de Seguridad</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Page -->
+            <div id="equipment-page" class="page-content">
+                <div class="page-header">
+                    <h2>Gestión de Equipos</h2>
+                    <button class="btn btn-primary" onclick="Equipment.showCreateForm()">
+                        <i class="fas fa-plus"></i> Nuevo Equipo
+                    </button>
+                </div>
+                <div id="equipment-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Assignments Page -->
+            <div id="assignments-page" class="page-content">
+                <div class="page-header">
+                    <h2>Gestión de Asignaciones</h2>
+                </div>
+                <div id="assignments-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reports-page" class="page-content">
+                <div class="page-header">
+                    <h2>Reportes</h2>
+                </div>
+                <div id="reports-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Security Page -->
+            <div id="security-page" class="page-content">
+                <div class="page-header">
+                    <h2>Control de Seguridad</h2>
+                </div>
+                <div id="security-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Disposal Page -->
+            <div id="disposal-page" class="page-content">
+                <div class="page-header">
+                    <h2>Propuestas de Baja</h2>
+                </div>
+                <div id="disposal-content">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
             </div>
         </main>
     </div>
