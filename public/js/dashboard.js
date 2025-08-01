@@ -31,6 +31,7 @@ class Dashboard {
     this.setupCharts();
     this.setupRealTimeUpdates();
     this.setupInteractions();
+    this.initProgressBars();
   }
 
   // Configurar optimizaciones específicas para desktop
@@ -231,6 +232,134 @@ class Dashboard {
         element.textContent = value;
       }
     });
+  }
+
+  // Inicializar barras de progreso
+  initProgressBars() {
+    const progressBars = document.querySelectorAll('.progress-bar');
+    
+    progressBars.forEach(bar => {
+      const value = parseInt(bar.getAttribute('data-value'));
+      const fill = bar.querySelector('.progress-fill');
+      
+      if (fill) {
+        // Establecer el ancho inicial en 0
+        fill.style.width = '0%';
+        
+        // Animar después de un pequeño delay
+        setTimeout(() => {
+          fill.style.width = `${value}%`;
+        }, 500);
+        
+        // Agregar evento click para mostrar detalles
+        bar.addEventListener('click', () => {
+          this.showProgressDetails(bar, value);
+        });
+      }
+    });
+  }
+
+  // Mostrar detalles de la barra de progreso
+  showProgressDetails(bar, value) {
+    const label = bar.closest('.metric-item').querySelector('.metric-label').textContent;
+    
+    // Crear modal con detalles
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.innerHTML = `
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>${label}</h3>
+          <button class="modal-close" data-modal-close>&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="progress-details">
+            <div class="progress-summary">
+              <div class="progress-value">${value}%</div>
+              <div class="progress-description">
+                ${this.getProgressDescription(label, value)}
+              </div>
+            </div>
+            <div class="progress-bar-large">
+              <div class="progress-fill-large" style="width: ${value}%"></div>
+            </div>
+            <div class="progress-stats">
+              ${this.getProgressStats(label, value)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Cerrar modal
+    const closeBtn = modal.querySelector('[data-modal-close]');
+    const overlay = modal.querySelector('.modal-overlay');
+    
+    const closeModal = () => {
+      modal.remove();
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+  }
+
+  // Obtener descripción del progreso
+  getProgressDescription(label, value) {
+    if (label === 'Tasa Operacional') {
+      if (value >= 90) return 'Excelente rendimiento operacional';
+      if (value >= 75) return 'Buen rendimiento operacional';
+      if (value >= 60) return 'Rendimiento operacional aceptable';
+      return 'Rendimiento operacional bajo';
+    } else if (label === 'Tasa de Mantenimiento') {
+      if (value <= 10) return 'Mantenimiento preventivo óptimo';
+      if (value <= 20) return 'Mantenimiento preventivo adecuado';
+      if (value <= 30) return 'Mantenimiento preventivo aceptable';
+      return 'Requiere atención en mantenimiento';
+    }
+    return 'Métrica del sistema';
+  }
+
+  // Obtener estadísticas del progreso
+  getProgressStats(label, value) {
+    if (label === 'Tasa Operacional') {
+      return `
+        <div class="stat-item">
+          <span class="stat-label">Equipos Activos:</span>
+          <span class="stat-value">${Math.round(value * 0.25)}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Eficiencia:</span>
+          <span class="stat-value">${value}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Estado:</span>
+          <span class="stat-value ${value >= 75 ? 'status-good' : 'status-warning'}">
+            ${value >= 75 ? 'Óptimo' : 'Requiere atención'}
+          </span>
+        </div>
+      `;
+    } else if (label === 'Tasa de Mantenimiento') {
+      return `
+        <div class="stat-item">
+          <span class="stat-label">Equipos en Mantenimiento:</span>
+          <span class="stat-value">${Math.round(value * 0.25)}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Tiempo Promedio:</span>
+          <span class="stat-value">${Math.round(value * 2)} días</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Estado:</span>
+          <span class="stat-value ${value <= 15 ? 'status-good' : 'status-warning'}">
+            ${value <= 15 ? 'Controlado' : 'Requiere revisión'}
+          </span>
+        </div>
+      `;
+    }
+    return '';
   }
 
   // Configurar gráficos
