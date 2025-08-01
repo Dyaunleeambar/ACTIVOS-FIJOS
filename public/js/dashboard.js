@@ -5,6 +5,7 @@ const Dashboard = {
     charts: {},
     alerts: [],
     recentActivity: [],
+    chartInstances: {}, // Para almacenar las instancias de Chart.js
     
     // Inicializar dashboard
     init: function() {
@@ -23,7 +24,7 @@ const Dashboard = {
     // Cargar datos del dashboard
     loadDashboard: async function() {
         try {
-            console.log('🔄 Cargando datos del dashboard...');
+            console.log('�� Cargando datos del dashboard...');
             
             // Mostrar loading
             UI.showLoading('#dashboard-page', 'Cargando estadísticas...');
@@ -352,8 +353,26 @@ const Dashboard = {
         }
     },
     
+    // Destruir gráficos existentes
+    destroyCharts: function() {
+        Object.keys(this.chartInstances).forEach(chartId => {
+            if (this.chartInstances[chartId]) {
+                try {
+                    this.chartInstances[chartId].destroy();
+                } catch (error) {
+                    console.warn('Error destruyendo gráfico:', chartId, error);
+                }
+                this.chartInstances[chartId] = null;
+            }
+        });
+        this.chartInstances = {};
+    },
+    
     // Crear gráficos
     createCharts: function() {
+        // Destruir gráficos existentes antes de crear nuevos
+        this.destroyCharts();
+        
         this.createEquipmentTypeChart();
         this.createEquipmentStateChart();
         this.createEquipmentLocationChart();
@@ -362,151 +381,172 @@ const Dashboard = {
     // Crear gráfico de equipos por tipo
     createEquipmentTypeChart: function() {
         const ctx = document.getElementById('equipment-type-chart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.warn('Canvas equipment-type-chart no encontrado');
+            return;
+        }
         
         const data = this.charts.equipmentByType;
         const labels = Object.keys(data).map(type => CONFIG.EQUIPMENT_TYPES[type]);
         const values = Object.values(data);
         
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: values,
-                    backgroundColor: [
-                        '#667eea',
-                        '#764ba2',
-                        '#f093fb',
-                        '#f5576c',
-                        '#4facfe',
-                        '#00f2fe'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true
+        try {
+            this.chartInstances['equipment-type'] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe',
+                            '#00f2fe'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
                         }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff'
                     }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error creando gráfico de equipos por tipo:', error);
+        }
     },
     
     // Crear gráfico de equipos por estado
     createEquipmentStateChart: function() {
         const ctx = document.getElementById('equipment-state-chart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.warn('Canvas equipment-state-chart no encontrado');
+            return;
+        }
         
         const data = this.charts.equipmentByState;
         const labels = Object.keys(data).map(status => CONFIG.EQUIPMENT_STATUS[status]);
         const values = Object.values(data);
         
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Cantidad de Equipos',
-                    data: values,
-                    backgroundColor: [
-                        '#28a745',
-                        '#ffc107',
-                        '#dc3545',
-                        '#6c757d'
-                    ],
-                    borderColor: [
-                        '#28a745',
-                        '#ffc107',
-                        '#dc3545',
-                        '#6c757d'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff'
-                    }
+        try {
+            this.chartInstances['equipment-state'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cantidad de Equipos',
+                        data: values,
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545',
+                            '#6c757d'
+                        ],
+                        borderColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545',
+                            '#6c757d'
+                        ],
+                        borderWidth: 1
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error creando gráfico de equipos por estado:', error);
+        }
     },
     
     // Crear gráfico de equipos por ubicación
     createEquipmentLocationChart: function() {
         const ctx = document.getElementById('equipment-location-chart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.warn('Canvas equipment-location-chart no encontrado');
+            return;
+        }
         
         const data = this.charts.equipmentByLocation;
         const labels = Object.keys(data);
         const values = Object.values(data);
         
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Equipos por Ubicación',
-                    data: values,
-                    backgroundColor: '#667eea',
-                    borderColor: '#667eea',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff'
-                    }
+        try {
+            this.chartInstances['equipment-location'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Equipos por Ubicación',
+                        data: values,
+                        backgroundColor: '#667eea',
+                        borderColor: '#667eea',
+                        borderWidth: 1
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error creando gráfico de equipos por ubicación:', error);
+        }
     },
     
     // Refrescar estadísticas en tiempo real
@@ -567,6 +607,15 @@ const Dashboard = {
             console.error('Error exportando dashboard:', error);
             UI.showNotification('Error al exportar dashboard', 'error');
         }
+    },
+    
+    // Limpiar recursos del dashboard
+    cleanup: function() {
+        this.destroyCharts();
+        this.stats = {};
+        this.charts = {};
+        this.alerts = [];
+        this.recentActivity = [];
     }
 };
 
@@ -576,4 +625,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Exportar módulo del dashboard
-window.Dashboard = Dashboard; 
+window.Dashboard = Dashboard;
