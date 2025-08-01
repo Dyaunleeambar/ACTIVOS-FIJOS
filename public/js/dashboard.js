@@ -137,29 +137,29 @@ class Dashboard {
     // Simular datos para demostración
     return {
       stats: {
-        totalEquipment: 25,
-        activeEquipment: 20,
-        maintenanceEquipment: 3,
-        totalAssignments: 18,
-        disposalProposals: 2,
+                totalEquipment: 25,
+                activeEquipment: 20,
+                maintenanceEquipment: 3,
+                totalAssignments: 18,
+                disposalProposals: 2,
         outOfService: 2
       },
       alerts: [
         {
-          type: 'warning',
-          message: '3 equipos requieren mantenimiento preventivo',
+                    type: 'warning',
+                    message: '3 equipos requieren mantenimiento preventivo',
           time: 'hace 2 horas',
           icon: 'fas fa-tools'
-        },
-        {
-          type: 'warning',
-          message: '1 propuesta de baja pendiente de aprobación',
+                },
+                {
+                    type: 'warning',
+                    message: '1 propuesta de baja pendiente de aprobación',
           time: 'hace 4 horas',
           icon: 'fas fa-exclamation-triangle'
-        },
-        {
-          type: 'success',
-          message: 'Sistema funcionando correctamente',
+                },
+                {
+                    type: 'success',
+                    message: 'Sistema funcionando correctamente',
           time: 'hace 0 minutos',
           icon: 'fas fa-check-circle'
         }
@@ -167,8 +167,8 @@ class Dashboard {
       security: {
         securityEquipment: 15,
         accessLogs: 12,
-        updatedCredentials: 3,
-        securityAlerts: 0
+                updatedCredentials: 3,
+                securityAlerts: 0
       }
     };
   }
@@ -182,7 +182,7 @@ class Dashboard {
 
   // Actualizar estadísticas
   updateStats(stats) {
-    const elements = {
+        const elements = {
       'total-equipment': stats.totalEquipment,
       'active-equipment': stats.activeEquipment,
       'maintenance-equipment': stats.maintenanceEquipment,
@@ -192,8 +192,8 @@ class Dashboard {
     };
 
     Object.entries(elements).forEach(([id, value]) => {
-      const element = document.getElementById(id);
-      if (element) {
+            const element = document.getElementById(id);
+            if (element) {
         element.textContent = value;
       }
     });
@@ -206,20 +206,20 @@ class Dashboard {
 
     container.innerHTML = alerts.map(alert => `
       <div class="alert alert-${alert.type}">
-        <div class="alert-icon">
-          <i class="${alert.icon}"></i>
-        </div>
-        <div class="alert-content">
-          <div class="alert-message">${alert.message}</div>
+                <div class="alert-icon">
+                    <i class="${alert.icon}"></i>
+                </div>
+                <div class="alert-content">
+                    <div class="alert-message">${alert.message}</div>
           <div class="alert-time">${alert.time}</div>
-        </div>
-      </div>
-    `).join('');
+                </div>
+            </div>
+        `).join('');
   }
 
   // Actualizar métricas de seguridad
   updateSecurityMetrics(security) {
-    const elements = {
+        const elements = {
       'security-equipment': security.securityEquipment,
       'security-access-logs': security.accessLogs,
       'security-updated-credentials': security.updatedCredentials,
@@ -227,8 +227,8 @@ class Dashboard {
     };
 
     Object.entries(elements).forEach(([id, value]) => {
-      const element = document.getElementById(id);
-      if (element) {
+            const element = document.getElementById(id);
+            if (element) {
         element.textContent = value;
       }
     });
@@ -279,7 +279,7 @@ class Dashboard {
               <div class="progress-value">${value}%</div>
               <div class="progress-description">
                 ${this.getProgressDescription(label, value)}
-              </div>
+                </div>
             </div>
             <div class="progress-bar-large">
               <div class="progress-fill-large" style="width: ${value}%"></div>
@@ -375,12 +375,12 @@ class Dashboard {
     if (!ctx) return;
 
     new Chart(ctx, {
-      type: 'doughnut',
-      data: {
+                type: 'doughnut',
+                data: {
         labels: ['Desktop', 'Laptop', 'Printer', 'Server', 'Router', 'Switch'],
-        datasets: [{
+                    datasets: [{
           data: [8, 6, 4, 3, 2, 2],
-          backgroundColor: [
+                        backgroundColor: [
             '#3b82f6',
             '#8b5cf6',
             '#06b6d4',
@@ -388,18 +388,18 @@ class Dashboard {
             '#f59e0b',
             '#ef4444'
           ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
             position: 'bottom'
-          }
-        }
-      }
-    });
+                        }
+                    }
+                }
+            });
   }
 
   // Gráfico de equipos por estado
@@ -408,35 +408,35 @@ class Dashboard {
     if (!ctx) return;
 
     new Chart(ctx, {
-      type: 'bar',
-      data: {
+                type: 'bar',
+                data: {
         labels: ['Activo', 'Mantenimiento', 'Fuera de Servicio', 'Desechado'],
-        datasets: [{
+                    datasets: [{
           label: 'Cantidad',
           data: [20, 3, 2, 0],
-          backgroundColor: [
+                        backgroundColor: [
             '#10b981',
             '#f59e0b',
             '#ef4444',
             '#6b7280'
           ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
             beginAtZero: true
-          }
-        }
-      }
-    });
+                        }
+                    }
+                }
+            });
   }
 
   // Gráfico de equipos por ubicación
@@ -446,9 +446,9 @@ class Dashboard {
 
     new Chart(ctx, {
       type: 'pie',
-      data: {
+                data: {
         labels: ['Oficina Central', 'Sucursal Norte', 'Sucursal Sur', 'Almacén'],
-        datasets: [{
+                    datasets: [{
           data: [12, 6, 4, 3],
           backgroundColor: [
             '#3b82f6',
@@ -456,18 +456,18 @@ class Dashboard {
             '#06b6d4',
             '#10b981'
           ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
             position: 'bottom'
-          }
-        }
-      }
-    });
+                        }
+                    }
+                }
+            });
   }
 
   // Configurar actualizaciones en tiempo real

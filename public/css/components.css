@@ -23,8 +23,8 @@
 }
 
 .summary-item {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
   gap: var(--spacing-3);
   padding: var(--spacing-3);
   background: var(--color-background-primary);
@@ -138,11 +138,11 @@
 }
 
 .tooltip-content {
-  position: relative;
+    position: relative;
 }
 
 .tooltip-arrow {
-  position: absolute;
+    position: absolute;
   width: 0;
   height: 0;
   border: 4px solid transparent;
@@ -150,7 +150,7 @@
 
 .tooltip[data-position="top"] .tooltip-arrow {
   bottom: -8px;
-  left: 50%;
+    left: 50%;
   transform: translateX(-50%);
   border-top-color: var(--color-gray-900);
 }
@@ -1256,7 +1256,7 @@
 
 .skeleton-title {
   width: 60%;
-  height: 24px;
+    height: 24px;
   background: var(--color-gray-200);
   border-radius: var(--border-radius-md);
   margin-bottom: var(--spacing-2);
@@ -1398,7 +1398,7 @@
   position: absolute;
   width: 1px;
   height: 1px;
-  padding: 0;
+    padding: 0;
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
@@ -1518,7 +1518,7 @@
     border-width: 2px;
   }
   
-  .card {
+    .card {
     border-width: 2px;
   }
   
@@ -1563,9 +1563,9 @@
 }
 
 .text-center {
-  text-align: center;
-}
-
+        text-align: center;
+    }
+    
 .text-left {
   text-align: left;
 }
