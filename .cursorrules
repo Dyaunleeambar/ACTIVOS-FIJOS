@@ -1,0 +1,306 @@
+# 🎯 Cursor Rules - Sistema de Gestión de Medios Informáticos
+
+## 📋 Contexto del Proyecto
+
+Este es un sistema de gestión de medios informáticos para el sector público, específicamente diseñado para:
+- **IT Central**: Administración central de equipos
+- **Responsables de Medios**: Gestión por estados/regiones
+- **Consultores**: Visualización y reportes
+
+## 🎨 Sistema de Diseño
+
+### Design Tokens
+- **Archivo principal**: `public/css/design-tokens.css`
+- **Variables CSS**: Usar siempre variables CSS definidas
+- **Colores**: Paleta profesional con azul primario y púrpura secundario
+- **Tipografía**: Inter como fuente principal
+- **Espaciado**: Sistema de 8px base (0.5rem)
+
+### Estructura de Archivos CSS
+```
+public/css/
+├── design-tokens.css    # Variables CSS del sistema
+├── styles.css          # Estilos base y layout
+├── dashboard.css       # Estilos específicos del dashboard
+├── forms.css          # Estilos de formularios
+└── components.css     # Componentes reutilizables
+```
+
+### Reglas de CSS
+- Usar variables CSS para colores, espaciado, tipografía
+- Mobile-first responsive design
+- Accesibilidad WCAG 2.1 AA
+- Transiciones suaves (300ms ease-in-out)
+- Sombras consistentes (shadow-sm, shadow-md, shadow-lg)
+
+## 🏗️ Arquitectura Frontend
+
+### Estructura de JavaScript
+```
+public/js/
+├── config.js          # Configuración global
+├── auth.js            # Módulo de autenticación
+├── api.js             # Módulo de API
+├── ui.js              # Utilidades de UI
+├── app.js             # Aplicación principal
+├── dashboard.js       # Módulo del dashboard
+└── equipment.js       # Módulo de equipos
+```
+
+### Patrones de Código
+- **Modular**: Separación clara de responsabilidades
+- **Funcional**: Preferir funciones puras
+- **Async/Await**: Para operaciones asíncronas
+- **Error Handling**: Manejo consistente de errores
+- **Loading States**: Indicadores de carga en todas las operaciones
+
+## 🎯 Componentes Principales
+
+### Autenticación
+- Login con JWT tokens
+- Gestión de roles (admin, manager, consultant)
+- Auto-logout por expiración
+- Validación de permisos por página
+
+### Dashboard
+- Estadísticas en tiempo real
+- Gráficos con Chart.js
+- Cards informativas
+- Quick actions
+- Recent activity
+
+### Gestión de Equipos
+- CRUD completo de equipos
+- Filtros avanzados
+- Búsqueda en tiempo real
+- Estados: active, maintenance, out_of_service, disposed
+- Tipos: desktop, laptop, printer, server, router, switch, radio_communication, sim_chip, roaming, other
+
+## 📊 Estados de Equipos
+
+### Colores Semánticos
+```css
+--color-status-active: #22c55e;        /* Verde */
+--color-status-maintenance: #f59e0b;   /* Amarillo */
+--color-status-out-of-service: #ef4444; /* Rojo */
+--color-status-disposed: #6b7280;      /* Gris */
+```
+
+### Estados Disponibles
+- **active**: Equipo en uso normal
+- **maintenance**: En mantenimiento
+- **out_of_service**: Fuera de servicio
+- **disposed**: Desechado
+
+## 🎨 Paleta de Colores
+
+### Colores Primarios
+```css
+--color-primary-500: #3b82f6;  /* Azul principal */
+--color-primary-600: #2563eb;  /* Hover */
+--color-primary-700: #1d4ed8;  /* Active */
+```
+
+### Colores Secundarios
+```css
+--color-secondary-500: #a855f7; /* Púrpura */
+--color-secondary-600: #9333ea; /* Hover */
+--color-secondary-700: #7c3aed; /* Active */
+```
+
+### Estados del Sistema
+```css
+--color-success-500: #22c55e;   /* Éxito */
+--color-warning-500: #f59e0b;  /* Advertencia */
+--color-error-500: #ef4444;     /* Error */
+--color-info-500: #3b82f6;      /* Información */
+```
+
+## 📱 Responsive Design
+
+### Breakpoints
+```css
+--breakpoint-xs: 0;        /* Extra small */
+--breakpoint-sm: 640px;    /* Small */
+--breakpoint-md: 768px;    /* Medium */
+--breakpoint-lg: 1024px;   /* Large */
+--breakpoint-xl: 1280px;   /* Extra large */
+--breakpoint-2xl: 1536px;  /* 2X large */
+```
+
+### Mobile First
+- Diseño para móviles primero
+- Navegación colapsable en móvil
+- Touch-friendly (44px mínimo)
+- Optimización de performance
+
+## ♿ Accesibilidad
+
+### Requisitos
+- WCAG 2.1 AA compliance
+- Contraste mínimo 4.5:1
+- Focus visible en todos los elementos interactivos
+- Screen reader support
+- Keyboard navigation
+
+### Clases de Accesibilidad
+```css
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+```
+
+## 🔧 API Integration
+
+### Endpoints Principales
+```javascript
+// Autenticación
+POST /api/auth/login
+POST /api/auth/logout
+
+// Equipos
+GET /api/equipment
+POST /api/equipment
+PUT /api/equipment/:id
+DELETE /api/equipment/:id
+
+// Reportes
+GET /api/reports/inventory
+GET /api/reports/equipment-by-state
+```
+
+### Manejo de Errores
+- Mostrar mensajes de error amigables
+- Retry automático para errores de red
+- Timeout de 10 segundos
+- Loading states durante requests
+
+## 📝 Convenciones de Código
+
+### JavaScript
+- **Variables**: camelCase
+- **Constantes**: UPPER_SNAKE_CASE
+- **Funciones**: camelCase
+- **Clases**: PascalCase
+- **Archivos**: kebab-case
+
+### CSS
+- **Clases**: kebab-case
+- **Variables**: kebab-case con prefijo
+- **BEM**: Para componentes complejos
+- **Utilidades**: Prefijo con propósito
+
+### HTML
+- **Atributos**: kebab-case
+- **IDs**: camelCase
+- **Data attributes**: data-* con kebab-case
+
+## 🎯 Funcionalidades Específicas
+
+### Dashboard
+- Estadísticas en tiempo real
+- Gráficos interactivos
+- Quick actions
+- Recent activity feed
+- Alertas del sistema
+
+### Gestión de Equipos
+- Listado con paginación
+- Filtros avanzados
+- Búsqueda en tiempo real
+- Creación/edición modal
+- Eliminación con confirmación
+
+### Reportes
+- Exportación PDF/Excel
+- Filtros por fecha
+- Gráficos estadísticos
+- Comparativas por estado
+
+## 🔒 Seguridad
+
+### Frontend
+- Validación de inputs
+- Sanitización de datos
+- XSS protection
+- CSRF tokens
+- Secure storage de tokens
+
+### Autenticación
+- JWT tokens
+- Refresh tokens
+- Role-based access control
+- Session management
+- Auto-logout
+
+## 📚 Documentación
+
+### Archivos de Referencia
+- `docs/design-system.md`: Sistema de diseño completo
+- `docs/04-arquitectura-sistema.md`: Arquitectura del sistema
+- `docs/05-especificaciones-tecnicas.md`: Especificaciones técnicas
+- `docs/README-Frontend-Completado.md`: Estado actual del frontend
+
+### Mejores Prácticas
+- Documentar cambios importantes
+- Mantener consistencia en el código
+- Seguir patrones establecidos
+- Revisar accesibilidad regularmente
+- Optimizar performance
+
+## 🚀 Performance
+
+### Optimizaciones
+- Lazy loading de componentes
+- Debounce en búsquedas
+- Caching de datos
+- Minificación de assets
+- CDN para librerías externas
+
+### Métricas
+- First Contentful Paint < 1.5s
+- Largest Contentful Paint < 2.5s
+- Cumulative Layout Shift < 0.1
+- First Input Delay < 100ms
+
+## 🎨 UI/UX Guidelines
+
+### Principios
+- **Claridad**: Interfaz limpia y fácil de entender
+- **Consistencia**: Patrones uniformes
+- **Eficiencia**: Flujos optimizados
+- **Accesibilidad**: Cumplimiento WCAG 2.1 AA
+- **Escalabilidad**: Sistema que crece
+
+### Personalidad
+- **Profesional**: Diseño corporativo serio
+- **Confiable**: Colores y formas que transmiten seguridad
+- **Moderno**: Tecnología actual sin ser experimental
+- **Funcional**: Prioridad a la usabilidad
+
+## 🔄 Workflow de Desarrollo
+
+### Flujo de Trabajo
+1. **Diseño**: Usar design tokens y componentes existentes
+2. **Desarrollo**: Seguir patrones establecidos
+3. **Testing**: Verificar funcionalidad y accesibilidad
+4. **Documentación**: Actualizar docs si es necesario
+5. **Review**: Revisar consistencia con el sistema
+
+### Herramientas Recomendadas
+- **Chrome DevTools**: Para debugging
+- **Lighthouse**: Para auditorías
+- **Color Contrast Analyzer**: Para accesibilidad
+- **Figma**: Para diseño de componentes
+
+---
+
+*Cursor Rules - Sistema de Gestión de Medios Informáticos - Versión 1.0* 

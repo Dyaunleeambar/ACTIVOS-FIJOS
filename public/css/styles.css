@@ -562,3 +562,129 @@ body {
 .mt-20 {
     margin-top: 20px;
 } 
+
+/* ========================================
+   VISTA ESPECÍFICA PARA DESKTOP
+   ======================================== */
+
+/* Clase para detectar vista desktop */
+.desktop-view {
+  /* Mejoras específicas para desktop */
+}
+
+.desktop-view .dashboard-page {
+  padding: var(--spacing-8);
+  max-width: none;
+  width: 100%;
+  margin: 0;
+}
+
+.desktop-view .page-header {
+  margin-bottom: var(--spacing-8);
+  padding-bottom: var(--spacing-6);
+}
+
+.desktop-view .card-stats {
+  min-height: 140px;
+}
+
+.desktop-view .card-stats .card-body {
+  padding: var(--spacing-8);
+}
+
+.desktop-view .stats-icon {
+  width: 70px;
+  height: 70px;
+  font-size: var(--font-size-2xl);
+}
+
+.desktop-view .stats-number {
+  font-size: var(--font-size-3xl);
+}
+
+.desktop-view .chart-container {
+  padding: var(--spacing-8);
+}
+
+.desktop-view .chart-container canvas {
+  height: 350px !important;
+}
+
+.desktop-view .quick-action-btn {
+  min-height: 140px;
+  padding: var(--spacing-8);
+}
+
+.desktop-view .quick-action-btn i {
+  font-size: var(--font-size-3xl);
+}
+
+/* Hover effects mejorados para desktop */
+.desktop-view .card-stats:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+}
+
+.desktop-view .quick-action-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+}
+
+.desktop-view .chart-container:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Mejoras de espaciado para desktop */
+.desktop-view .alerts-section,
+.desktop-view .dashboard-grid,
+.desktop-view .performance-metrics,
+.desktop-view .dashboard-charts,
+.desktop-view .security-metrics,
+.desktop-view .state-summary,
+.desktop-view .recent-activity,
+.desktop-view .quick-actions {
+  margin-bottom: var(--spacing-8);
+}
+
+/* Grid optimizado para pantallas muy grandes */
+@media (min-width: 1440px) {
+  .desktop-view .dashboard-page {
+    max-width: none;
+    width: 100%;
+  }
+  
+  .desktop-view .dashboard-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .desktop-view .security-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .desktop-view .actions-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+/* Mejoras para pantallas ultra-wide */
+@media (min-width: 1920px) {
+  .desktop-view .dashboard-page {
+    max-width: none;
+    width: 100%;
+  }
+  
+  .desktop-view .card-stats .card-body {
+    padding: var(--spacing-10);
+  }
+  
+  .desktop-view .stats-icon {
+    width: 80px;
+    height: 80px;
+    font-size: var(--font-size-3xl);
+  }
+  
+  .desktop-view .stats-number {
+    font-size: var(--font-size-4xl);
+  }
+} 

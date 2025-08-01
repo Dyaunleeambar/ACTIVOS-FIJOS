@@ -104,4 +104,81 @@ pdf-docs/
 
 # Build directories
 dist/
-build/ 
+build/
+
+# ========================================
+# PROYECTO ESPECÍFICO - Sistema de Gestión de Medios Informáticos
+# ========================================
+
+# Archivos de configuración local
+.env.example
+config/local.js
+config/local.json
+
+# Archivos de logs específicos del proyecto
+logs/app.log
+logs/error.log
+logs/access.log
+
+# Archivos temporales del proyecto
+temp/
+tmp/
+uploads/
+
+# Archivos de base de datos local
+data/
+database/
+
+# Archivos de certificados y claves
+*.pem
+*.key
+*.crt
+*.p12
+
+# Archivos de configuración de servidor
+server-config/
+nginx/
+apache/
+
+# Archivos de backup de base de datos
+*.sql
+*.dump
+
+# Archivos de reportes generados
+reports/
+exports/
+
+# Archivos de cache del navegador
+.cache/
+.cache-*/
+
+# Archivos de desarrollo específicos
+dev/
+development/
+
+# Archivos de testing
+test-results/
+coverage/
+.nyc_output/
+
+# Archivos de documentación generada
+docs/generated/
+docs/build/
+
+# Archivos de assets compilados (si se usan)
+public/assets/compiled/
+public/css/compiled/
+public/js/compiled/
+
+# Archivos de configuración de IDE específicos
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# Archivos de sistema específicos de Windows
+*.lnk
+desktop.ini
+
+# Archivos de configuración de servidor local
+localhost/
+127.0.0.1/ 
