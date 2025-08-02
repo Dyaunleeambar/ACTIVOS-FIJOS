@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const equipmentRoutes = require('./routes/equipment');
 const stateRoutes = require('./routes/stateRoutes');
 const userRoutes = require('./routes/users');
+const dashboardRoutes = require('./routes/dashboard');
 
 // Importar middleware
 const { authenticateToken } = require('./middleware/auth');
@@ -75,6 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/states', stateRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Ruta de salud
 app.get('/health', (req, res) => {

@@ -134,48 +134,72 @@ class Dashboard {
 
   // Obtener datos del dashboard
   async fetchDashboardData() {
-    // Simular datos para demostración
-    return {
-      stats: {
-                totalEquipment: 25,
-                activeEquipment: 20,
-                maintenanceEquipment: 3,
-                totalAssignments: 18,
-                disposalProposals: 2,
-        outOfService: 2
-      },
-      alerts: [
-        {
-                    type: 'warning',
-                    message: '3 equipos requieren mantenimiento preventivo',
-          time: 'hace 2 horas',
-          icon: 'fas fa-tools'
-                },
-                {
-                    type: 'warning',
-                    message: '1 propuesta de baja pendiente de aprobación',
-          time: 'hace 4 horas',
-          icon: 'fas fa-exclamation-triangle'
-                },
-                {
-                    type: 'success',
-                    message: 'Sistema funcionando correctamente',
-          time: 'hace 0 minutos',
-          icon: 'fas fa-check-circle'
+    try {
+      const response = await fetch('/api/dashboard/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      ],
-      security: {
-        securityEquipment: 15,
-        accessLogs: 12,
-                updatedCredentials: 3,
-                securityAlerts: 0
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener datos del dashboard');
       }
-    };
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener datos del dashboard:', error);
+      // Retornar datos simulados en caso de error
+      return {
+        stats: {
+          totalEquipment: 25,
+          activeEquipment: 20,
+          disposalProposals: 2
+        },
+        equipmentByType: {
+          totalLaptops: 8,
+          totalPcs: 12,
+          totalMonitors: 15,
+          totalPrinters: 5,
+          totalSims: 20,
+          totalRadios: 10
+        },
+        alerts: [
+          {
+            type: 'warning',
+            message: '3 equipos requieren mantenimiento preventivo',
+            time: 'hace 2 horas',
+            icon: 'fas fa-tools'
+          },
+          {
+            type: 'warning',
+            message: '1 propuesta de baja pendiente de aprobación',
+            time: 'hace 4 horas',
+            icon: 'fas fa-exclamation-triangle'
+          },
+          {
+            type: 'success',
+            message: 'Sistema funcionando correctamente',
+            time: 'hace 0 minutos',
+            icon: 'fas fa-check-circle'
+          }
+        ],
+        security: {
+          securityEquipment: 15,
+          accessLogs: 12,
+          updatedCredentials: 3,
+          securityAlerts: 0
+        }
+      };
+    }
   }
 
   // Actualizar dashboard con datos
   updateDashboard(data) {
     this.updateStats(data.stats);
+    this.updateEquipmentByType(data.equipmentByType);
     this.updateAlerts(data.alerts);
     this.updateSecurityMetrics(data.security);
   }
@@ -185,15 +209,31 @@ class Dashboard {
         const elements = {
       'total-equipment': stats.totalEquipment,
       'active-equipment': stats.activeEquipment,
-      'maintenance-equipment': stats.maintenanceEquipment,
-      'total-assignments': stats.totalAssignments,
-      'disposal-proposals': stats.disposalProposals,
-      'out-of-service': stats.outOfService
+      'disposal-proposals': stats.disposalProposals
     };
 
     Object.entries(elements).forEach(([id, value]) => {
             const element = document.getElementById(id);
             if (element) {
+        element.textContent = value;
+      }
+    });
+  }
+
+  // Actualizar estadísticas por tipo de equipo
+  updateEquipmentByType(equipmentByType) {
+    const elements = {
+      'total-laptops': equipmentByType.totalLaptops,
+      'total-pcs': equipmentByType.totalPcs,
+      'total-monitors': equipmentByType.totalMonitors,
+      'total-printers': equipmentByType.totalPrinters,
+      'total-sims': equipmentByType.totalSims,
+      'total-radios': equipmentByType.totalRadios
+    };
+
+    Object.entries(elements).forEach(([id, value]) => {
+      const element = document.getElementById(id);
+      if (element) {
         element.textContent = value;
       }
     });
@@ -364,23 +404,62 @@ class Dashboard {
 
   // Configurar gráficos
   setupCharts() {
-    this.setupEquipmentTypeChart();
-    this.setupEquipmentStateChart();
-    this.setupEquipmentLocationChart();
+    this.loadChartData();
+  }
+
+  // Cargar datos de gráficos desde el backend
+  async loadChartData() {
+    try {
+      const response = await fetch('/api/dashboard/charts', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener datos de gráficos');
+      }
+
+      const chartData = await response.json();
+      this.setupEquipmentTypeChart(chartData.data.typeChart);
+      this.setupEquipmentStateChart(chartData.data.stateChart);
+      this.setupEquipmentLocationChart(chartData.data.locationChart);
+    } catch (error) {
+      console.error('Error al cargar datos de gráficos:', error);
+      // Usar datos simulados en caso de error
+      this.setupEquipmentTypeChart();
+      this.setupEquipmentStateChart();
+      this.setupEquipmentLocationChart();
+    }
   }
 
   // Gráfico de equipos por tipo
-  setupEquipmentTypeChart() {
+  setupEquipmentTypeChart(data) {
     const ctx = document.getElementById('equipment-type-chart');
     if (!ctx) return;
 
+    // Usar datos del backend si están disponibles, sino usar datos simulados
+    const chartData = data || [
+      { type: 'desktop', count: 8 },
+      { type: 'laptop', count: 6 },
+      { type: 'printer', count: 4 },
+      { type: 'server', count: 3 },
+      { type: 'router', count: 2 },
+      { type: 'switch', count: 2 }
+    ];
+
+    const labels = chartData.map(item => item.type.charAt(0).toUpperCase() + item.type.slice(1));
+    const values = chartData.map(item => item.count);
+
     new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-        labels: ['Desktop', 'Laptop', 'Printer', 'Server', 'Router', 'Switch'],
-                    datasets: [{
-          data: [8, 6, 4, 3, 2, 2],
-                        backgroundColor: [
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: [
             '#3b82f6',
             '#8b5cf6',
             '#06b6d4',
@@ -388,86 +467,116 @@ class Dashboard {
             '#f59e0b',
             '#ef4444'
           ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
             position: 'bottom'
-                        }
-                    }
-                }
-            });
+          }
+        }
+      }
+    });
   }
 
   // Gráfico de equipos por estado
-  setupEquipmentStateChart() {
+  setupEquipmentStateChart(data) {
     const ctx = document.getElementById('equipment-state-chart');
     if (!ctx) return;
 
+    // Usar datos del backend si están disponibles, sino usar datos simulados
+    const chartData = data || [
+      { status: 'active', count: 20 },
+      { status: 'maintenance', count: 3 },
+      { status: 'out_of_service', count: 2 },
+      { status: 'disposed', count: 0 }
+    ];
+
+    const labels = chartData.map(item => {
+      switch (item.status) {
+        case 'active': return 'Activo';
+        case 'maintenance': return 'Mantenimiento';
+        case 'out_of_service': return 'Fuera de Servicio';
+        case 'disposed': return 'Desechado';
+        default: return item.status;
+      }
+    });
+    const values = chartData.map(item => item.count);
+
     new Chart(ctx, {
-                type: 'bar',
-                data: {
-        labels: ['Activo', 'Mantenimiento', 'Fuera de Servicio', 'Desechado'],
-                    datasets: [{
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
           label: 'Cantidad',
-          data: [20, 3, 2, 0],
-                        backgroundColor: [
+          data: values,
+          backgroundColor: [
             '#10b981',
             '#f59e0b',
             '#ef4444',
             '#6b7280'
           ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
             beginAtZero: true
-                        }
-                    }
-                }
-            });
+          }
+        }
+      }
+    });
   }
 
   // Gráfico de equipos por ubicación
-  setupEquipmentLocationChart() {
+  setupEquipmentLocationChart(data) {
     const ctx = document.getElementById('equipment-location-chart');
     if (!ctx) return;
 
+    // Usar datos del backend si están disponibles, sino usar datos simulados
+    const chartData = data || [
+      { location: 'Oficina Central', count: 12 },
+      { location: 'Sucursal Norte', count: 6 },
+      { location: 'Sucursal Sur', count: 4 },
+      { location: 'Almacén', count: 3 }
+    ];
+
+    const labels = chartData.map(item => item.location);
+    const values = chartData.map(item => item.count);
+
     new Chart(ctx, {
       type: 'pie',
-                data: {
-        labels: ['Oficina Central', 'Sucursal Norte', 'Sucursal Sur', 'Almacén'],
-                    datasets: [{
-          data: [12, 6, 4, 3],
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
           backgroundColor: [
             '#3b82f6',
             '#8b5cf6',
             '#06b6d4',
             '#10b981'
           ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
             position: 'bottom'
-                        }
-                    }
-                }
-            });
+          }
+        }
+      }
+    });
   }
 
   // Configurar actualizaciones en tiempo real

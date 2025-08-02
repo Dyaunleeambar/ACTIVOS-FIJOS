@@ -219,7 +219,7 @@ const ConfigUtils = {
 
 // Configuración de desarrollo
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    CONFIG.API_BASE_URL = 'http://localhost:3000/api';
+    CONFIG.API_BASE_URL = 'http://localhost:3001/api';
     console.log('🔧 Modo desarrollo detectado');
     console.log('📡 API URL:', CONFIG.API_BASE_URL);
 }
