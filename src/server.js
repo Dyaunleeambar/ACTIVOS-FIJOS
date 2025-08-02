@@ -9,9 +9,13 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const equipmentRoutes = require('./routes/equipment');
 const stateRoutes = require('./routes/stateRoutes');
+const userRoutes = require('./routes/users');
 
 // Importar middleware
 const { authenticateToken } = require('./middleware/auth');
+
+// Importar inicialización de base de datos
+const { initializeDatabase } = require('./config/init-database');
 
 // Crear aplicación Express
 const app = express();
@@ -70,6 +74,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/states', stateRoutes);
+app.use('/api/users', userRoutes);
 
 // Ruta de salud
 app.get('/health', (req, res) => {
@@ -109,11 +114,19 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 
 // Iniciar servidor
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🚀 Servidor iniciado en puerto ${PORT}`);
     console.log(`📱 Frontend disponible en: http://localhost:${PORT}`);
     console.log(`🔧 API disponible en: http://localhost:${PORT}/api`);
     console.log(`💚 Salud del servidor: http://localhost:${PORT}/health`);
+    
+    // Inicializar base de datos
+    try {
+        await initializeDatabase();
+        console.log('✅ Base de datos inicializada correctamente');
+    } catch (error) {
+        console.error('❌ Error inicializando base de datos:', error);
+    }
 });
 
 // Manejo de señales para cierre graceful

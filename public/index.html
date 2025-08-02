@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/forms.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/equipment.css">
     
     <!-- Chart.js para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -83,7 +84,7 @@
                 </button>
                 <div class="logo-small">
                     <i class="fas fa-server"></i>
-                    <span>Sistema de Gestión</span>
+                    <span>Sistema de Gestión de Medios Informáticos</span>
                 </div>
             </div>
             
@@ -430,12 +431,93 @@
             <div id="equipment-page" class="page-content">
                 <div class="page-header">
                     <h2>Gestión de Equipos</h2>
-                    <button class="btn btn-primary" onclick="Equipment.showCreateForm()">
-                        <i class="fas fa-plus"></i> Nuevo Equipo
-                    </button>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="Equipment.showCreateForm()">
+                            <i class="fas fa-plus"></i> Nuevo Equipo
+                        </button>
+                        <button class="btn btn-secondary" onclick="Equipment.showImportModal()">
+                            <i class="fas fa-file-excel"></i> Importar Excel
+                        </button>
+                        <button class="btn btn-secondary" onclick="Equipment.exportToExcel()">
+                            <i class="fas fa-download"></i> Exportar
+                        </button>
+                    </div>
                 </div>
-                <div id="equipment-content">
-                    <!-- El contenido se cargará dinámicamente -->
+                
+                <!-- Filtros y búsqueda -->
+                <div class="equipment-filters">
+                    <div class="filter-group">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="search-equipment" placeholder="Buscar por inventario, nombre...">
+                        </div>
+                        <select id="filter-type" class="filter-select">
+                            <option value="">Todos los tipos</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="laptop">Laptop</option>
+                            <option value="printer">Impresora</option>
+                            <option value="server">Servidor</option>
+                            <option value="router">Router</option>
+                            <option value="switch">Switch</option>
+                            <option value="radio_communication">Radio Comunicación</option>
+                            <option value="sim_chip">Chip SIM</option>
+                            <option value="roaming">Roaming</option>
+                            <option value="other">Otro</option>
+                        </select>
+                        <select id="filter-status" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="active">Activo</option>
+                            <option value="maintenance">Mantenimiento</option>
+                            <option value="out_of_service">Fuera de servicio</option>
+                            <option value="disposed">Desechado</option>
+                        </select>
+                        <select id="filter-state" class="filter-select">
+                            <option value="">Todos los estados/regiones</option>
+                            <!-- Se cargará dinámicamente -->
+                        </select>
+                        <button class="btn btn-secondary" onclick="Equipment.clearFilters()">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tabla de equipos -->
+                <div class="equipment-table-container">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <span id="equipment-count">0</span> equipos encontrados
+                        </div>
+                        <div class="table-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="Equipment.refreshList()">
+                                <i class="fas fa-sync-alt"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="equipment-table">
+                            <thead>
+                                <tr>
+                                    <th>N° Inventario</th>
+                                    <th>Nombre</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th>Ubicación</th>
+                                    <th>Asignado a</th>
+                                    <th>Valor</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equipment-tbody">
+                                <!-- Se cargará dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginación -->
+                    <div class="pagination" id="equipment-pagination">
+                        <!-- Se generará dinámicamente -->
+                    </div>
                 </div>
             </div>
 
@@ -481,16 +563,275 @@
         </main>
     </div>
 
-         <!-- Scripts de la aplicación -->
-     <script src="js/config.js"></script>
-     <script src="js/auth.js"></script>
-     <script src="js/ui.js"></script>
-     <script src="js/api.js"></script>
-     <script src="js/components.js"></script>
-     <script src="js/accessibility.js"></script>
-     <script src="js/performance.js"></script>
-     <script src="js/app.js"></script>
-     <script src="js/dashboard.js"></script>
-     <script src="js/equipment.js"></script>
+    <!-- Modal para crear/editar equipo -->
+    <div id="equipment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nuevo Equipo</h3>
+                <button class="modal-close" onclick="Equipment.closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="equipment-form" class="equipment-form">
+                <div class="form-grid">
+                    <!-- Información básica -->
+                    <div class="form-section">
+                        <h4>Información Básica</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inventory-number">Número de Inventario *</label>
+                                <input type="text" id="inventory-number" name="inventory_number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="equipment-name">Nombre del Equipo *</label>
+                                <input type="text" id="equipment-name" name="name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="equipment-type">Tipo *</label>
+                                <select id="equipment-type" name="type" required>
+                                    <option value="">Seleccionar tipo</option>
+                                    <option value="desktop">Desktop</option>
+                                    <option value="laptop">Laptop</option>
+                                    <option value="printer">Impresora</option>
+                                    <option value="server">Servidor</option>
+                                    <option value="router">Router</option>
+                                    <option value="switch">Switch</option>
+                                    <option value="radio_communication">Radio Comunicación</option>
+                                    <option value="sim_chip">Chip SIM</option>
+                                    <option value="roaming">Roaming</option>
+                                    <option value="other">Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="equipment-status">Estado *</label>
+                                <select id="equipment-status" name="status" required>
+                                    <option value="active">Activo</option>
+                                    <option value="maintenance">Mantenimiento</option>
+                                    <option value="out_of_service">Fuera de servicio</option>
+                                    <option value="disposed">Desechado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información técnica -->
+                    <div class="form-section">
+                        <h4>Información Técnica</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="equipment-brand">Marca</label>
+                                <input type="text" id="equipment-brand" name="brand">
+                            </div>
+                            <div class="form-group">
+                                <label for="equipment-model">Modelo</label>
+                                <input type="text" id="equipment-model" name="model">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipment-specifications">Especificaciones</label>
+                            <textarea id="equipment-specifications" name="specifications" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Información financiera -->
+                    <div class="form-section">
+                        <h4>Información Financiera</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="purchase-date">Fecha de Compra</label>
+                                <input type="date" id="purchase-date" name="purchase_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="purchase-cost">Costo de Compra</label>
+                                <input type="number" id="purchase-cost" name="purchase_cost" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="current-value">Valor Actual</label>
+                            <input type="number" id="current-value" name="current_value" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <!-- Ubicación y asignación -->
+                    <div class="form-section">
+                        <h4>Ubicación y Asignación</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="equipment-state">Estado/Región *</label>
+                                <select id="equipment-state" name="state_id" required>
+                                    <option value="">Seleccionar estado</option>
+                                    <!-- Se cargará dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assigned-to">Asignado a</label>
+                                <select id="assigned-to" name="assigned_to">
+                                    <option value="">Sin asignar</option>
+                                    <!-- Se cargará dinámicamente -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location-details">Detalles de Ubicación</label>
+                            <textarea id="location-details" name="location_details" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de seguridad -->
+                    <div class="form-section">
+                        <h4>Información de Seguridad</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="security-username">Usuario de Seguridad</label>
+                                <input type="text" id="security-username" name="security_username">
+                            </div>
+                            <div class="form-group">
+                                <label for="security-password">Contraseña de Seguridad</label>
+                                <input type="password" id="security-password" name="security_password">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="access-details">Detalles de Acceso</label>
+                            <textarea id="access-details" name="access_details" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="Equipment.closeModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Equipo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de importación Excel -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Importar Equipos desde Excel</h3>
+                <button class="modal-close" onclick="Equipment.closeImportModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="import-content">
+                <!-- Paso 1: Subir archivo -->
+                <div id="import-step-1" class="import-step active">
+                    <h4>Paso 1: Seleccionar archivo Excel</h4>
+                    <div class="file-upload-area">
+                        <input type="file" id="excel-file" accept=".xlsx,.xls" style="display: none;">
+                        <div class="upload-zone" onclick="document.getElementById('excel-file').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Haz clic para seleccionar archivo Excel</p>
+                            <small>Formatos soportados: .xlsx, .xls</small>
+                        </div>
+                    </div>
+                    
+                    <div class="template-download">
+                        <h5>¿No tienes una plantilla?</h5>
+                        <button type="button" class="btn btn-secondary" onclick="Equipment.downloadTemplate()">
+                            <i class="fas fa-download"></i> Descargar Plantilla
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Paso 2: Mapear columnas -->
+                <div id="import-step-2" class="import-step">
+                    <h4>Paso 2: Mapear columnas</h4>
+                    <div class="column-mapping">
+                        <div class="mapping-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Columna Excel</th>
+                                        <th>Campo del Sistema</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mapping-tbody">
+                                    <!-- Se generará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paso 3: Validar datos -->
+                <div id="import-step-3" class="import-step">
+                    <h4>Paso 3: Validar datos</h4>
+                    <div class="validation-results">
+                        <div class="validation-summary">
+                            <div class="summary-item success">
+                                <i class="fas fa-check-circle"></i>
+                                <span id="valid-count">0</span> registros válidos
+                            </div>
+                            <div class="summary-item error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span id="error-count">0</span> errores
+                            </div>
+                        </div>
+                        
+                        <div class="validation-details">
+                            <div id="validation-errors" class="error-list">
+                                <!-- Errores de validación -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paso 4: Confirmar importación -->
+                <div id="import-step-4" class="import-step">
+                    <h4>Paso 4: Confirmar importación</h4>
+                    <div class="import-summary">
+                        <div class="summary-card">
+                            <h5>Resumen de importación</h5>
+                            <ul>
+                                <li>Total de registros: <span id="total-records">0</span></li>
+                                <li>Registros a importar: <span id="to-import">0</span></li>
+                                <li>Registros duplicados: <span id="duplicates">0</span></li>
+                                <li>Registros con errores: <span id="with-errors">0</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="import-actions">
+                <button type="button" class="btn btn-secondary" onclick="Equipment.previousImportStep()" id="prev-btn">
+                    Anterior
+                </button>
+                <button type="button" class="btn btn-primary" onclick="Equipment.nextImportStep()" id="next-btn">
+                    Siguiente
+                </button>
+                <button type="button" class="btn btn-success" onclick="Equipment.confirmImport()" id="confirm-btn" style="display: none;">
+                    <i class="fas fa-upload"></i> Confirmar Importación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la aplicación -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/accessibility.js"></script>
+    <script src="js/performance.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/equipment.js"></script>
 </body>
 </html> 

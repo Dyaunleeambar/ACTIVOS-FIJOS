@@ -49,4 +49,37 @@ router.get('/state/:stateId',
   equipmentController.getEquipmentByState
 );
 
+// POST /api/equipment/upload-excel - Importar equipos desde Excel
+router.post('/upload-excel', 
+  authenticateToken, 
+  authorizeRole(['admin', 'manager']), 
+  equipmentController.uploadExcel
+);
+
+// POST /api/equipment/validate-import - Validar datos de importación
+router.post('/validate-import', 
+  authenticateToken, 
+  authorizeRole(['admin', 'manager']), 
+  equipmentController.validateImport
+);
+
+// POST /api/equipment/import - Confirmar importación
+router.post('/import', 
+  authenticateToken, 
+  authorizeRole(['admin', 'manager']), 
+  equipmentController.confirmImport
+);
+
+// GET /api/equipment/export - Exportar equipos a Excel
+router.get('/export', 
+  authenticateToken, 
+  equipmentController.exportToExcel
+);
+
+// GET /api/equipment/template - Descargar plantilla Excel
+router.get('/template', 
+  authenticateToken, 
+  equipmentController.downloadTemplate
+);
+
 module.exports = router; 

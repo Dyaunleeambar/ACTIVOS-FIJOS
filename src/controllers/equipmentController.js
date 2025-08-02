@@ -1,4 +1,8 @@
 const { executeQuery } = require('../config/database');
+const XLSX = require('xlsx');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 // Obtener todos los equipos con filtros
 const getAllEquipment = async (req, res) => {
@@ -385,11 +389,426 @@ const getEquipmentByState = async (req, res) => {
   }
 };
 
+// Configuración de multer para subida de archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'equipment-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['.xlsx', '.xls'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos Excel (.xlsx, .xls)'), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
+
+// Subir archivo Excel
+const uploadExcel = async (req, res) => {
+  try {
+    upload.single('file')(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({
+          error: err.message
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          error: 'No se proporcionó ningún archivo'
+        });
+      }
+
+      // Leer el archivo Excel
+      const workbook = XLSX.readFile(req.file.path);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      if (data.length < 2) {
+        return res.status(400).json({
+          error: 'El archivo Excel debe contener al menos una fila de datos'
+        });
+      }
+
+      // Obtener columnas (primera fila)
+      const columns = data[0];
+      const rows = data.slice(1);
+
+      // Limpiar archivo temporal
+      fs.unlinkSync(req.file.path);
+
+      res.json({
+        success: true,
+        data: {
+          columns: columns,
+          data: rows,
+          totalRows: rows.length
+        }
+      });
+
+    });
+  } catch (error) {
+    console.error('Error al procesar archivo Excel:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
+// Validar datos de importación
+const validateImport = async (req, res) => {
+  try {
+    const { mapping, data } = req.body;
+
+    if (!mapping || !data) {
+      return res.status(400).json({
+        error: 'Datos de mapeo y datos son requeridos'
+      });
+    }
+
+    const errors = [];
+    const validRows = [];
+    const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id'];
+
+    // Validar cada fila
+    data.forEach((row, index) => {
+      const rowErrors = [];
+      const mappedData = {};
+
+      // Mapear datos según el mapping
+      Object.keys(mapping).forEach(field => {
+        const columnIndex = mapping[field];
+        if (columnIndex !== undefined && columnIndex < row.length) {
+          mappedData[field] = row[columnIndex];
+        }
+      });
+
+      // Validar campos requeridos
+      requiredFields.forEach(field => {
+        if (!mappedData[field] || mappedData[field].toString().trim() === '') {
+          rowErrors.push(`Campo requerido faltante: ${field}`);
+        }
+      });
+
+      // Validar número de inventario único
+      if (mappedData.inventory_number) {
+        // Aquí se podría verificar en la base de datos si ya existe
+        // Por ahora solo validamos que no esté vacío
+      }
+
+      // Validar tipo de equipo
+      const validTypes = ['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other'];
+      if (mappedData.type && !validTypes.includes(mappedData.type.toLowerCase())) {
+        rowErrors.push(`Tipo de equipo inválido: ${mappedData.type}`);
+      }
+
+      // Validar estado
+      const validStatuses = ['active', 'maintenance', 'out_of_service', 'disposed'];
+      if (mappedData.status && !validStatuses.includes(mappedData.status.toLowerCase())) {
+        rowErrors.push(`Estado inválido: ${mappedData.status}`);
+      }
+
+      if (rowErrors.length > 0) {
+        errors.push({
+          row: index + 2, // +2 porque Excel empieza en 1 y la primera fila son headers
+          errors: rowErrors,
+          data: mappedData
+        });
+      } else {
+        validRows.push(mappedData);
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        valid: validRows.length,
+        errors: errors.length,
+        total: data.length,
+        errorDetails: errors
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al validar datos:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
+// Confirmar importación
+const confirmImport = async (req, res) => {
+  try {
+    const { mapping, data, validation } = req.body;
+
+    if (!mapping || !data || !validation) {
+      return res.status(400).json({
+        error: 'Datos de mapeo, datos y validación son requeridos'
+      });
+    }
+
+    let imported = 0;
+    let duplicates = 0;
+    let errors = 0;
+
+    // Procesar cada fila válida
+    for (const row of data) {
+      try {
+        const mappedData = {};
+
+        // Mapear datos según el mapping
+        Object.keys(mapping).forEach(field => {
+          const columnIndex = mapping[field];
+          if (columnIndex !== undefined && columnIndex < row.length) {
+            mappedData[field] = row[columnIndex];
+          }
+        });
+
+        // Verificar si el número de inventario ya existe
+        const existingQuery = 'SELECT id FROM equipment WHERE inventory_number = ?';
+        const existing = await executeQuery(existingQuery, [mappedData.inventory_number]);
+
+        if (existing.length > 0) {
+          duplicates++;
+          continue;
+        }
+
+        // Insertar equipo
+        const insertQuery = `
+          INSERT INTO equipment (
+            inventory_number, name, type, brand, model, specifications,
+            purchase_date, purchase_cost, current_value, status, state_id,
+            assigned_to, location_details, security_username, security_password,
+            access_details
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        await executeQuery(insertQuery, [
+          mappedData.inventory_number,
+          mappedData.name,
+          mappedData.type,
+          mappedData.brand || null,
+          mappedData.model || null,
+          mappedData.specifications || null,
+          mappedData.purchase_date || null,
+          mappedData.purchase_cost || null,
+          mappedData.current_value || null,
+          mappedData.status,
+          mappedData.state_id,
+          mappedData.assigned_to || null,
+          mappedData.location_details || null,
+          mappedData.security_username || null,
+          mappedData.security_password || null,
+          mappedData.access_details || null
+        ]);
+
+        imported++;
+
+      } catch (error) {
+        console.error('Error al importar fila:', error);
+        errors++;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        imported,
+        duplicates,
+        errors,
+        total: data.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al confirmar importación:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
+// Exportar a Excel
+const exportToExcel = async (req, res) => {
+  try {
+    const { state_id, type, status, search } = req.query;
+
+    // Construir query con filtros
+    let whereConditions = [];
+    let params = [];
+
+    if (state_id) {
+      whereConditions.push('e.state_id = ?');
+      params.push(state_id);
+    }
+
+    if (type) {
+      whereConditions.push('e.type = ?');
+      params.push(type);
+    }
+
+    if (status) {
+      whereConditions.push('e.status = ?');
+      params.push(status);
+    }
+
+    if (search) {
+      whereConditions.push('(e.inventory_number LIKE ? OR e.name LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    const query = `
+      SELECT 
+        e.inventory_number,
+        e.name,
+        e.type,
+        e.brand,
+        e.model,
+        e.specifications,
+        e.purchase_date,
+        e.purchase_cost,
+        e.current_value,
+        e.status,
+        s.name as state_name,
+        e.location_details,
+        u.full_name as assigned_user_name,
+        e.security_username,
+        e.access_details,
+        e.created_at
+      FROM equipment e
+      LEFT JOIN states s ON e.state_id = s.id
+      LEFT JOIN users u ON e.assigned_to = u.id
+      ${whereClause}
+      ORDER BY e.created_at DESC
+    `;
+
+    const equipment = await executeQuery(query, params);
+
+    // Crear workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Preparar datos para Excel
+    const excelData = equipment.map(item => ({
+      'Número de Inventario': item.inventory_number,
+      'Nombre del Equipo': item.name,
+      'Tipo': item.type,
+      'Marca': item.brand || '',
+      'Modelo': item.model || '',
+      'Especificaciones': item.specifications || '',
+      'Fecha de Compra': item.purchase_date || '',
+      'Costo de Compra': item.purchase_cost || '',
+      'Valor Actual': item.current_value || '',
+      'Estado': item.status,
+      'Estado/Región': item.state_name || '',
+      'Detalles de Ubicación': item.location_details || '',
+      'Asignado a': item.assigned_user_name || '',
+      'Usuario de Seguridad': item.security_username || '',
+      'Detalles de Acceso': item.access_details || '',
+      'Fecha de Creación': item.created_at
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipos');
+
+    // Generar buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    // Configurar headers para descarga
+    const filename = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+
+    res.send(buffer);
+
+  } catch (error) {
+    console.error('Error al exportar equipos:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
+// Descargar plantilla Excel
+const downloadTemplate = async (req, res) => {
+  try {
+    // Crear workbook con plantilla
+    const workbook = XLSX.utils.book_new();
+    
+    // Datos de ejemplo
+    const templateData = [
+      {
+        'Número de Inventario': 'INV-001',
+        'Nombre del Equipo': 'Laptop Dell Latitude',
+        'Tipo': 'laptop',
+        'Marca': 'Dell',
+        'Modelo': 'Latitude 5520',
+        'Especificaciones': 'Intel i5, 8GB RAM, 256GB SSD',
+        'Fecha de Compra': '2023-01-15',
+        'Costo de Compra': '1200.00',
+        'Valor Actual': '800.00',
+        'Estado': 'active',
+        'Estado/Región': 'Estado 1',
+        'Detalles de Ubicación': 'Oficina principal',
+        'Asignado a': 'Juan Pérez',
+        'Usuario de Seguridad': 'admin',
+        'Detalles de Acceso': 'Acceso administrativo'
+      }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Plantilla');
+
+    // Generar buffer
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    // Configurar headers para descarga
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla-equipos.xlsx"');
+    res.setHeader('Content-Length', buffer.length);
+
+    res.send(buffer);
+
+  } catch (error) {
+    console.error('Error al generar plantilla:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
 module.exports = {
   getAllEquipment,
   getEquipmentById,
   createEquipment,
   updateEquipment,
   deleteEquipment,
-  getEquipmentByState
+  getEquipmentByState,
+  uploadExcel,
+  validateImport,
+  confirmImport,
+  exportToExcel,
+  downloadTemplate
 }; 

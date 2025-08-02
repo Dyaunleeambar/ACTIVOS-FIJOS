@@ -1,0 +1,20 @@
+# Plantilla Excel para Importación de Equipos
+# Este archivo debe ser generado dinámicamente por el backend
+# Por ahora es un placeholder
+
+# Columnas requeridas:
+# - Número de Inventario
+# - Nombre del Equipo  
+# - Tipo
+# - Marca
+# - Modelo
+# - Especificaciones
+# - Fecha de Compra
+# - Costo de Compra
+# - Valor Actual
+# - Estado
+# - Estado/Región
+# - Detalles de Ubicación
+
+# Ejemplo de datos:
+# INV-001 | Laptop Dell Latitude | laptop | Dell | Latitude 5520 | Intel i5, 8GB RAM | 2023-01-15 | 1200.00 | 800.00 | active | Estado 1 | Oficina principal 
