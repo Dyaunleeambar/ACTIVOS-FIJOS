@@ -123,6 +123,20 @@ const App = {
             }
         });
         
+        // Actualizar título de la página
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+            const pageLabels = {
+                'dashboard': 'Dashboard',
+                'equipment': 'Equipos',
+                'assignments': 'Asignaciones',
+                'reports': 'Reportes',
+                'security': 'Seguridad',
+                'disposal': 'Propuestas de Baja'
+            };
+            pageTitle.textContent = pageLabels[pageName] || pageName;
+        }
+        
         // Mostrar página
         UI.showPage(pageName);
         

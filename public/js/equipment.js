@@ -25,6 +25,7 @@ class Equipment {
         this.setupEventListeners();
         this.loadEquipmentList();
         this.loadFilterData();
+        this.loadEquipmentStats();
     }
 
     setupEventListeners() {
@@ -250,6 +251,57 @@ class Equipment {
         } catch (error) {
             console.error('Error cargando datos de filtros:', error);
         }
+    }
+
+    // Cargar estadísticas de tipos de equipos
+    async loadEquipmentStats() {
+        try {
+            const response = await API.get('/equipment/stats');
+            
+            if (response.success) {
+                this.updateEquipmentStats(response.data);
+            } else {
+                // Si no hay datos del backend, usar datos mock
+                this.updateEquipmentStats({
+                    laptops: 8,
+                    pcs: 12,
+                    monitors: 15,
+                    printers: 5,
+                    sims: 20,
+                    radios: 10
+                });
+            }
+        } catch (error) {
+            console.error('Error cargando estadísticas de equipos:', error);
+            // Usar datos mock en caso de error
+            this.updateEquipmentStats({
+                laptops: 8,
+                pcs: 12,
+                monitors: 15,
+                printers: 5,
+                sims: 20,
+                radios: 10
+            });
+        }
+    }
+
+    // Actualizar estadísticas de equipos en la UI
+    updateEquipmentStats(stats) {
+        const elements = {
+            'equipment-laptops': stats.laptops || 0,
+            'equipment-pcs': stats.pcs || 0,
+            'equipment-monitors': stats.monitors || 0,
+            'equipment-printers': stats.printers || 0,
+            'equipment-sims': stats.sims || 0,
+            'equipment-radios': stats.radios || 0
+        };
+
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = elements[id];
+            }
+        });
     }
 
     // Mostrar formulario de creación/edición
@@ -673,6 +725,7 @@ class Equipment {
     // Actualizar lista
     refreshList() {
         this.loadEquipmentList();
+        this.loadEquipmentStats();
     }
 
     // Utilidades

@@ -65,7 +65,9 @@ const UI = {
                 
                 // Actualizar título
                 if (pageTitle) {
-                    pageTitle.textContent = link.querySelector('span').textContent;
+                    // Obtener el texto del enlace (excluyendo el ícono)
+                    const linkText = link.textContent.trim();
+                    pageTitle.textContent = linkText;
                 }
                 
                 // Cerrar sidebar en móvil
@@ -89,6 +91,20 @@ const UI = {
         const targetPage = document.getElementById(pageName + '-page');
         if (targetPage) {
             targetPage.classList.add('active');
+        }
+        
+        // Actualizar título de la página
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+            const pageLabels = {
+                'dashboard': 'Dashboard',
+                'equipment': 'Equipos',
+                'assignments': 'Asignaciones',
+                'reports': 'Reportes',
+                'security': 'Seguridad',
+                'disposal': 'Propuestas de Baja'
+            };
+            pageTitle.textContent = pageLabels[pageName] || pageName;
         }
         
         // Actualizar URL hash
