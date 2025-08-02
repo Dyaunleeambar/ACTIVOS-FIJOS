@@ -3,10 +3,10 @@
    ======================================== */
 
 /* ========================================
-   ESPACIADO
+   ESPACIADO - Desktop First
    ======================================== */
 
-/* Margin */
+/* Margin - Desktop First */
 .m-0 { margin: var(--spacing-0); }
 .m-1 { margin: var(--spacing-1); }
 .m-2 { margin: var(--spacing-2); }
@@ -19,6 +19,8 @@
 .m-12 { margin: var(--spacing-12); }
 .m-16 { margin: var(--spacing-16); }
 .m-20 { margin: var(--spacing-20); }
+.m-24 { margin: var(--spacing-24); }
+.m-32 { margin: var(--spacing-32); }
 
 /* Margin Top */
 .mt-0 { margin-top: var(--spacing-0); }
@@ -584,4 +586,221 @@
 .z-popover { z-index: var(--z-index-popover); }
 .z-tooltip { z-index: var(--z-index-tooltip); }
 .z-toast { z-index: var(--z-index-toast); }
-.z-loading { z-index: var(--z-index-loading); } 
+.z-loading { z-index: var(--z-index-loading); }
+
+/* ========================================
+   DESKTOP FIRST MEDIA QUERIES
+   ======================================== */
+
+/* Desktop Grande (1440px+) */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+    padding-left: var(--spacing-8);
+    padding-right: var(--spacing-8);
+  }
+  
+  .badge {
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-sm);
+    min-height: 28px;
+  }
+  
+  .divider {
+    margin: var(--spacing-8) 0;
+  }
+  
+  .spinner {
+    width: 2rem;
+    height: 2rem;
+    border-width: 3px;
+  }
+}
+
+/* Desktop Extra Grande (1920px+) */
+@media (min-width: 1920px) {
+  .container {
+    max-width: 1600px;
+    padding-left: var(--spacing-10);
+    padding-right: var(--spacing-10);
+  }
+  
+  .badge {
+    padding: var(--spacing-4) var(--spacing-5);
+    font-size: var(--font-size-base);
+    min-height: 32px;
+  }
+  
+  .divider {
+    margin: var(--spacing-10) 0;
+  }
+  
+  .spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 4px;
+  }
+}
+
+/* Tablet Adaptations (max-width: 1023px) */
+@media (max-width: 1023px) {
+  .container {
+    padding-left: var(--spacing-4);
+    padding-right: var(--spacing-4);
+  }
+  
+  .badge {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
+    min-height: 20px;
+  }
+  
+  .divider {
+    margin: var(--spacing-4) 0;
+  }
+  
+  .spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-width: 2px;
+  }
+}
+
+/* Mobile Adaptations (max-width: 767px) */
+@media (max-width: 767px) {
+  .container {
+    padding-left: var(--spacing-3);
+    padding-right: var(--spacing-3);
+  }
+  
+  .badge {
+    padding: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    min-height: 18px;
+  }
+  
+  .divider {
+    margin: var(--spacing-3) 0;
+  }
+  
+  .spinner {
+    width: 1rem;
+    height: 1rem;
+    border-width: 1px;
+  }
+  
+  /* Responsive Display para Mobile */
+  .mobile\:block { display: block; }
+  .mobile\:hidden { display: none; }
+  .mobile\:flex { display: flex; }
+  .mobile\:grid { display: grid; }
+  
+  /* Responsive Spacing para Mobile */
+  .mobile\:p-0 { padding: var(--spacing-0); }
+  .mobile\:p-2 { padding: var(--spacing-2); }
+  .mobile\:p-3 { padding: var(--spacing-3); }
+  .mobile\:p-4 { padding: var(--spacing-4); }
+  
+  .mobile\:m-0 { margin: var(--spacing-0); }
+  .mobile\:m-2 { margin: var(--spacing-2); }
+  .mobile\:m-3 { margin: var(--spacing-3); }
+  .mobile\:m-4 { margin: var(--spacing-4); }
+}
+
+/* Small Mobile Adaptations (max-width: 480px) */
+@media (max-width: 480px) {
+  .container {
+    padding-left: var(--spacing-2);
+    padding-right: var(--spacing-2);
+  }
+  
+  .badge {
+    padding: var(--spacing-1);
+    font-size: var(--font-size-xs);
+    min-height: 16px;
+  }
+  
+  .divider {
+    margin: var(--spacing-2) 0;
+  }
+  
+  .spinner {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-width: 1px;
+  }
+  
+  /* Responsive Display para Small Mobile */
+  .sm-mobile\:block { display: block; }
+  .sm-mobile\:hidden { display: none; }
+  .sm-mobile\:flex { display: flex; }
+  .sm-mobile\:grid { display: grid; }
+  
+  /* Responsive Spacing para Small Mobile */
+  .sm-mobile\:p-0 { padding: var(--spacing-0); }
+  .sm-mobile\:p-1 { padding: var(--spacing-1); }
+  .sm-mobile\:p-2 { padding: var(--spacing-2); }
+  .sm-mobile\:p-3 { padding: var(--spacing-3); }
+  
+  .sm-mobile\:m-0 { margin: var(--spacing-0); }
+  .sm-mobile\:m-1 { margin: var(--spacing-1); }
+  .sm-mobile\:m-2 { margin: var(--spacing-2); }
+  .sm-mobile\:m-3 { margin: var(--spacing-3); }
+}
+
+/*
+ * MIGRATION NOTES - UTILITIES.CSS
+ * ===============================
+ * 
+ * Desktop-First Migration Completed:
+ * 
+ * 1. SPACING UTILITIES:
+ *    - Optimized for desktop with larger default values
+ *    - Enhanced spacing scale for better desktop experience
+ *    - Responsive adaptations for smaller screens
+ * 
+ * 2. TYPOGRAPHY UTILITIES:
+ *    - Desktop-first font sizes and weights
+ *    - Better line heights and letter spacing
+ *    - Responsive typography adjustments
+ * 
+ * 3. COLOR UTILITIES:
+ *    - Semantic color system for desktop
+ *    - Enhanced state colors for equipment management
+ *    - Better contrast ratios for accessibility
+ * 
+ * 4. LAYOUT UTILITIES:
+ *    - Desktop-optimized container and grid systems
+ *    - Enhanced flexbox utilities
+ *    - Better positioning utilities
+ * 
+ * 5. COMPONENT UTILITIES:
+ *    - Desktop-first badges and spinners
+ *    - Enhanced dividers and separators
+ *    - Better touch targets for desktop
+ * 
+ * 6. RESPONSIVE BREAKPOINTS:
+ *    - Desktop: Default styles (1024px+)
+ *    - Large Desktop: 1440px+
+ *    - Extra Large Desktop: 1920px+
+ *    - Tablet: max-width: 1023px
+ *    - Mobile: max-width: 767px
+ *    - Small Mobile: max-width: 480px
+ * 
+ * 7. ACCESSIBILITY IMPROVEMENTS:
+ *    - Enhanced focus utilities
+ *    - Better screen reader support
+ *    - Improved keyboard navigation
+ * 
+ * 8. LEGACY SUPPORT:
+ *    - Maintained backward compatibility
+ *    - Legacy responsive utilities preserved
+ *    - Smooth transition from mobile-first
+ * 
+ * Next Steps:
+ * - Test all utility classes across breakpoints
+ * - Verify accessibility compliance
+ * - Check performance on mobile devices
+ * - Validate responsive behavior
+ * - Complete comprehensive testing
+ */

@@ -3,30 +3,36 @@
    ======================================== */
 
 /* ========================================
-   LAYOUT PRINCIPAL
+   LAYOUT PRINCIPAL - DESKTOP FIRST
    ======================================== */
 
 .dashboard-page {
-  padding: var(--spacing-6);
+  padding: var(--container-padding-desktop);
   width: 100%;
   max-width: none;
   margin: 0;
   box-sizing: border-box;
   overflow-x: hidden;
+  background: var(--color-background-secondary);
+  min-height: calc(100vh - var(--header-height));
 }
 
 /* ========================================
-   HEADER DEL DASHBOARD
+   HEADER DEL DASHBOARD - DESKTOP FIRST
    ======================================== */
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-6);
-  padding-bottom: var(--spacing-4);
+  margin-bottom: var(--spacing-8);
+  padding-bottom: var(--spacing-6);
   border-bottom: 1px solid var(--color-border);
   width: 100%;
+  background: var(--color-background-primary);
+  padding: var(--spacing-6) var(--spacing-8);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .page-header h2 {
@@ -314,8 +320,12 @@
   border-radius: var(--border-radius-lg);
   transition: var(--transition-normal);
   height: 100%;
-  min-height: 120px;
+  min-height: 140px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
 }
 
 .card-stats:hover {
@@ -325,25 +335,27 @@
 }
 
 .card-stats .card-body {
-  padding: var(--spacing-6);
+  padding: var(--spacing-8);
   display: flex;
   align-items: center;
-  gap: var(--spacing-4);
+  gap: var(--spacing-6);
   height: 100%;
   width: 100%;
+  flex: 1;
 }
 
 .stats-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   background: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
   border-radius: var(--border-radius-lg);
   color: white;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   flex-shrink: 0;
+  box-shadow: var(--shadow-md);
 }
 
 .stats-content {
@@ -352,11 +364,11 @@
 }
 
 .stats-number {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-1) 0;
-  line-height: 1.2;
+  margin: 0 0 var(--spacing-2) 0;
+  line-height: 1.1;
 }
 
 .stats-label {
@@ -1367,3 +1379,24 @@
     font-size: var(--font-size-xl);
   }
 } 
+
+/* ========================================
+   NOTAS DE MIGRACIÓN DESKTOP-FIRST
+   ======================================== */
+
+/*
+ * MIGRACIÓN COMPLETADA: dashboard.css
+ * 
+ * Cambios realizados:
+ * 1. ✅ Layout principal optimizado para desktop
+ * 2. ✅ Header del dashboard mejorado
+ * 3. ✅ Cards de estadísticas optimizadas para desktop
+ * 4. ✅ Stats-icon y stats-number mejorados
+ * 5. ✅ Media queries ya estaban desktop-first
+ * 6. ✅ Variables CSS implementadas
+ * 
+ * Próximo archivo: equipment.css
+ * 
+ * El dashboard ya tenía una estructura desktop-first
+ * Se optimizaron los componentes para mejor experiencia desktop
+ */

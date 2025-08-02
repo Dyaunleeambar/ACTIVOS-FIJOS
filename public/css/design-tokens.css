@@ -288,10 +288,20 @@
 }
 
 /* ========================================
-   BREAKPOINTS
+   BREAKPOINTS - DESKTOP FIRST
    ======================================== */
 
 :root {
+  /* Desktop First Breakpoints */
+  --breakpoint-desktop: 1024px;    /* Desktop por defecto */
+  --breakpoint-tablet: 768px;      /* Tablet */
+  --breakpoint-mobile: 480px;      /* Mobile */
+  
+  /* Breakpoints específicos para media queries */
+  --breakpoint-desktop-lg: 1440px; /* Desktop grande */
+  --breakpoint-desktop-xl: 1920px; /* Desktop extra grande */
+  
+  /* Breakpoints legacy para compatibilidad */
   --breakpoint-xs: 0;
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
@@ -331,14 +341,50 @@
   --modal-max-width: 32rem;      /* 512px */
   --modal-max-width-lg: 48rem;   /* 768px */
   --modal-max-width-xl: 64rem;   /* 1024px */
+  
+  /* Modales Desktop First */
+  --modal-max-width-desktop: 80rem;    /* 1280px - Más ancho para desktop */
+  --modal-max-width-desktop-lg: 96rem; /* 1536px - Desktop grande */
+  --modal-padding-desktop: var(--spacing-8);
+  --modal-padding-tablet: var(--spacing-6);
+  --modal-padding-mobile: var(--spacing-4);
 
   /* Sidebar */
   --sidebar-width: 16rem;        /* 256px */
   --sidebar-width-collapsed: 4rem; /* 64px */
+  
+  /* Sidebar Desktop First */
+  --sidebar-width-desktop: 20rem;     /* 320px - Más ancho para desktop */
+  --sidebar-width-desktop-lg: 24rem;  /* 384px - Desktop grande */
+  --sidebar-padding-desktop: var(--spacing-6);
+  --sidebar-padding-tablet: var(--spacing-4);
+  --sidebar-padding-mobile: var(--spacing-3);
 
   /* Header */
   --header-height: 4rem;         /* 64px */
   --header-height-mobile: 3.5rem; /* 56px */
+  
+  /* Layout Desktop First */
+  --container-max-width: 1400px;  /* Ancho máximo del contenedor */
+  --container-padding-desktop: var(--spacing-8); /* Padding desktop */
+  --container-padding-tablet: var(--spacing-6);  /* Padding tablet */
+  --container-padding-mobile: var(--spacing-4);  /* Padding mobile */
+  
+  /* Grid Desktop */
+  --grid-columns-desktop: 12;     /* Columnas para desktop */
+  --grid-columns-tablet: 8;       /* Columnas para tablet */
+  --grid-columns-mobile: 4;       /* Columnas para mobile */
+  --grid-gap-desktop: var(--spacing-6);
+  --grid-gap-tablet: var(--spacing-4);
+  --grid-gap-mobile: var(--spacing-3);
+  
+  /* Tablas Desktop First */
+  --table-cell-padding-desktop: var(--spacing-4) var(--spacing-6);
+  --table-cell-padding-tablet: var(--spacing-3) var(--spacing-4);
+  --table-cell-padding-mobile: var(--spacing-2) var(--spacing-3);
+  --table-border-radius-desktop: var(--border-radius-lg);
+  --table-border-radius-tablet: var(--border-radius-md);
+  --table-border-radius-mobile: var(--border-radius-sm);
 }
 
 /* ========================================
@@ -400,3 +446,26 @@
   --gradient-bg-primary: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-secondary-50) 100%);
   --gradient-bg-secondary: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);
 } 
+
+/* ========================================
+   NOTAS DE MIGRACIÓN DESKTOP-FIRST
+   ======================================== */
+
+/*
+ * MIGRACIÓN COMPLETADA: design-tokens.css
+ * 
+ * Cambios realizados:
+ * 1. ✅ Breakpoints actualizados para desktop-first
+ * 2. ✅ Variables de layout desktop agregadas
+ * 3. ✅ Variables de componentes desktop agregadas
+ * 4. ✅ Variables de tablas desktop agregadas
+ * 5. ✅ Variables de modales desktop agregadas
+ * 6. ✅ Variables de sidebar desktop agregadas
+ * 
+ * Próximo archivo: styles.css (Layout principal)
+ * 
+ * Uso de las nuevas variables:
+ * - Desktop: @media (min-width: 1024px) { ... }
+ * - Tablet: @media (max-width: 1023px) { ... }
+ * - Mobile: @media (max-width: 767px) { ... }
+ */

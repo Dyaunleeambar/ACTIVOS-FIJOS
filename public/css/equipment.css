@@ -70,7 +70,7 @@
 }
 
 /* ========================================
-   TABLA DE EQUIPOS
+   TABLA DE EQUIPOS - DESKTOP FIRST
    ======================================== */
 
 .equipment-table-container {
@@ -79,15 +79,17 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-8);
 }
 
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-4) var(--spacing-6);
+  padding: var(--spacing-6) var(--spacing-8);
   background: var(--color-background-secondary);
   border-bottom: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
 }
 
 .table-info {
@@ -113,18 +115,20 @@
 
 .equipment-table th {
   background: var(--color-background-secondary);
-  padding: var(--spacing-4) var(--spacing-3);
+  padding: var(--table-cell-padding-desktop);
   text-align: left;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
+  font-size: var(--font-size-sm);
 }
 
 .equipment-table td {
-  padding: var(--spacing-4) var(--spacing-3);
+  padding: var(--table-cell-padding-desktop);
   border-bottom: 1px solid var(--color-border-light);
   vertical-align: middle;
+  font-size: var(--font-size-sm);
 }
 
 .equipment-table tbody tr:hover {
@@ -139,12 +143,14 @@
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1);
-  padding: var(--spacing-1) var(--spacing-2);
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--border-radius-full);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
+  min-width: 100px;
+  justify-content: center;
 }
 
 .status-active {
@@ -171,14 +177,16 @@
 .type-badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1);
-  padding: var(--spacing-1) var(--spacing-2);
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--border-radius-md);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   background: var(--color-primary-100);
   color: var(--color-primary-700);
   text-transform: capitalize;
+  min-width: 80px;
+  justify-content: center;
 }
 
 /* Acciones de tabla */
@@ -192,14 +200,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: var(--border-radius-md);
   background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: var(--font-size-sm);
 }
 
 .action-btn:hover {
@@ -288,7 +297,7 @@
   background: var(--color-background-primary);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
-  max-width: 900px;
+  max-width: var(--modal-max-width-desktop);
   width: 90%;
   margin: 20px auto;
   max-height: calc(100vh - 40px);
@@ -299,7 +308,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-6);
+  padding: var(--modal-padding-desktop);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-background-secondary);
   border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
@@ -336,7 +345,7 @@
    ======================================== */
 
 .equipment-form {
-  padding: var(--spacing-6);
+  padding: var(--modal-padding-desktop);
 }
 
 .form-grid {
@@ -347,8 +356,9 @@
 .form-section {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-lg);
-  padding: var(--spacing-6);
+  padding: var(--spacing-8);
   background: var(--color-background-secondary);
+  margin-bottom: var(--spacing-6);
 }
 
 .form-section h4 {
@@ -618,10 +628,63 @@
 }
 
 /* ========================================
-   RESPONSIVE DESIGN
+   MEDIA QUERIES DESKTOP-FIRST
    ======================================== */
 
-@media (max-width: 768px) {
+/* Desktop Grande (1440px+) */
+@media (min-width: 1440px) {
+  .equipment-table-container {
+    margin-bottom: var(--spacing-10);
+  }
+  
+  .equipment-table th,
+  .equipment-table td {
+    padding: var(--spacing-6) var(--spacing-8);
+  }
+  
+  .modal-content {
+    max-width: var(--modal-max-width-desktop-lg);
+  }
+  
+  .form-section {
+    padding: var(--spacing-10);
+  }
+}
+
+/* Desktop Extra Grande (1920px+) */
+@media (min-width: 1920px) {
+  .equipment-table-container {
+    margin-bottom: var(--spacing-12);
+  }
+  
+  .equipment-table th,
+  .equipment-table td {
+    padding: var(--spacing-8) var(--spacing-10);
+  }
+  
+  .modal-content {
+    max-width: var(--modal-max-width-desktop-lg);
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) {
+  .equipment-table th,
+  .equipment-table td {
+    padding: var(--table-cell-padding-tablet);
+  }
+  
+  .modal-content {
+    max-width: var(--modal-max-width-lg);
+  }
+  
+  .form-section {
+    padding: var(--spacing-6);
+  }
+}
+
+/* Mobile (hasta 767px) */
+@media (max-width: 767px) {
   .filter-group {
     flex-direction: column;
     align-items: stretch;
@@ -641,7 +704,7 @@
   
   .equipment-table th,
   .equipment-table td {
-    padding: var(--spacing-2);
+    padding: var(--table-cell-padding-mobile);
   }
   
   .modal-content {
@@ -659,6 +722,7 @@
   }
 }
 
+/* Mobile Pequeño (hasta 480px) */
 @media (max-width: 480px) {
   .equipment-filters {
     padding: var(--spacing-4);
@@ -771,3 +835,30 @@
     transform: translate(-50%, -50%) rotate(360deg);
   }
 } 
+
+/* ========================================
+   NOTAS DE MIGRACIÓN DESKTOP-FIRST
+   ======================================== */
+
+/*
+ * MIGRACIÓN COMPLETADA: equipment.css
+ * 
+ * Cambios realizados:
+ * 1. ✅ Tabla de equipos optimizada para desktop
+ * 2. ✅ Badges de estado y tipo mejorados
+ * 3. ✅ Acciones de tabla optimizadas
+ * 4. ✅ Modales con variables CSS desktop
+ * 5. ✅ Formularios con mejor espaciado
+ * 6. ✅ Media queries reorganizados (desktop-first)
+ * 7. ✅ Variables CSS implementadas
+ * 
+ * Próximo archivo: forms.css
+ * 
+ * Breakpoints implementados:
+ * - Desktop: 1024px+ (por defecto)
+ * - Desktop Grande: 1440px+
+ * - Desktop Extra Grande: 1920px+
+ * - Tablet: 768px-1023px
+ * - Mobile: hasta 767px
+ * - Mobile Pequeño: hasta 480px
+ */

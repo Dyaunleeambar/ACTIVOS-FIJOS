@@ -207,26 +207,30 @@ body {
     margin-top: 20px;
 }
 
-/* App Container */
+/* App Container - Desktop First */
 .app-container {
     display: flex;
     min-height: 100vh;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    background: var(--color-background-primary);
 }
 
-/* Header */
+/* Header - Desktop First */
 .app-header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
-    background: white;
-    border-bottom: 1px solid #e1e5e9;
+    height: var(--header-height);
+    background: var(--color-background-primary);
+    border-bottom: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    z-index: 1000;
+    padding: 0 var(--container-padding-desktop);
+    z-index: var(--z-index-fixed);
+    box-shadow: var(--shadow-sm);
 }
 
 .header-left {
@@ -380,16 +384,30 @@ body {
     visibility: visible;
 }
 
-/* Sidebar Flotante */
+/* Sidebar - Desktop First */
+.sidebar-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width-desktop);
+    height: 100vh;
+    background: var(--color-background-primary);
+    border-right: 1px solid var(--color-border);
+    z-index: var(--z-index-sticky);
+    overflow-y: auto;
+    transition: width 0.3s ease;
+}
+
+/* Sidebar Flotante (Mobile/Tablet) */
 .sidebar-floating {
     position: fixed;
     top: 0;
     left: -300px;
     width: 280px;
     height: 100vh;
-    background: white;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 999;
+    background: var(--color-background-primary);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-index-modal);
     transition: transform 0.3s ease;
     overflow-y: auto;
 }
@@ -469,13 +487,13 @@ body {
     text-align: center;
 }
 
-/* Main Content */
+/* Main Content - Desktop First */
 .app-main {
-    margin-left: 0;
-    margin-top: 60px;
-    padding: 20px;
-    min-height: calc(100vh - 60px);
-    background: #f8fafc;
+    margin-left: var(--sidebar-width-desktop);
+    margin-top: var(--header-height);
+    padding: var(--container-padding-desktop);
+    min-height: calc(100vh - var(--header-height));
+    background: var(--color-background-secondary);
     transition: margin-left 0.3s ease;
 }
 
@@ -500,8 +518,26 @@ body {
     color: #333;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Responsive Design - Desktop First */
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) {
+    .sidebar-fixed {
+        display: none;
+    }
+    
+    .app-main {
+        margin-left: 0;
+        padding: var(--container-padding-tablet);
+    }
+    
+    .app-header {
+        padding: 0 var(--container-padding-tablet);
+    }
+}
+
+/* Mobile (hasta 767px) */
+@media (max-width: 767px) {
     .sidebar-floating {
         width: 100%;
         left: -100%;
@@ -513,6 +549,12 @@ body {
     
     .app-main {
         margin-left: 0;
+        padding: var(--container-padding-mobile);
+    }
+    
+    .app-header {
+        padding: 0 var(--container-padding-mobile);
+        height: var(--header-height-mobile);
     }
     
     .header-center {
@@ -570,6 +612,7 @@ body {
 /* Clase para detectar vista desktop */
 .desktop-view {
   /* Mejoras específicas para desktop */
+  display: block;
 }
 
 .desktop-view .dashboard-page {
@@ -634,6 +677,75 @@ body {
   transform: scale(1.02);
   box-shadow: var(--shadow-lg);
 }
+
+/* ========================================
+   MEDIA QUERIES DESKTOP-FIRST
+   ======================================== */
+
+/* Desktop Grande (1440px+) */
+@media (min-width: 1440px) {
+  .sidebar-fixed {
+    width: var(--sidebar-width-desktop-lg);
+  }
+  
+  .app-main {
+    margin-left: var(--sidebar-width-desktop-lg);
+    padding: var(--spacing-8);
+  }
+  
+  .app-header {
+    padding: 0 var(--spacing-8);
+  }
+  
+  .app-container {
+    max-width: 1600px;
+  }
+}
+
+/* Desktop Extra Grande (1920px+) */
+@media (min-width: 1920px) {
+  .app-container {
+    max-width: 1800px;
+  }
+  
+  .sidebar-fixed {
+    width: var(--sidebar-width-desktop-lg);
+  }
+  
+  .app-main {
+    margin-left: var(--sidebar-width-desktop-lg);
+    padding: var(--spacing-10);
+  }
+  
+  .app-header {
+    padding: 0 var(--spacing-10);
+  }
+}
+
+/* ========================================
+   NOTAS DE MIGRACIÓN DESKTOP-FIRST
+   ======================================== */
+
+/*
+ * MIGRACIÓN COMPLETADA: styles.css
+ * 
+ * Cambios realizados:
+ * 1. ✅ App-container optimizado para desktop
+ * 2. ✅ Header con variables CSS y mejor espaciado
+ * 3. ✅ Sidebar fijo para desktop + flotante para mobile
+ * 4. ✅ App-main con margin-left para sidebar fijo
+ * 5. ✅ Media queries reorganizados (desktop-first)
+ * 6. ✅ Variables CSS implementadas
+ * 
+ * Próximo archivo: dashboard.css
+ * 
+ * Breakpoints implementados:
+ * - Desktop: 1024px+ (por defecto)
+ * - Tablet: 768px-1023px
+ * - Mobile: hasta 767px
+ * - Desktop Grande: 1440px+
+ * - Desktop Extra Grande: 1920px+
+ */
 
 /* Mejoras de espaciado para desktop */
 .desktop-view .alerts-section,
