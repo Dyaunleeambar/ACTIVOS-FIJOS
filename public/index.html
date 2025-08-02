@@ -37,6 +37,40 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <!-- Función de verificación global -->
+    <script>
+        // Función para verificar si Equipment está disponible
+        function checkEquipmentAvailable() {
+            if (window.Equipment && window.Equipment.showCreateForm) {
+                return true;
+            } else {
+                console.error('❌ Equipment no disponible. Esperando inicialización...');
+                return false;
+            }
+        }
+        
+        // Función segura para llamar métodos de Equipment
+        function safeEquipmentCall(methodName, ...args) {
+            if (checkEquipmentAvailable()) {
+                return window.Equipment[methodName](...args);
+            } else {
+                console.error(`❌ No se puede llamar ${methodName} - Equipment no disponible`);
+                
+                // Retry automático después de 500ms
+                setTimeout(() => {
+                    if (checkEquipmentAvailable()) {
+                        console.log(`🔄 Retry exitoso para ${methodName}`);
+                        window.Equipment[methodName](...args);
+                    } else {
+                        console.error(`❌ Retry fallido para ${methodName}`);
+                    }
+                }, 500);
+                
+                return false;
+            }
+        }
+    </script>
+    
     <!-- Pantalla de carga -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
@@ -538,13 +572,13 @@
                 <div class="page-header">
                     <h2>Gestión de Equipos</h2>
                     <div class="page-actions">
-                        <button class="btn btn-primary" onclick="Equipment.showCreateForm()">
+                        <button class="btn btn-primary" onclick="safeEquipmentCall('showCreateForm')">
                             <i class="fas fa-plus"></i> Nuevo Equipo
                         </button>
-                        <button class="btn btn-secondary" onclick="Equipment.showImportModal()">
+                        <button class="btn btn-secondary" onclick="safeEquipmentCall('showImportModal')">
                             <i class="fas fa-file-excel"></i> Importar Excel
                         </button>
-                        <button class="btn btn-secondary" onclick="Equipment.exportToExcel()">
+                        <button class="btn btn-secondary" onclick="safeEquipmentCall('exportToExcel')">
                             <i class="fas fa-download"></i> Exportar
                         </button>
                         
@@ -582,7 +616,7 @@
                             <option value="">Todos los estados/regiones</option>
                             <!-- Se cargará dinámicamente -->
                         </select>
-                        <button class="btn btn-secondary" onclick="Equipment.clearFilters()">
+                        <button class="btn btn-secondary" onclick="safeEquipmentCall('clearFilters')">
                             <i class="fas fa-times"></i> Limpiar
                         </button>
                     </div>
@@ -597,7 +631,7 @@
                             <span id="equipment-count">0</span> equipos encontrados
                         </div>
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="Equipment.refreshList()">
+                            <button class="btn btn-sm btn-secondary" onclick="safeEquipmentCall('refreshList')">
                                 <i class="fas fa-sync-alt"></i> Actualizar
                             </button>
                         </div>
@@ -613,7 +647,7 @@
                                     <th>Estado</th>
                                     <th>Ubicación</th>
                                     <th>Asignado a</th>
-                                    <th>Valor</th>
+                                    <th>Usuario Seguridad</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -747,25 +781,7 @@
                         </div>
                     </div>
                     
-                    <!-- Información financiera -->
-                    <div class="form-section">
-                        <h4>Información Financiera</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="purchase-date">Fecha de Compra</label>
-                                <input type="date" id="purchase-date" name="purchase_date">
-                            </div>
-                            <div class="form-group">
-                                <label for="purchase-cost">Costo de Compra</label>
-                                <input type="number" id="purchase-cost" name="purchase_cost" step="0.01">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="current-value">Valor Actual</label>
-                            <input type="number" id="current-value" name="current_value" step="0.01">
-                        </div>
-                    </div>
+
                     
                     <!-- Ubicación y asignación -->
                     <div class="form-section">
@@ -787,29 +803,15 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="location-details">Detalles de Ubicación</label>
-                            <textarea id="location-details" name="location_details" rows="2"></textarea>
-                        </div>
+
                     </div>
                     
                     <!-- Información de seguridad -->
                     <div class="form-section">
                         <h4>Información de Seguridad</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="security-username">Usuario de Seguridad</label>
-                                <input type="text" id="security-username" name="security_username">
-                            </div>
-                            <div class="form-group">
-                                <label for="security-password">Contraseña de Seguridad</label>
-                                <input type="password" id="security-password" name="security_password">
-                            </div>
-                        </div>
-                        
                         <div class="form-group">
-                            <label for="access-details">Detalles de Acceso</label>
-                            <textarea id="access-details" name="access_details" rows="2"></textarea>
+                            <label for="security-username">Usuario de Seguridad</label>
+                            <input type="text" id="security-username" name="security_username">
                         </div>
                     </div>
                 </div>
@@ -942,6 +944,7 @@
     <script src="js/app.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/equipment.js"></script>
+    <script src="js/test-equipment.js"></script>
     <script src="js/test-navigation.js"></script>
 </body>
 </html> 

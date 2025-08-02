@@ -52,7 +52,7 @@ const getAllEquipment = async (req, res) => {
         e.status,
         e.state_id,
         e.assigned_to,
-        e.location_details,
+        e.security_username,
         e.created_at,
         e.updated_at,
         s.name as state_name,
@@ -117,7 +117,6 @@ const getEquipmentById = async (req, res) => {
         e.status,
         e.state_id,
         e.assigned_to,
-        e.location_details,
         e.created_at,
         e.updated_at,
         s.name as state_name,
@@ -159,9 +158,9 @@ const createEquipment = async (req, res) => {
       brand,
       model,
       specifications,
+      status = 'active',
       state_id,
-      assigned_to,
-      location_details
+      assigned_to
     } = req.body;
 
     // Verificar que el número de inventario sea único
@@ -178,13 +177,13 @@ const createEquipment = async (req, res) => {
     const insertQuery = `
       INSERT INTO equipment (
         inventory_number, name, type, brand, model, specifications,
-        state_id, assigned_to, location_details
+        status, state_id, assigned_to
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const result = await executeQuery(insertQuery, [
       inventory_number, name, type, brand, model, specifications,
-      state_id, assigned_to, location_details
+      status, state_id, assigned_to
     ]);
 
     // Obtener el equipo creado
@@ -343,7 +342,6 @@ const getEquipmentByState = async (req, res) => {
         e.status,
         e.state_id,
         e.assigned_to,
-        e.location_details,
         e.created_at,
         e.updated_at,
         s.name as state_name,
@@ -596,10 +594,8 @@ const confirmImport = async (req, res) => {
         const insertQuery = `
           INSERT INTO equipment (
             inventory_number, name, type, brand, model, specifications,
-            purchase_date, purchase_cost, current_value, status, state_id,
-            assigned_to, location_details, security_username, security_password,
-            access_details
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            status, state_id, assigned_to
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         await executeQuery(insertQuery, [
@@ -609,16 +605,9 @@ const confirmImport = async (req, res) => {
           mappedData.brand || null,
           mappedData.model || null,
           mappedData.specifications || null,
-          mappedData.purchase_date || null,
-          mappedData.purchase_cost || null,
-          mappedData.current_value || null,
           mappedData.status,
           mappedData.state_id,
-          mappedData.assigned_to || null,
-          mappedData.location_details || null,
-          mappedData.security_username || null,
-          mappedData.security_password || null,
-          mappedData.access_details || null
+          mappedData.assigned_to || null
         ]);
 
         imported++;
@@ -686,15 +675,9 @@ const exportToExcel = async (req, res) => {
         e.brand,
         e.model,
         e.specifications,
-        e.purchase_date,
-        e.purchase_cost,
-        e.current_value,
         e.status,
         s.name as state_name,
-        e.location_details,
         u.full_name as assigned_user_name,
-        e.security_username,
-        e.access_details,
         e.created_at
       FROM equipment e
       LEFT JOIN states s ON e.state_id = s.id
@@ -716,15 +699,9 @@ const exportToExcel = async (req, res) => {
       'Marca': item.brand || '',
       'Modelo': item.model || '',
       'Especificaciones': item.specifications || '',
-      'Fecha de Compra': item.purchase_date || '',
-      'Costo de Compra': item.purchase_cost || '',
-      'Valor Actual': item.current_value || '',
       'Estado': item.status,
       'Estado/Región': item.state_name || '',
-      'Detalles de Ubicación': item.location_details || '',
       'Asignado a': item.assigned_user_name || '',
-      'Usuario de Seguridad': item.security_username || '',
-      'Detalles de Acceso': item.access_details || '',
       'Fecha de Creación': item.created_at
     }));
 
@@ -766,15 +743,9 @@ const downloadTemplate = async (req, res) => {
         'Marca': 'Dell',
         'Modelo': 'Latitude 5520',
         'Especificaciones': 'Intel i5, 8GB RAM, 256GB SSD',
-        'Fecha de Compra': '2023-01-15',
-        'Costo de Compra': '1200.00',
-        'Valor Actual': '800.00',
         'Estado': 'active',
         'Estado/Región': 'Estado 1',
-        'Detalles de Ubicación': 'Oficina principal',
-        'Asignado a': 'Juan Pérez',
-        'Usuario de Seguridad': 'admin',
-        'Detalles de Acceso': 'Acceso administrativo'
+        'Asignado a': 'Juan Pérez'
       }
     ];
 

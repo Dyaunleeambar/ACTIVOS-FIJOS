@@ -42,16 +42,10 @@ const initializeDatabase = async () => {
         brand VARCHAR(100),
         model VARCHAR(100),
         specifications TEXT,
-        purchase_date DATE,
-        purchase_cost DECIMAL(10,2),
-        current_value DECIMAL(10,2),
         status ENUM('active', 'maintenance', 'out_of_service', 'disposed') DEFAULT 'active',
         state_id INT NOT NULL,
         assigned_to INT,
-        location_details TEXT,
         security_username VARCHAR(50),
-        security_password VARCHAR(255),
-        access_details TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (state_id) REFERENCES states(id),
@@ -118,13 +112,10 @@ const initializeDatabase = async () => {
         brand: 'Dell',
         model: 'Latitude 5520',
         specifications: 'Intel i5-1135G7, 8GB RAM, 256GB SSD, Windows 10 Pro',
-        purchase_date: '2023-01-15',
-        purchase_cost: 1200.00,
-        current_value: 800.00,
         status: 'active',
         state_id: 1,
         assigned_to: 2,
-        location_details: 'Oficina principal, piso 2'
+        security_username: 'admin'
       },
       {
         inventory_number: 'INV-002',
@@ -133,13 +124,10 @@ const initializeDatabase = async () => {
         brand: 'HP',
         model: 'EliteDesk 800 G5',
         specifications: 'Intel i7-9700, 16GB RAM, 512GB SSD, Windows 10 Pro',
-        purchase_date: '2022-11-20',
-        purchase_cost: 1500.00,
-        current_value: 1000.00,
         status: 'active',
         state_id: 1,
         assigned_to: 3,
-        location_details: 'Sala de reuniones'
+        security_username: 'manager1'
       },
       {
         inventory_number: 'INV-003',
@@ -148,12 +136,9 @@ const initializeDatabase = async () => {
         brand: 'HP',
         model: 'LaserJet Pro M404n',
         specifications: 'Impresora láser monocromática, 38 ppm, red Ethernet',
-        purchase_date: '2023-03-10',
-        purchase_cost: 300.00,
-        current_value: 200.00,
         status: 'active',
         state_id: 1,
-        location_details: 'Área de impresión'
+        security_username: 'consultant1'
       },
       {
         inventory_number: 'INV-004',
@@ -162,12 +147,9 @@ const initializeDatabase = async () => {
         brand: 'Dell',
         model: 'PowerEdge R740',
         specifications: 'Intel Xeon E5-2680 v4, 32GB RAM, 2TB HDD, Windows Server 2019',
-        purchase_date: '2022-08-05',
-        purchase_cost: 5000.00,
-        current_value: 3500.00,
         status: 'active',
         state_id: 1,
-        location_details: 'Sala de servidores'
+        security_username: 'admin'
       },
       {
         inventory_number: 'INV-005',
@@ -176,12 +158,9 @@ const initializeDatabase = async () => {
         brand: 'Cisco',
         model: 'ISR 4321',
         specifications: 'Router empresarial, 4 puertos Gigabit, IOS-XE',
-        purchase_date: '2023-02-15',
-        purchase_cost: 800.00,
-        current_value: 600.00,
         status: 'maintenance',
         state_id: 1,
-        location_details: 'Sala de telecomunicaciones'
+        security_username: 'admin'
       }
     ];
 
@@ -189,14 +168,12 @@ const initializeDatabase = async () => {
       await executeQuery(`
         INSERT IGNORE INTO equipment (
           inventory_number, name, type, brand, model, specifications,
-          purchase_date, purchase_cost, current_value, status, state_id,
-          assigned_to, location_details
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          status, state_id, assigned_to, security_username
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         item.inventory_number, item.name, item.type, item.brand, item.model,
-        item.specifications, item.purchase_date, item.purchase_cost,
-        item.current_value, item.status, item.state_id, item.assigned_to,
-        item.location_details
+        item.specifications, item.status, item.state_id, item.assigned_to,
+        item.security_username
       ]);
     }
 

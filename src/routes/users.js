@@ -17,7 +17,6 @@ router.get('/', authenticateToken, async (req, res) => {
         state_id,
         created_at
       FROM users
-      WHERE active = 1
       ORDER BY full_name ASC
     `;
 
@@ -52,7 +51,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
         state_id,
         created_at
       FROM users
-      WHERE id = ? AND active = 1
+      WHERE id = ?
     `;
 
     const users = await executeQuery(query, [id]);

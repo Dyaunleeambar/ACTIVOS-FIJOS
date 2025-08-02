@@ -4,9 +4,8 @@ const { executeQuery } = require('../config/database');
 const getAllStates = async (req, res) => {
   try {
     const query = `
-      SELECT id, name, code, is_active, created_at, updated_at
+      SELECT id, name, code, created_at, updated_at
       FROM states 
-      WHERE is_active = 1
       ORDER BY name ASC
     `;
     
@@ -32,9 +31,9 @@ const getStateById = async (req, res) => {
     const { id } = req.params;
     
     const query = `
-      SELECT id, name, code, is_active, created_at, updated_at
+      SELECT id, name, code, created_at, updated_at
       FROM states 
-      WHERE id = ? AND is_active = 1
+      WHERE id = ?
     `;
     
     const states = await executeQuery(query, [id]);

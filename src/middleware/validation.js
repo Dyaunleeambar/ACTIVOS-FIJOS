@@ -48,9 +48,10 @@ const validateCreateEquipment = [
   body('brand').optional().isString().withMessage('Marca debe ser texto'),
   body('model').optional().isString().withMessage('Modelo debe ser texto'),
   body('specifications').optional().isString().withMessage('Especificaciones debe ser texto'),
+  body('status').optional().isIn(['active', 'maintenance', 'out_of_service', 'disposed']).withMessage('Estado inválido'),
   body('state_id').isInt().withMessage('ID de estado es requerido y debe ser un número entero'),
   body('assigned_to').optional().isInt().withMessage('ID de usuario asignado debe ser un número entero'),
-  body('location_details').optional().isString().withMessage('Detalles de ubicación debe ser texto'),
+  body('security_username').optional().isString().withMessage('Username de seguridad debe ser texto'),
   handleValidationErrors
 ];
 
@@ -64,7 +65,7 @@ const validateUpdateEquipment = [
   body('status').optional().isIn(['active', 'maintenance', 'out_of_service', 'disposed']).withMessage('Estado inválido'),
   body('state_id').optional().isInt().withMessage('ID de estado debe ser un número entero'),
   body('assigned_to').optional().isInt().withMessage('ID de usuario asignado debe ser un número entero'),
-  body('location_details').optional().isString().withMessage('Detalles de ubicación debe ser texto'),
+  body('security_username').optional().isString().withMessage('Username de seguridad debe ser texto'),
   handleValidationErrors
 ];
 

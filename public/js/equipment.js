@@ -148,14 +148,13 @@ class Equipment {
                 <td>
                     <div>
                         <div>${item.state_name || 'N/A'}</div>
-                        <small style="color: #666;">${item.location_details || ''}</small>
                     </div>
                 </td>
                 <td>
                     ${item.assigned_to_name || '<span style="color: #999;">Sin asignar</span>'}
                 </td>
                 <td>
-                    ${item.current_value ? `$${parseFloat(item.current_value).toLocaleString()}` : 'N/A'}
+                    ${item.security_username || '<span style="color: #999;">N/A</span>'}
                 </td>
                 <td>
                     <div class="table-actions-cell">
@@ -306,12 +305,18 @@ class Equipment {
 
     // Mostrar formulario de creación/edición
     async showCreateForm(equipmentId = null) {
+        console.log('🔍 showCreateForm llamado con equipmentId:', equipmentId);
+        
         const modal = document.getElementById('equipment-modal');
         const title = document.getElementById('modal-title');
         const form = document.getElementById('equipment-form');
         
+        console.log('🔍 Modal encontrado:', !!modal);
+        console.log('🔍 Title encontrado:', !!title);
+        console.log('🔍 Form encontrado:', !!form);
+        
         if (!modal) {
-            console.error('Modal no encontrado');
+            console.error('❌ Modal no encontrado');
             return;
         }
         
@@ -323,14 +328,19 @@ class Equipment {
             form.reset();
         }
         
+        console.log('🔍 Llamando a showModalDynamically...');
         // Crear un nuevo modal dinámicamente
         this.showModalDynamically(modal, equipmentId);
         
         await this.loadFormData();
+        console.log('✅ showCreateForm completado');
     }
 
     // Nueva función para mostrar modal dinámicamente
     showModalDynamically(originalModal, equipmentId) {
+        console.log('🔍 showModalDynamically llamado');
+        console.log('🔍 originalModal:', originalModal);
+        console.log('🔍 equipmentId:', equipmentId);
         // Crear un nuevo modal completamente independiente
         const dynamicModal = document.createElement('div');
         dynamicModal.id = 'dynamic-equipment-modal';
@@ -422,45 +432,15 @@ class Equipment {
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Especificaciones</label>
                     <textarea name="specifications" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fecha de Compra</label>
-                        <input type="date" name="purchase_date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Costo de Compra</label>
-                        <input type="number" name="purchase_cost" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Valor Actual</label>
-                        <input type="number" name="current_value" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Estado/Región</label>
-                        <select name="state_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="">Seleccionar estado</option>
-                        </select>
-                    </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Estado/Región</label>
+                    <select name="state_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Seleccionar estado</option>
+                    </select>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Detalles de Ubicación</label>
-                    <input type="text" name="location_details" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Usuario de Seguridad</label>
-                        <input type="text" name="security_username" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Contraseña de Seguridad</label>
-                        <input type="password" name="security_password" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Detalles de Acceso</label>
-                    <textarea name="access_details" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Usuario de Seguridad</label>
+                    <input type="text" name="security_username" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                     <button type="button" id="dynamic-cancel-btn" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
@@ -518,6 +498,8 @@ class Equipment {
                 console.log('🚀 ❌ Modal dinámico no es visible');
             }
         }, 100);
+        
+        console.log('✅ showModalDynamically completado');
     }
 
     // Guardar equipo desde el modal dinámico
@@ -525,23 +507,17 @@ class Equipment {
         try {
             const formData = new FormData(form);
             
-            const equipmentData = {
-                inventory_number: formData.get('inventory_number'),
-                name: formData.get('name'),
-                type: formData.get('type'),
-                brand: formData.get('brand'),
-                model: formData.get('model'),
-                specifications: formData.get('specifications'),
-                purchase_date: formData.get('purchase_date'),
-                purchase_cost: parseFloat(formData.get('purchase_cost')) || 0,
-                current_value: parseFloat(formData.get('current_value')) || 0,
-                status: formData.get('status'),
-                state_id: parseInt(formData.get('state_id')) || null,
-                location_details: formData.get('location_details'),
-                security_username: formData.get('security_username'),
-                security_password: formData.get('security_password'),
-                access_details: formData.get('access_details')
-            };
+                    const equipmentData = {
+            inventory_number: formData.get('inventory_number'),
+            name: formData.get('name'),
+            type: formData.get('type'),
+            brand: formData.get('brand'),
+            model: formData.get('model'),
+            specifications: formData.get('specifications'),
+            status: formData.get('status'),
+            state_id: parseInt(formData.get('state_id')) || null,
+            security_username: formData.get('security_username')
+        };
 
             const response = await API.post('/equipment', equipmentData);
             
@@ -647,16 +623,10 @@ class Equipment {
                 brand: formData.get('brand'),
                 model: formData.get('model'),
                 specifications: formData.get('specifications'),
-                purchase_date: formData.get('purchase_date'),
-                purchase_cost: parseFloat(formData.get('purchase_cost')) || 0,
-                current_value: parseFloat(formData.get('current_value')) || 0,
                 status: formData.get('status'),
                 state_id: parseInt(formData.get('state_id')),
                 assigned_to: formData.get('assigned_to') || null,
-                location_details: formData.get('location_details'),
-                security_username: formData.get('security_username'),
-                security_password: formData.get('security_password'),
-                access_details: formData.get('access_details')
+                security_username: formData.get('security_username')
             };
 
             // Determinar si es creación o edición
@@ -767,12 +737,9 @@ class Equipment {
             { key: 'brand', label: 'Marca' },
             { key: 'model', label: 'Modelo' },
             { key: 'specifications', label: 'Especificaciones' },
-            { key: 'purchase_date', label: 'Fecha de Compra' },
-            { key: 'purchase_cost', label: 'Costo de Compra' },
-            { key: 'current_value', label: 'Valor Actual' },
             { key: 'status', label: 'Estado' },
             { key: 'state_id', label: 'Estado/Región' },
-            { key: 'location_details', label: 'Detalles de Ubicación' }
+            { key: 'security_username', label: 'Usuario de Seguridad' }
         ];
 
         systemFields.forEach(field => {
@@ -1035,6 +1002,14 @@ class Equipment {
 // Inicializar módulo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.Equipment = new Equipment();
+    
+    // Hacer métodos disponibles globalmente para compatibilidad
+    window.Equipment.showCreateForm = window.Equipment.showCreateForm.bind(window.Equipment);
+    window.Equipment.viewEquipment = window.Equipment.viewEquipment.bind(window.Equipment);
+    window.Equipment.deleteEquipment = window.Equipment.deleteEquipment.bind(window.Equipment);
+    window.Equipment.goToPage = window.Equipment.goToPage.bind(window.Equipment);
+    
+    console.log('✅ Equipment inicializado y métodos disponibles globalmente');
 });
 
  

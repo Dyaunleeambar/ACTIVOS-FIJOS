@@ -29,11 +29,11 @@ const authenticateToken = async (req, res, next) => {
         
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Verificar que el usuario existe y está activo
+        // Verificar que el usuario existe
         const userQuery = `
-            SELECT id, username, email, full_name, role, state_id, is_active 
+            SELECT id, username, email, full_name, role, state_id
             FROM users 
-            WHERE id = ? AND is_active = 1
+            WHERE id = ?
         `;
         const users = await executeQuery(userQuery, [decoded.userId]);
         

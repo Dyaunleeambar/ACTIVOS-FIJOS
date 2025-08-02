@@ -9,9 +9,9 @@ const login = async (req, res) => {
 
     // Buscar usuario por username
     const userQuery = `
-      SELECT id, username, email, full_name, role, state_id, password, is_active 
+      SELECT id, username, email, full_name, role, state_id, password
       FROM users 
-      WHERE username = ? AND is_active = 1
+      WHERE username = ?
     `;
     const users = await executeQuery(userQuery, [username]);
 
@@ -57,7 +57,7 @@ const getProfile = async (req, res) => {
     const userId = req.user.id;
 
     const userQuery = `
-      SELECT id, username, email, full_name, role, state_id, is_active, created_at, updated_at
+      SELECT id, username, email, full_name, role, state_id, created_at, updated_at
       FROM users 
       WHERE id = ?
     `;
