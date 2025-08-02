@@ -310,6 +310,11 @@ class Equipment {
         const title = document.getElementById('modal-title');
         const form = document.getElementById('equipment-form');
         
+        if (!modal) {
+            console.error('Modal no encontrado');
+            return;
+        }
+        
         if (equipmentId) {
             title.textContent = 'Editar Equipo';
             await this.loadEquipmentData(equipmentId);
@@ -318,8 +323,266 @@ class Equipment {
             form.reset();
         }
         
-        modal.style.display = 'block';
+        // Crear un nuevo modal dinámicamente
+        this.showModalDynamically(modal, equipmentId);
+        
         await this.loadFormData();
+    }
+
+    // Nueva función para mostrar modal dinámicamente
+    showModalDynamically(originalModal, equipmentId) {
+        // Crear un nuevo modal completamente independiente
+        const dynamicModal = document.createElement('div');
+        dynamicModal.id = 'dynamic-equipment-modal';
+        dynamicModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        `;
+        
+        // Crear el contenido del modal desde cero (sin clonar)
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10000000;
+            padding: 20px;
+        `;
+        
+        // Crear contenido del modal desde cero
+        modalContent.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="dynamic-modal-title" style="margin: 0; color: #333;">Nuevo Equipo</h2>
+                <button id="dynamic-close-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+            </div>
+            <form id="dynamic-equipment-form" style="display: grid; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Número de Inventario</label>
+                        <input type="text" name="inventory_number" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Nombre del Equipo</label>
+                        <input type="text" name="name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Tipo</label>
+                        <select name="type" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Seleccionar tipo</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="laptop">Laptop</option>
+                            <option value="printer">Impresora</option>
+                            <option value="server">Servidor</option>
+                            <option value="router">Router</option>
+                            <option value="switch">Switch</option>
+                            <option value="radio_communication">Radio Comunicación</option>
+                            <option value="sim_chip">Chip SIM</option>
+                            <option value="roaming">Roaming</option>
+                            <option value="other">Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Estado</label>
+                        <select name="status" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Seleccionar estado</option>
+                            <option value="active">Activo</option>
+                            <option value="maintenance">Mantenimiento</option>
+                            <option value="out_of_service">Fuera de servicio</option>
+                            <option value="disposed">Desechado</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Marca</label>
+                        <input type="text" name="brand" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Modelo</label>
+                        <input type="text" name="model" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Especificaciones</label>
+                    <textarea name="specifications" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fecha de Compra</label>
+                        <input type="date" name="purchase_date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Costo de Compra</label>
+                        <input type="number" name="purchase_cost" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Valor Actual</label>
+                        <input type="number" name="current_value" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Estado/Región</label>
+                        <select name="state_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Seleccionar estado</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Detalles de Ubicación</label>
+                    <input type="text" name="location_details" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Usuario de Seguridad</label>
+                        <input type="text" name="security_username" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Contraseña de Seguridad</label>
+                        <input type="password" name="security_password" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Detalles de Acceso</label>
+                    <textarea name="access_details" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" id="dynamic-cancel-btn" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                    <button type="submit" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
+                </div>
+            </form>
+        `;
+        
+        // Agregar event listeners
+        const closeBtn = modalContent.querySelector('#dynamic-close-btn');
+        const cancelBtn = modalContent.querySelector('#dynamic-cancel-btn');
+        const form = modalContent.querySelector('#dynamic-equipment-form');
+        
+        closeBtn.onclick = () => this.closeDynamicModal();
+        cancelBtn.onclick = () => this.closeDynamicModal();
+        
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            this.saveDynamicEquipment(form);
+        };
+        
+        // Agregar overlay para cerrar al hacer clic fuera
+        dynamicModal.onclick = (e) => {
+            if (e.target === dynamicModal) {
+                this.closeDynamicModal();
+            }
+        };
+        
+        // Agregar al body
+        document.body.appendChild(dynamicModal);
+        dynamicModal.appendChild(modalContent);
+        
+        // Guardar referencia para poder cerrarlo
+        this.dynamicModal = dynamicModal;
+        
+        console.log('🚀 Modal dinámico creado y mostrado');
+        
+        // Verificar que funciona
+        setTimeout(() => {
+            const rect = dynamicModal.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const elementsAtCenter = document.elementsFromPoint(centerX, centerY);
+            console.log('🚀 Elementos en el centro del modal dinámico:', elementsAtCenter);
+            console.log('🚀 Modal dinámico es el elemento superior:', elementsAtCenter[0] === dynamicModal || elementsAtCenter[0] === modalContent);
+            
+            // Verificar si el modal es visible
+            const isVisible = rect.width > 0 && rect.height > 0;
+            console.log('🚀 Modal dinámico visible:', isVisible);
+            
+            if (isVisible) {
+                console.log('🚀 ✅ Modal dinámico creado exitosamente');
+            } else {
+                console.log('🚀 ❌ Modal dinámico no es visible');
+            }
+        }, 100);
+    }
+
+    // Guardar equipo desde el modal dinámico
+    async saveDynamicEquipment(form) {
+        try {
+            const formData = new FormData(form);
+            
+            const equipmentData = {
+                inventory_number: formData.get('inventory_number'),
+                name: formData.get('name'),
+                type: formData.get('type'),
+                brand: formData.get('brand'),
+                model: formData.get('model'),
+                specifications: formData.get('specifications'),
+                purchase_date: formData.get('purchase_date'),
+                purchase_cost: parseFloat(formData.get('purchase_cost')) || 0,
+                current_value: parseFloat(formData.get('current_value')) || 0,
+                status: formData.get('status'),
+                state_id: parseInt(formData.get('state_id')) || null,
+                location_details: formData.get('location_details'),
+                security_username: formData.get('security_username'),
+                security_password: formData.get('security_password'),
+                access_details: formData.get('access_details')
+            };
+
+            const response = await API.post('/equipment', equipmentData);
+            
+            if (response.success) {
+                UI.showNotification('Equipo creado exitosamente', 'success');
+                this.closeDynamicModal();
+                this.loadEquipmentList();
+            } else {
+                throw new Error(response.message || 'Error guardando equipo');
+            }
+        } catch (error) {
+            console.error('Error guardando equipo:', error);
+            UI.showNotification('Error guardando equipo', 'error');
+        }
+    }
+
+    // Cerrar modal dinámico
+    closeDynamicModal() {
+        if (this.dynamicModal) {
+            document.body.removeChild(this.dynamicModal);
+            this.dynamicModal = null;
+            console.log('🚀 Modal dinámico cerrado');
+        }
+    }
+
+    // Cerrar modal (mantener para compatibilidad)
+    closeModal() {
+        // Cerrar modal dinámico si existe
+        this.closeDynamicModal();
+        
+        // Cerrar modal original
+        const modal = document.getElementById('equipment-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        
+        const form = document.getElementById('equipment-form');
+        if (form) {
+            form.reset();
+            form.removeAttribute('data-equipment-id');
+        }
     }
 
     // Cargar datos del equipo para edición
@@ -420,15 +683,6 @@ class Equipment {
             console.error('Error guardando equipo:', error);
             UI.showNotification('Error guardando equipo', 'error');
         }
-    }
-
-    // Cerrar modal
-    closeModal() {
-        const modal = document.getElementById('equipment-modal');
-        modal.style.display = 'none';
-        const form = document.getElementById('equipment-form');
-        form.reset();
-        form.removeAttribute('data-equipment-id');
     }
 
     // Ver detalles del equipo
@@ -781,4 +1035,6 @@ class Equipment {
 // Inicializar módulo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.Equipment = new Equipment();
-}); 
+});
+
+ 

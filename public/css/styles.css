@@ -526,7 +526,7 @@ body {
 }
 
 /* Main Content - Desktop First */
-.app-main {
+.app-main {    
     margin-top: var(--header-height);
     padding: var(--container-padding-desktop);
     min-height: calc(100vh - var(--header-height));
