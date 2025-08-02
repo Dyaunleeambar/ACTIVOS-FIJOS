@@ -181,7 +181,24 @@
 
         <!-- Contenido principal -->
         <main class="app-main">
-            <h2>Estadísticas Principales</h2>
+            <div class="dashboard-titulo-alertas">
+                <h2>Estadísticas Principales</h2>
+                <!-- Alertas del Sistema -->
+                <div class="alerts-section collapsible-section" data-collapsed="true">
+                    <div class="section-header">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
+                        <button class="collapse-toggle" aria-label="Colapsar sección de alertas del sistema">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <div id="alerts-container" class="alerts-container">
+                            <!-- Las alertas se cargarán dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
                          <!-- Dashboard Page -->
              <div id="dashboard-page" class="page-content active dashboard-page">               
 
@@ -299,41 +316,8 @@
 
                 <!-- Métricas de Performance -->
                 <div class="performance-metrics">
-                    <div class="metric-item">
-                        <div class="metric-label">Tasa Operacional</div>
-                        <div class="metric-value" id="operational-rate">92%</div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="operational-progress" data-value="92">
-                                <div class="progress-fill"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Tasa de Mantenimiento</div>
-                        <div class="metric-value" id="maintenance-rate">8%</div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="maintenance-progress" data-value="8">
-                                <div class="progress-fill"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- La Tasa Operacional se movió a la sección de gráficos -->
                 </div>
-                
-                <!-- Alertas del Sistema -->
-                <div class="alerts-section collapsible-section" data-collapsed="true">
-                    <div class="section-header">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
-                        <button class="collapse-toggle" aria-label="Colapsar sección de alertas del sistema">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="section-content">
-                        <div id="alerts-container" class="alerts-container">
-                            <!-- Las alertas se cargarán dinámicamente -->
-                        </div>
-                    </div>
-                </div>
-
                                  <!-- Gráficos -->
                  <div class="dashboard-charts collapsible-section" data-collapsed="true">
                      <div class="section-header">
@@ -357,6 +341,11 @@
                              <div class="chart-container">
                                  <h3>Equipos por Ubicación</h3>
                                  <canvas id="equipment-location-chart"></canvas>
+                             </div>
+                             
+                             <div class="chart-container">
+                                 <h3>Tasa Operacional</h3>
+                                 <canvas id="operational-rate-chart"></canvas>
                              </div>
                          </div>
                      </div>

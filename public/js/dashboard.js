@@ -353,11 +353,6 @@ class Dashboard {
       if (value >= 75) return 'Buen rendimiento operacional';
       if (value >= 60) return 'Rendimiento operacional aceptable';
       return 'Rendimiento operacional bajo';
-    } else if (label === 'Tasa de Mantenimiento') {
-      if (value <= 10) return 'Mantenimiento preventivo óptimo';
-      if (value <= 20) return 'Mantenimiento preventivo adecuado';
-      if (value <= 30) return 'Mantenimiento preventivo aceptable';
-      return 'Requiere atención en mantenimiento';
     }
     return 'Métrica del sistema';
   }
@@ -378,23 +373,6 @@ class Dashboard {
           <span class="stat-label">Estado:</span>
           <span class="stat-value ${value >= 75 ? 'status-good' : 'status-warning'}">
             ${value >= 75 ? 'Óptimo' : 'Requiere atención'}
-          </span>
-        </div>
-      `;
-    } else if (label === 'Tasa de Mantenimiento') {
-      return `
-        <div class="stat-item">
-          <span class="stat-label">Equipos en Mantenimiento:</span>
-          <span class="stat-value">${Math.round(value * 0.25)}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Tiempo Promedio:</span>
-          <span class="stat-value">${Math.round(value * 2)} días</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Estado:</span>
-          <span class="stat-value ${value <= 15 ? 'status-good' : 'status-warning'}">
-            ${value <= 15 ? 'Controlado' : 'Requiere revisión'}
           </span>
         </div>
       `;
@@ -426,12 +404,14 @@ class Dashboard {
       this.setupEquipmentTypeChart(chartData.data.typeChart);
       this.setupEquipmentStateChart(chartData.data.stateChart);
       this.setupEquipmentLocationChart(chartData.data.locationChart);
+      this.setupOperationalRateChart(chartData.data.operationalRate);
     } catch (error) {
       console.error('Error al cargar datos de gráficos:', error);
       // Usar datos simulados en caso de error
       this.setupEquipmentTypeChart();
       this.setupEquipmentStateChart();
       this.setupEquipmentLocationChart();
+      this.setupOperationalRateChart();
     }
   }
 
@@ -489,7 +469,6 @@ class Dashboard {
     // Usar datos del backend si están disponibles, sino usar datos simulados
     const chartData = data || [
       { status: 'active', count: 20 },
-      { status: 'maintenance', count: 3 },
       { status: 'out_of_service', count: 2 },
       { status: 'disposed', count: 0 }
     ];
@@ -497,7 +476,6 @@ class Dashboard {
     const labels = chartData.map(item => {
       switch (item.status) {
         case 'active': return 'Activo';
-        case 'maintenance': return 'Mantenimiento';
         case 'out_of_service': return 'Fuera de Servicio';
         case 'disposed': return 'Desechado';
         default: return item.status;
@@ -577,6 +555,91 @@ class Dashboard {
         }
       }
     });
+  }
+
+  // Gráfico de anillo para Tasa Operacional
+  setupOperationalRateChart(data) {
+    const ctx = document.getElementById('operational-rate-chart');
+    if (!ctx) return;
+
+    // Usar datos del backend si están disponibles, sino usar datos simulados
+    const operationalRate = data || 92; // Porcentaje de tasa operacional
+    const remainingRate = 100 - operationalRate;
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Operacional', 'No Operacional'],
+        datasets: [{
+          data: [operationalRate, remainingRate],
+          backgroundColor: [
+            '#22c55e', // Verde para operacional
+            '#e5e7eb'  // Gris claro para no operacional
+          ],
+          borderWidth: 0,
+          cutout: '70%'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.parsed}%`;
+              }
+            }
+          }
+        },
+        elements: {
+          arc: {
+            borderWidth: 0
+          }
+        }
+      }
+    });
+
+    // Agregar el porcentaje en el centro del gráfico
+    const centerText = document.createElement('div');
+    centerText.className = 'chart-center-text';
+    centerText.innerHTML = `
+      <div class="center-percentage">${operationalRate}%</div>
+      <div class="center-label">Tasa Operacional</div>
+    `;
+    centerText.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    `;
+    
+    const centerPercentage = centerText.querySelector('.center-percentage');
+    centerPercentage.style.cssText = `
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--color-text-primary);
+      line-height: 1;
+    `;
+    
+    const centerLabel = centerText.querySelector('.center-label');
+    centerLabel.style.cssText = `
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      margin-top: 0.5rem;
+    `;
+
+    ctx.parentElement.style.position = 'relative';
+    ctx.parentElement.appendChild(centerText);
   }
 
   // Configurar actualizaciones en tiempo real

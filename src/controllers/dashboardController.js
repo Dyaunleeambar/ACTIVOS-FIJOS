@@ -61,35 +61,6 @@ const getSystemAlerts = async (user) => {
   try {
     const alerts = [];
 
-    // Alerta de equipos en mantenimiento
-    let maintenanceQuery = `
-      SELECT COUNT(*) as count
-      FROM equipment e
-      WHERE e.status = 'maintenance'
-    `;
-    let params = [];
-
-    if (user.role === 'manager') {
-      maintenanceQuery += ' AND e.state_id = ?';
-      params.push(user.state_id);
-    } else if (user.role === 'consultant') {
-      maintenanceQuery += ' AND a.user_id = ?';
-      maintenanceQuery = maintenanceQuery.replace('FROM equipment e', 'FROM equipment e LEFT JOIN assignments a ON e.id = a.equipment_id AND a.returned_at IS NULL');
-      params.push(user.id);
-    }
-
-    const maintenanceResult = await executeQuery(maintenanceQuery, params);
-    const maintenanceCount = maintenanceResult[0].count;
-
-    if (maintenanceCount > 0) {
-      alerts.push({
-        type: 'warning',
-        message: `${maintenanceCount} equipo${maintenanceCount > 1 ? 's' : ''} requieren mantenimiento preventivo`,
-        time: 'hace 2 horas',
-        icon: 'fas fa-tools'
-      });
-    }
-
     // Alerta de propuestas de baja pendientes
     let disposalQuery = `
       SELECT COUNT(*) as count
@@ -206,7 +177,6 @@ const getEquipmentTypeStats = async (req, res) => {
         type,
         COUNT(*) as total,
         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
-        SUM(CASE WHEN status = 'maintenance' THEN 1 ELSE 0 END) as maintenance,
         SUM(CASE WHEN status = 'out_of_service' THEN 1 ELSE 0 END) as out_of_service,
         SUM(CASE WHEN status = 'disposed' THEN 1 ELSE 0 END) as disposed
       FROM equipment e
@@ -248,7 +218,6 @@ const getDashboardCharts = async (req, res) => {
         ],
         stateChart: [
           { status: 'active', count: 20 },
-          { status: 'maintenance', count: 3 },
           { status: 'out_of_service', count: 2 },
           { status: 'disposed', count: 0 }
         ],

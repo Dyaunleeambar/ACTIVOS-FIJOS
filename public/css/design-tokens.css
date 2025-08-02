@@ -103,8 +103,10 @@
   --color-background-tertiary: var(--color-gray-100);
   --color-background-overlay: rgba(0, 0, 0, 0.5);
 
-  --color-border-primary: var(--color-gray-200);
-  --color-border-secondary: var(--color-gray-300);
+  --color-border: var(--color-gray-300);
+  --color-border-primary: var(--color-gray-300);
+  --color-border-secondary: var(--color-gray-400);
+  --color-border-light: var(--color-gray-200);
   --color-border-focus: var(--color-primary-500);
 
   /* Estados de Equipos */

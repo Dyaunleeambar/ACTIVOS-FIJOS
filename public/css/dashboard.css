@@ -617,10 +617,6 @@
   background: linear-gradient(90deg, var(--color-success-500), var(--color-success-400));
 }
 
-#maintenance-progress .progress-fill {
-  background: linear-gradient(90deg, var(--color-warning-500), var(--color-warning-400));
-}
-
 /* Tooltip para mostrar el valor exacto */
 .progress-bar::before {
   content: attr(data-value) '%';
@@ -874,10 +870,38 @@
   max-height: 400px;
 }
 
-/* Desktop: 3 columnas */
+/* Estilos específicos para el gráfico de anillo de Tasa Operacional */
+.chart-container:has(#operational-rate-chart) {
+  position: relative;
+}
+
+.chart-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.center-percentage {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.center-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.5rem;
+}
+
+/* Desktop: 4 columnas */
 @media (min-width: 1024px) {
   .charts-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
   
   .chart-container canvas {
@@ -885,10 +909,10 @@
   }
 }
 
-/* Pantallas muy grandes: 3 columnas con más espacio */
+/* Pantallas muy grandes: 4 columnas con más espacio */
 @media (min-width: 1440px) {
   .charts-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--spacing-8);
   }
   
@@ -1697,5 +1721,135 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+  }
+}
+
+/* Estilos para el contenedor dashboard-titulo-alertas */
+.dashboard-titulo-alertas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
+}
+
+.dashboard-titulo-alertas h2 {
+  text-align: center;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+}
+
+/* Estilos para la sección de alertas como línea desplegable */
+.dashboard-titulo-alertas .alerts-section {
+  width: 100%;
+  max-width: 800px;
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.dashboard-titulo-alertas .alerts-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-4) var(--spacing-6);
+  background: var(--color-background-primary);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-titulo-alertas .alerts-section .section-header:hover {
+  background: var(--color-background-secondary);
+}
+
+.dashboard-titulo-alertas .alerts-section .section-header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.dashboard-titulo-alertas .alerts-section .section-header h3 i {
+  color: var(--color-warning-500);
+}
+
+.dashboard-titulo-alertas .alerts-section .collapse-toggle {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-titulo-alertas .alerts-section .collapse-toggle:hover {
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
+}
+
+.dashboard-titulo-alertas .alerts-section .collapse-toggle i {
+  transition: transform 0.3s ease;
+}
+
+.dashboard-titulo-alertas .alerts-section[data-collapsed="false"] .collapse-toggle i {
+  transform: rotate(180deg);
+}
+
+.dashboard-titulo-alertas .alerts-section .section-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  background: var(--color-background-primary);
+}
+
+.dashboard-titulo-alertas .alerts-section[data-collapsed="false"] .section-content {
+  max-height: 500px;
+  padding: var(--spacing-6);
+}
+
+.dashboard-titulo-alertas .alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Responsive para el contenedor dashboard-titulo-alertas */
+@media (max-width: 767px) {
+  .dashboard-titulo-alertas {
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-6);
+  }
+  
+  .dashboard-titulo-alertas h2 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .dashboard-titulo-alertas .alerts-section {
+    max-width: 100%;
+  }
+  
+  .dashboard-titulo-alertas .alerts-section .section-header {
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .dashboard-titulo-alertas .alerts-section .section-header h3 {
+    font-size: var(--font-size-base);
+  }
+  
+  .dashboard-titulo-alertas .alerts-section[data-collapsed="false"] .section-content {
+    padding: var(--spacing-4);
   }
 }
