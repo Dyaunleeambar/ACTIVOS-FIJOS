@@ -684,8 +684,8 @@
   width: 48px;
   height: 48px;
   border-radius: var(--border-radius-lg);
-  background: var(--gradient-primary);
-  color: var(--color-text-inverse);
+  background: transparent;
+  color: var(--color-text-primary);
   font-size: var(--font-size-xl);
 }
 
@@ -1912,6 +1912,9 @@
     width: 60px;
     height: 60px;
     font-size: var(--font-size-2xl);
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: none;
   }
   
   .stats-number {
@@ -1952,6 +1955,9 @@
     width: 70px;
     height: 70px;
     font-size: var(--font-size-3xl);
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: none;
   }
   
   .stats-number {
@@ -2014,6 +2020,9 @@
     width: 40px;
     height: 40px;
     font-size: var(--font-size-lg);
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: none;
   }
   
   .stats-number {
@@ -2119,6 +2128,9 @@
     width: 32px;
     height: 32px;
     font-size: var(--font-size-base);
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: none;
   }
   
   .stats-number {
@@ -2227,6 +2239,9 @@
     width: 28px;
     height: 28px;
     font-size: var(--font-size-sm);
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: none;
   }
   
   .stats-number {

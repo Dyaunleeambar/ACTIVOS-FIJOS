@@ -495,12 +495,12 @@
   justify-content: center;
   width: 70px;
   height: 70px;
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
+  background: transparent;
   border-radius: var(--border-radius-lg);
-  color: white;
+  color: var(--color-text-primary);
   font-size: var(--font-size-2xl);
   flex-shrink: 0;
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
 .stats-content {

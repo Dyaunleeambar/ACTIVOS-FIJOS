@@ -687,6 +687,9 @@ body {
   width: 70px;
   height: 70px;
   font-size: var(--font-size-2xl);
+  background: transparent;
+  color: var(--color-text-primary);
+  box-shadow: none;
 }
 
 .desktop-view .stats-number {
@@ -842,6 +845,9 @@ body {
     width: 80px;
     height: 80px;
     font-size: var(--font-size-3xl);
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: none;
   }
   
   .desktop-view .stats-number {
