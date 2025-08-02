@@ -1545,3 +1545,157 @@
  * El dashboard ya tenía una estructura desktop-first
  * Se optimizaron los componentes para mejor experiencia desktop
  */
+
+/* ========================================
+   ESTILOS ESPECÍFICOS PARA LAS TRES PRIMERAS TARJETAS
+   ======================================== */
+
+/* Desktop: Estilos específicos para las tres primeras tarjetas */
+@media (min-width: 1024px) {
+  .dashboard-grid .card-stats:nth-child(1),
+  .dashboard-grid .card-stats:nth-child(2),
+  .dashboard-grid .card-stats:nth-child(3) {
+    aspect-ratio: 1;
+    width: 240px !important; /* 200px + 20% = 240px */
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0 auto;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .card-body,
+  .dashboard-grid .card-stats:nth-child(2) .card-body,
+  .dashboard-grid .card-stats:nth-child(3) .card-body {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-4);
+    height: 100%;
+    padding: var(--spacing-4);
+    width: 100%;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-icon,
+  .dashboard-grid .card-stats:nth-child(2) .stats-icon,
+  .dashboard-grid .card-stats:nth-child(3) .stats-icon {
+    margin: 0;
+    font-size: var(--font-size-3xl);
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-number,
+  .dashboard-grid .card-stats:nth-child(2) .stats-number,
+  .dashboard-grid .card-stats:nth-child(3) .stats-number {
+    font-size: var(--font-size-4xl);
+    margin: 0;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-label,
+  .dashboard-grid .card-stats:nth-child(2) .stats-label,
+  .dashboard-grid .card-stats:nth-child(3) .stats-label {
+    margin: 0;
+  }
+}
+
+/* Desktop Grande (1440px+) */
+@media (min-width: 1440px) {
+  .dashboard-grid .card-stats:nth-child(1),
+  .dashboard-grid .card-stats:nth-child(2),
+  .dashboard-grid .card-stats:nth-child(3) {
+    width: 264px !important; /* 220px + 20% = 264px */
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-icon,
+  .dashboard-grid .card-stats:nth-child(2) .stats-icon,
+  .dashboard-grid .card-stats:nth-child(3) .stats-icon {
+    font-size: var(--font-size-4xl);
+    width: 70px;
+    height: 70px;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-number,
+  .dashboard-grid .card-stats:nth-child(2) .stats-number,
+  .dashboard-grid .card-stats:nth-child(3) .stats-number {
+    font-size: var(--font-size-5xl);
+  }
+}
+
+/* Desktop Extra Grande (1920px+) */
+@media (min-width: 1920px) {
+  .dashboard-grid .card-stats:nth-child(1),
+  .dashboard-grid .card-stats:nth-child(2),
+  .dashboard-grid .card-stats:nth-child(3) {
+    width: 288px !important; /* 240px + 20% = 288px */
+    height: 240px !important;
+    min-height: 240px !important;
+    max-height: 240px !important;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-icon,
+  .dashboard-grid .card-stats:nth-child(2) .stats-icon,
+  .dashboard-grid .card-stats:nth-child(3) .stats-icon {
+    font-size: var(--font-size-5xl);
+    width: 80px;
+    height: 80px;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .stats-number,
+  .dashboard-grid .card-stats:nth-child(2) .stats-number,
+  .dashboard-grid .card-stats:nth-child(3) .stats-number {
+    font-size: var(--font-size-6xl);
+  }
+}
+
+/* Tablet: Estilos para las tres primeras tarjetas */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-grid .card-stats:nth-child(1),
+  .dashboard-grid .card-stats:nth-child(2),
+  .dashboard-grid .card-stats:nth-child(3) {
+    aspect-ratio: 1;
+    width: 192px !important; /* 160px + 20% = 192px */
+    height: 160px !important;
+    min-height: 160px !important;
+    max-height: 160px !important;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .card-body,
+  .dashboard-grid .card-stats:nth-child(2) .card-body,
+  .dashboard-grid .card-stats:nth-child(3) .card-body {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Mobile: Estilos para las tres primeras tarjetas */
+@media (max-width: 767px) {
+  .dashboard-grid .card-stats:nth-child(1),
+  .dashboard-grid .card-stats:nth-child(2),
+  .dashboard-grid .card-stats:nth-child(3) {
+    width: 168px !important; /* 140px + 20% = 168px */
+    height: 140px !important;
+    min-height: 140px !important;
+    max-height: 140px !important;
+  }
+  
+  .dashboard-grid .card-stats:nth-child(1) .card-body,
+  .dashboard-grid .card-stats:nth-child(2) .card-body,
+  .dashboard-grid .card-stats:nth-child(3) .card-body {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+}
