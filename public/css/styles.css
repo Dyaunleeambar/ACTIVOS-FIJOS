@@ -281,6 +281,44 @@ body {
     justify-content: flex-end;
 }
 
+/* Header Actions - Botones de acción rápida */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 16px;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.btn-icon:hover {
+    background: var(--color-background-secondary);
+    color: var(--color-primary-500);
+    transform: translateY(-1px);
+}
+
+.btn-icon:active {
+    transform: translateY(0);
+}
+
+.btn-icon:focus {
+    outline: var(--focus-ring-width) var(--border-style-solid) var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
 .user-menu {
     position: relative;
 }
@@ -563,6 +601,17 @@ body {
     
     .header-right {
         gap: 8px;
+    }
+    
+    .header-actions {
+        gap: 4px;
+    }
+    
+    .btn-icon {
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 14px;
+        padding: 6px;
     }
     
     .user-info {

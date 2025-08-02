@@ -46,6 +46,40 @@ const App = {
                 this.handlePageChange(page);
             }
         });
+        
+        // Manejar botones de auditoría en el dropdown del usuario
+        this.setupAuditButtons();
+    },
+    
+    // Configurar botones de auditoría
+    setupAuditButtons: function() {
+        // Botón de Accesibilidad
+        const accessibilityLink = document.getElementById('accessibility-link');
+        if (accessibilityLink) {
+            accessibilityLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.AccessibilityValidator) {
+                    const validator = new AccessibilityValidator();
+                    validator.showReport();
+                } else {
+                    console.warn('AccessibilityValidator no está disponible');
+                }
+            });
+        }
+        
+        // Botón de Performance
+        const performanceLink = document.getElementById('performance-link');
+        if (performanceLink) {
+            performanceLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.PerformanceOptimizer) {
+                    const optimizer = new PerformanceOptimizer();
+                    optimizer.showPerformanceReport();
+                } else {
+                    console.warn('PerformanceOptimizer no está disponible');
+                }
+            });
+        }
     },
     
     // Cargar datos iniciales

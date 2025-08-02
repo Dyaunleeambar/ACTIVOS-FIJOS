@@ -428,17 +428,5 @@ class AccessibilityValidator {
 // Inicializar validador de accesibilidad
 window.AccessibilityValidator = AccessibilityValidator;
 
-// Agregar botón de validación de accesibilidad al header
-document.addEventListener('DOMContentLoaded', () => {
-  const headerActions = document.querySelector('.page-actions');
-  if (headerActions) {
-    const accessibilityBtn = document.createElement('button');
-    accessibilityBtn.className = 'btn btn-outline';
-    accessibilityBtn.innerHTML = '<i class="fas fa-universal-access"></i> Accesibilidad';
-    accessibilityBtn.onclick = () => {
-      const validator = new AccessibilityValidator();
-      validator.showReport();
-    };
-    headerActions.appendChild(accessibilityBtn);
-  }
-}); 
+// Nota: Los botones de accesibilidad ahora se manejan desde app.js
+// y se ubican en el dropdown del usuario 

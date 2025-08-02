@@ -636,17 +636,5 @@ class PerformanceOptimizer {
 // Inicializar optimizador de performance
 window.PerformanceOptimizer = PerformanceOptimizer;
 
-// Agregar botón de performance al header
-document.addEventListener('DOMContentLoaded', () => {
-  const headerActions = document.querySelector('.page-actions');
-  if (headerActions) {
-    const performanceBtn = document.createElement('button');
-    performanceBtn.className = 'btn btn-outline';
-    performanceBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i> Performance';
-    performanceBtn.onclick = () => {
-      const optimizer = new PerformanceOptimizer();
-      optimizer.showPerformanceReport();
-    };
-    headerActions.appendChild(performanceBtn);
-  }
-}); 
+// Nota: Los botones de performance ahora se manejan desde app.js
+// y se ubican en el dropdown del usuario 

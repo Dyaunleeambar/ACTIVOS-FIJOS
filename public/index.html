@@ -87,12 +87,23 @@
                     <span>Sistema de Gestión de Medios Informáticos</span>
                 </div>
             </div>
+            <!-- Botones de acción rápida -->
+            <div class="header-actions">
+                <button class="btn btn-icon" onclick="Dashboard.refresh()" title="Actualizar Dashboard">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-icon" onclick="Dashboard.exportDashboard('pdf')" title="Exportar Dashboard">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
             
             <div class="header-center">
                 <h1 id="page-title">Dashboard</h1>
             </div>
             
             <div class="header-right">
+                
+                
                 <div class="user-menu">
                     <button class="user-menu-btn" id="user-menu-btn">
                         <div class="user-info">
@@ -104,6 +115,12 @@
                     <div class="user-dropdown" id="user-dropdown">
                         <a href="#" id="profile-link">
                             <i class="fas fa-user"></i> Perfil
+                        </a>
+                        <a href="#" id="accessibility-link">
+                            <i class="fas fa-universal-access"></i> Accesibilidad
+                        </a>
+                        <a href="#" id="performance-link">
+                            <i class="fas fa-tachometer-alt"></i> Performance
                         </a>
                         <a href="#" id="settings-link">
                             <i class="fas fa-cog"></i> Configuración
@@ -168,17 +185,6 @@
         <main class="app-main">
                          <!-- Dashboard Page -->
              <div id="dashboard-page" class="page-content active dashboard-page">
-                <div class="page-header">
-                    <h2>Dashboard</h2>
-                    <div class="page-actions">
-                        <button class="btn btn-secondary" onclick="Dashboard.refresh()">
-                            <i class="fas fa-sync-alt"></i> Actualizar
-                        </button>
-                        <button class="btn btn-secondary" onclick="Dashboard.exportDashboard('pdf')">
-                            <i class="fas fa-download"></i> Exportar
-                        </button>
-                    </div>
-                </div>
 
                                  <!-- Alertas del Sistema -->
                  <div class="alerts-section collapsible-section" data-collapsed="true">
