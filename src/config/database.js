@@ -65,22 +65,36 @@ const executeQuery = async (query, params = []) => {
     
     // Asegurar que los parámetros sean del tipo correcto
     const processedParams = params.map(param => {
-      if (param === undefined) {
+      if (param === undefined || param === null) {
         return null;
       }
       if (typeof param === 'number') {
-        return param;
+        // Asegurar que los números sean enteros válidos para LIMIT y OFFSET
+        const num = parseInt(param);
+        return isNaN(num) ? 0 : num;
       }
-      if (typeof param === 'string' && param.trim() === '') {
-        return null;
+      if (typeof param === 'string') {
+        const trimmed = param.trim();
+        if (trimmed === '') {
+          return null;
+        }
+        // NO convertir strings a números automáticamente
+        // Solo mantener el string tal como está
+        return trimmed;
       }
       return param;
     });
     
-    const [results] = await connection.execute(query, processedParams);
+    console.log('🔍 executeQuery - Query:', query);
+    console.log('🔍 executeQuery - Parámetros originales:', params);
+    console.log('🔍 executeQuery - Parámetros procesados:', processedParams);
+    
+    // Usar connection.query() en lugar de connection.execute() para evitar problemas con parámetros
+    const [results] = await connection.query(query, processedParams);
     return results;
   } catch (error) {
     dbLogger.error('Error al ejecutar query:', { query, params, error: error.message });
+    console.error('❌ Error en executeQuery:', error);
     throw error;
   } finally {
     if (connection) {
@@ -98,7 +112,7 @@ const executeTransaction = async (queries) => {
     
     const results = [];
     for (const { query, params } of queries) {
-      const [result] = await connection.execute(query, params);
+      const [result] = await connection.query(query, params);
       results.push(result);
     }
     

@@ -64,7 +64,7 @@ class Equipment {
     }
 
     // Cargar lista de equipos
-    async loadEquipmentList() {
+    async loadEquipmentList(showErrors = true) {
         try {
             const tbody = document.getElementById('equipment-tbody');
             const countElement = document.getElementById('equipment-count');
@@ -79,18 +79,39 @@ class Equipment {
                 ...this.filters
             });
 
+            console.log('🔍 Cargando equipos con parámetros:', params.toString());
+
             const response = await API.get(`/equipment?${params}`);
+            
+            console.log('✅ Respuesta del servidor:', response);
             
             if (response.equipment) {
                 this.renderEquipmentTable(response.equipment);
                 this.renderPagination(response.pagination);
                 this.updateEquipmentCount(response.pagination.total);
             } else {
-                throw new Error('Error cargando equipos');
+                console.warn('⚠️ Respuesta sin datos de equipos:', response);
+                // Si no hay equipos, mostrar tabla vacía
+                this.renderEquipmentTable([]);
             }
         } catch (error) {
-            console.error('Error cargando equipos:', error);
-            UI.showNotification('Error cargando equipos', 'error');
+            console.error('❌ Error cargando equipos:', error);
+            
+            // Solo mostrar error al usuario si showErrors es true
+            if (showErrors) {
+                // Mostrar error más específico
+                let errorMessage = 'Error cargando equipos';
+                if (error.message.includes('500')) {
+                    errorMessage = 'Error interno del servidor al cargar equipos';
+                } else if (error.message.includes('401')) {
+                    errorMessage = 'Sesión expirada';
+                } else if (error.message.includes('403')) {
+                    errorMessage = 'Sin permisos para ver equipos';
+                }
+                
+                UI.showNotification(errorMessage, 'error');
+            }
+            
             this.renderEquipmentTable([]);
         }
     }
@@ -584,7 +605,11 @@ class Equipment {
             if (response.message) {
                 UI.showNotification(response.message, 'success');
                 this.closeDynamicModal();
-                this.loadEquipmentList();
+                
+                // Usar la nueva función para refrescar la lista
+                setTimeout(() => {
+                    this.refreshEquipmentList();
+                }, 500);
             } else {
                 throw new Error('Respuesta inesperada del servidor');
             }
@@ -958,6 +983,19 @@ class Equipment {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
+    }
+
+    async refreshEquipmentList() {
+        try {
+            console.log('🔄 Refrescando lista de equipos...');
+            await this.loadEquipmentList(false); // Pasar false para no mostrar notificaciones
+            console.log('✅ Lista de equipos actualizada');
+        } catch (error) {
+            console.error('❌ Error refrescando lista:', error);
+            // No mostrar notificación de error al usuario
+            // Solo log para debugging
+            // La creación del equipo fue exitosa, este error es solo para la recarga
+        }
     }
 }
 

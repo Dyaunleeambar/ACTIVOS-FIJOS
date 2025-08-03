@@ -8,6 +8,12 @@ const API = {
     request: async function(endpoint, options = {}) {
         const url = this.baseURL + endpoint;
         
+        console.log('🌐 API Request:', {
+            url: url,
+            method: options.method || 'GET',
+            headers: options.headers
+        });
+        
         // Configuración por defecto
         const defaultOptions = {
             method: 'GET',
@@ -31,18 +37,33 @@ const API = {
             const fetchPromise = fetch(url, requestOptions);
             const response = await Promise.race([fetchPromise, timeoutPromise]);
             
+            console.log(' API Response:', {
+                status: response.status,
+                statusText: response.statusText,
+                url: response.url
+            });
+            
             // Verificar si la respuesta es ok
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    // Si no se puede parsear JSON, usar texto plano
+                    errorData = { error: await response.text() };
+                }
+                
+                console.error('❌ API Error Response:', errorData);
                 throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
             }
             
             // Parsear respuesta
             const data = await response.json();
+            console.log('✅ API Success Response:', data);
             return data;
             
         } catch (error) {
-            console.error('API Error:', error);
+            console.error('❌ API Error:', error);
             
             // Manejar errores específicos
             if (error.message.includes('401')) {

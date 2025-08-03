@@ -8,7 +8,11 @@ const fs = require('fs');
 const getAllEquipment = async (req, res) => {
   try {
     const { state_id, type, status, page = 1, limit = 20 } = req.query;
-    const offset = (page - 1) * limit;
+    
+    // Convertir y validar parámetros de paginación
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 20));
+    const offset = (pageNum - 1) * limitNum;
 
     let whereConditions = [];
     let params = [];
@@ -68,59 +72,20 @@ const getAllEquipment = async (req, res) => {
     `;
 
     // Debug: mostrar valores recibidos
-    console.log('🔍 getAllEquipment - Valores recibidos:', { limit, offset, page });
-    console.log('🔍 getAllEquipment - Tipos:', { 
-      limitType: typeof limit, 
-      offsetType: typeof offset, 
-      pageType: typeof page 
+    console.log('🔍 getAllEquipment - Valores recibidos:', { page, limit });
+    console.log('🔍 getAllEquipment - Valores procesados:', { pageNum, limitNum, offset });
+    console.log('🔍 getAllEquipment - Tipos de parámetros:', { 
+      pageNumType: typeof pageNum, 
+      limitNumType: typeof limitNum, 
+      offsetType: typeof offset 
     });
     
-    // Asegurar que los parámetros sean números válidos y no undefined
-    let limitParam = 20;
-    let offsetParam = 0;
-    
-    // Procesar limit
-    if (limit !== undefined && limit !== null && limit !== '') {
-      const parsedLimit = parseInt(limit);
-      if (!isNaN(parsedLimit)) {
-        limitParam = parsedLimit;
-      }
-    }
-    
-    // Procesar offset
-    if (offset !== undefined && offset !== null && offset !== '') {
-      const parsedOffset = parseInt(offset);
-      if (!isNaN(parsedOffset)) {
-        offsetParam = parsedOffset;
-      }
-    }
-    
-    console.log('🔍 getAllEquipment - Valores procesados:', { limitParam, offsetParam });
-    
-    // Verificar que los valores sean números válidos
-    if (isNaN(limitParam) || isNaN(offsetParam)) {
-      console.log('❌ getAllEquipment - Valores inválidos:', { limitParam, offsetParam });
-      return res.status(400).json({
-        error: 'Parámetros de paginación inválidos'
-      });
-    }
-    
-    // Asegurar que los valores sean números positivos
-    limitParam = Math.max(1, Math.min(100, limitParam)); // Entre 1 y 100
-    offsetParam = Math.max(0, offsetParam); // Mínimo 0
-    
-    // Asegurar que los parámetros sean números enteros
-    limitParam = Math.floor(limitParam);
-    offsetParam = Math.floor(offsetParam);
-    
-    params.push(limitParam, offsetParam);
-    console.log('🔍 getAllEquipment - Parámetros finales:', params);
-    console.log('🔍 getAllEquipment - Tipos de parámetros finales:', { 
-      limitParamType: typeof limitParam, 
-      offsetParamType: typeof offsetParam 
-    });
+    // Agregar los parámetros de paginación al final
+    const finalParams = [...params, limitNum, offset];
+    console.log('🔍 getAllEquipment - Parámetros finales:', finalParams);
+    console.log('🔍 getAllEquipment - Tipos de parámetros finales:', finalParams.map(p => typeof p));
 
-    const equipment = await executeQuery(query, params);
+    const equipment = await executeQuery(query, finalParams);
 
     // Obtener total de registros para paginación
     const countQuery = `
@@ -130,22 +95,31 @@ const getAllEquipment = async (req, res) => {
       ${whereClause}
     `;
 
-    const countResult = await executeQuery(countQuery, params.slice(0, -2));
+    const countResult = await executeQuery(countQuery, params);
     const total = countResult[0].total;
 
+    // Calcular información de paginación
+    const totalPages = Math.ceil(total / limitNum);
+    const hasNextPage = pageNum < totalPages;
+    const hasPrevPage = pageNum > 1;
+
     res.json({
+      success: true,
       equipment,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        currentPage: pageNum,
+        totalPages,
         total,
-        pages: Math.ceil(total / limit)
+        limit: limitNum,
+        hasNextPage,
+        hasPrevPage
       }
     });
 
   } catch (error) {
-    console.error('Error al obtener equipos:', error);
+    console.error('Error en getAllEquipment:', error);
     res.status(500).json({
+      success: false,
       error: 'Error interno del servidor'
     });
   }
@@ -214,15 +188,35 @@ const createEquipment = async (req, res) => {
       assigned_to
     } = req.body;
 
+    console.log('🔍 createEquipment - Datos recibidos:', {
+      inventory_number,
+      name,
+      type,
+      brand,
+      model,
+      specifications,
+      status,
+      state_id,
+      assigned_to
+    });
+
     // Verificar que el número de inventario sea único
     const checkQuery = 'SELECT id FROM equipment WHERE inventory_number = ?';
+    console.log('🔍 createEquipment - Query de validación:', checkQuery);
+    console.log('🔍 createEquipment - Parámetro de validación:', [inventory_number]);
+    
     const existing = await executeQuery(checkQuery, [inventory_number]);
+    
+    console.log('🔍 createEquipment - Resultado de validación:', existing);
 
     if (existing.length > 0) {
+      console.log('❌ createEquipment - Número de inventario ya existe:', inventory_number);
       return res.status(400).json({
         error: 'El número de inventario ya existe'
       });
     }
+
+    console.log('✅ createEquipment - Número de inventario válido, procediendo con inserción');
 
     // Insertar nuevo equipo
     const insertQuery = `
@@ -238,10 +232,17 @@ const createEquipment = async (req, res) => {
       status, state_id, assigned_to || null
     ];
 
+    console.log('🔍 createEquipment - Query de inserción:', insertQuery);
+    console.log('🔍 createEquipment - Parámetros de inserción:', params);
+
     const result = await executeQuery(insertQuery, params);
+
+    console.log('✅ createEquipment - Equipo insertado, ID:', result.insertId);
 
     // Obtener el equipo creado
     const newEquipment = await executeQuery('SELECT * FROM equipment WHERE id = ?', [result.insertId]);
+
+    console.log('✅ createEquipment - Equipo creado exitosamente:', newEquipment[0]);
 
     res.status(201).json({
       message: 'Equipo creado exitosamente',
@@ -249,7 +250,7 @@ const createEquipment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error al crear equipo:', error);
+    console.error('❌ Error al crear equipo:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });
