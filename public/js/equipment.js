@@ -52,15 +52,6 @@ class Equipment {
             }
         });
 
-        // Formulario de equipo
-        const equipmentForm = document.getElementById('equipment-form');
-        if (equipmentForm) {
-            equipmentForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.saveEquipment();
-            });
-        }
-
         // Archivo Excel
         const excelFile = document.getElementById('excel-file');
         if (excelFile) {
@@ -236,16 +227,22 @@ class Equipment {
     // Cargar datos para filtros
     async loadFilterData() {
         try {
-            // Cargar estados
-            const statesResponse = await API.get('/states');
-            if (statesResponse.success) {
-                const stateSelect = document.getElementById('filter-state');
-                if (stateSelect) {
-                    stateSelect.innerHTML = '<option value="">Todos los estados/regiones</option>';
-                    statesResponse.data.forEach(state => {
-                        stateSelect.innerHTML += `<option value="${state.id}">${state.name}</option>`;
-                    });
-                }
+            // Los estados ahora son valores fijos, no necesitamos cargarlos desde la API
+            const stateSelect = document.getElementById('filter-state');
+            if (stateSelect) {
+                stateSelect.innerHTML = '<option value="">Todos los estados/regiones</option>';
+                const states = [
+                    { id: 'direccion', name: 'Dirección' },
+                    { id: 'capital', name: 'Capital' },
+                    { id: 'carabobo', name: 'Carabobo' },
+                    { id: 'barinas', name: 'Barinas' },
+                    { id: 'anzoategui', name: 'Anzoátegui' },
+                    { id: 'bolivar', name: 'Bolívar' },
+                    { id: 'zulia', name: 'Zulia' }
+                ];
+                states.forEach(state => {
+                    stateSelect.innerHTML += `<option value="${state.id}">${state.name}</option>`;
+                });
             }
         } catch (error) {
             console.error('Error cargando datos de filtros:', error);
@@ -307,40 +304,16 @@ class Equipment {
     async showCreateForm(equipmentId = null) {
         console.log('🔍 showCreateForm llamado con equipmentId:', equipmentId);
         
-        const modal = document.getElementById('equipment-modal');
-        const title = document.getElementById('modal-title');
-        const form = document.getElementById('equipment-form');
+        // Crear modal dinámico mejorado
+        this.showModalDynamically(equipmentId);
         
-        console.log('🔍 Modal encontrado:', !!modal);
-        console.log('🔍 Title encontrado:', !!title);
-        console.log('🔍 Form encontrado:', !!form);
-        
-        if (!modal) {
-            console.error('❌ Modal no encontrado');
-            return;
-        }
-        
-        if (equipmentId) {
-            title.textContent = 'Editar Equipo';
-            await this.loadEquipmentData(equipmentId);
-        } else {
-            title.textContent = 'Nuevo Equipo';
-            form.reset();
-        }
-        
-        console.log('🔍 Llamando a showModalDynamically...');
-        // Crear un nuevo modal dinámicamente
-        this.showModalDynamically(modal, equipmentId);
-        
-        await this.loadFormData();
         console.log('✅ showCreateForm completado');
     }
 
-    // Nueva función para mostrar modal dinámicamente
-    showModalDynamically(originalModal, equipmentId) {
-        console.log('🔍 showModalDynamically llamado');
-        console.log('🔍 originalModal:', originalModal);
-        console.log('🔍 equipmentId:', equipmentId);
+    // Función mejorada para mostrar modal dinámicamente
+    showModalDynamically(equipmentId) {
+        console.log('🔍 showModalDynamically llamado con equipmentId:', equipmentId);
+        
         // Crear un nuevo modal completamente independiente
         const dynamicModal = document.createElement('div');
         dynamicModal.id = 'dynamic-equipment-modal';
@@ -358,98 +331,132 @@ class Equipment {
             backdrop-filter: blur(2px);
         `;
         
-        // Crear el contenido del modal desde cero (sin clonar)
+        // Crear el contenido del modal desde cero
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             max-width: 800px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
             z-index: 10000000;
-            padding: 20px;
+            padding: 0;
         `;
         
-        // Crear contenido del modal desde cero
+        // Crear contenido del modal mejorado
         modalContent.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 id="dynamic-modal-title" style="margin: 0; color: #333;">Nuevo Equipo</h2>
-                <button id="dynamic-close-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; border-bottom: 1px solid #e1e5e9; background: #f8fafc; border-radius: 12px 12px 0 0;">
+                <h2 id="dynamic-modal-title" style="margin: 0; color: #333; font-size: 20px; font-weight: 600;">${equipmentId ? 'Editar Equipo' : 'Nuevo Equipo'}</h2>
+                <button id="dynamic-close-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 8px; border-radius: 6px; transition: all 0.2s ease;">&times;</button>
             </div>
-            <form id="dynamic-equipment-form" style="display: grid; gap: 20px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Número de Inventario</label>
-                        <input type="text" name="inventory_number" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <form id="dynamic-equipment-form" style="padding: 32px; display: grid; gap: 24px;">
+                <!-- Información Básica -->
+                <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
+                    <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 4px; height: 16px; background: #3b82f6; border-radius: 2px;"></span>
+                        Información Básica
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Número de Inventario *</label>
+                            <input type="text" name="inventory_number" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Nombre del Equipo *</label>
+                            <input type="text" name="name" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
                     </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Nombre del Equipo</label>
-                        <input type="text" name="name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Tipo</label>
-                        <select name="type" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="">Seleccionar tipo</option>
-                            <option value="desktop">Desktop</option>
-                            <option value="laptop">Laptop</option>
-                            <option value="printer">Impresora</option>
-                            <option value="server">Servidor</option>
-                            <option value="router">Router</option>
-                            <option value="switch">Switch</option>
-                            <option value="radio_communication">Radio Comunicación</option>
-                            <option value="sim_chip">Chip SIM</option>
-                            <option value="roaming">Roaming</option>
-                            <option value="other">Otro</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Estado</label>
-                        <select name="status" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="">Seleccionar estado</option>
-                            <option value="active">Activo</option>
-                            <option value="maintenance">Mantenimiento</option>
-                            <option value="out_of_service">Fuera de servicio</option>
-                            <option value="disposed">Desechado</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Marca</label>
-                        <input type="text" name="brand" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Modelo</label>
-                        <input type="text" name="model" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Tipo *</label>
+                            <select name="type" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                                <option value="">Seleccionar tipo</option>
+                                <option value="desktop">Desktop</option>
+                                <option value="laptop">Laptop</option>
+                                <option value="printer">Impresora</option>
+                                <option value="server">Servidor</option>
+                                <option value="router">Router</option>
+                                <option value="switch">Switch</option>
+                                <option value="radio_communication">Radio Comunicación</option>
+                                <option value="sim_chip">Chip SIM</option>
+                                <option value="roaming">Roaming</option>
+                                <option value="other">Otro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Estado *</label>
+                            <select name="status" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                                <option value="active">Activo</option>
+                                <option value="maintenance">Mantenimiento</option>
+                                <option value="out_of_service">Fuera de servicio</option>
+                                <option value="disposed">Desechado</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Especificaciones</label>
-                    <textarea name="specifications" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+                
+                <!-- Información Técnica -->
+                <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
+                    <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 4px; height: 16px; background: #3b82f6; border-radius: 2px;"></span>
+                        Información Técnica
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Marca</label>
+                            <input type="text" name="brand" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Modelo</label>
+                            <input type="text" name="model" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Especificaciones</label>
+                        <textarea name="specifications" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease; resize: vertical;"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Estado/Región</label>
-                    <select name="state_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="">Seleccionar estado</option>
-                    </select>
+                
+                <!-- Ubicación y Asignación -->
+                <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
+                    <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 4px; height: 16px; background: #3b82f6; border-radius: 2px;"></span>
+                        Ubicación y Asignación
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Estado/Región *</label>
+                            <select name="state_id" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                                <option value="">Seleccionar estado</option>
+                                <option value="direccion">Dirección</option>
+                                <option value="capital">Capital</option>
+                                <option value="carabobo">Carabobo</option>
+                                <option value="barinas">Barinas</option>
+                                <option value="anzoategui">Anzoátegui</option>
+                                <option value="bolivar">Bolívar</option>
+                                <option value="zulia">Zulia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Responsable del Equipo</label>
+                            <input type="text" name="assigned_to" placeholder="Nombre de la persona responsable" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Usuario de Seguridad</label>
-                    <input type="text" name="security_username" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" id="dynamic-cancel-btn" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                    <button type="submit" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end; padding: 24px; border-top: 1px solid #e1e5e9; background: #f8fafc; border-radius: 0 0 12px 12px; margin-top: 24px;">
+                    <button type="button" id="dynamic-cancel-btn" style="padding: 12px 24px; border: 2px solid #e1e5e9; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">Cancelar</button>
+                    <button type="submit" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i>Guardar Equipo
+                    </button>
                 </div>
             </form>
         `;
         
-        // Agregar event listeners
+        // Agregar event listeners mejorados
         const closeBtn = modalContent.querySelector('#dynamic-close-btn');
         const cancelBtn = modalContent.querySelector('#dynamic-cancel-btn');
         const form = modalContent.querySelector('#dynamic-equipment-form');
@@ -457,9 +464,22 @@ class Equipment {
         closeBtn.onclick = () => this.closeDynamicModal();
         cancelBtn.onclick = () => this.closeDynamicModal();
         
+        // Mejorar focus y hover states
+        const inputs = modalContent.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.style.borderColor = '#3b82f6';
+                input.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+            });
+            input.addEventListener('blur', () => {
+                input.style.borderColor = '#e1e5e9';
+                input.style.boxShadow = 'none';
+            });
+        });
+        
         form.onsubmit = (e) => {
             e.preventDefault();
-            this.saveDynamicEquipment(form);
+            this.saveDynamicEquipment(form, equipmentId);
         };
         
         // Agregar overlay para cerrar al hacer clic fuera
@@ -476,98 +496,21 @@ class Equipment {
         // Guardar referencia para poder cerrarlo
         this.dynamicModal = dynamicModal;
         
-        console.log('🚀 Modal dinámico creado y mostrado');
-        
-        // Verificar que funciona
-        setTimeout(() => {
-            const rect = dynamicModal.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            const elementsAtCenter = document.elementsFromPoint(centerX, centerY);
-            console.log('🚀 Elementos en el centro del modal dinámico:', elementsAtCenter);
-            console.log('🚀 Modal dinámico es el elemento superior:', elementsAtCenter[0] === dynamicModal || elementsAtCenter[0] === modalContent);
-            
-            // Verificar si el modal es visible
-            const isVisible = rect.width > 0 && rect.height > 0;
-            console.log('🚀 Modal dinámico visible:', isVisible);
-            
-            if (isVisible) {
-                console.log('🚀 ✅ Modal dinámico creado exitosamente');
-            } else {
-                console.log('🚀 ❌ Modal dinámico no es visible');
-            }
-        }, 100);
-        
-        console.log('✅ showModalDynamically completado');
-    }
-
-    // Guardar equipo desde el modal dinámico
-    async saveDynamicEquipment(form) {
-        try {
-            const formData = new FormData(form);
-            
-                    const equipmentData = {
-            inventory_number: formData.get('inventory_number'),
-            name: formData.get('name'),
-            type: formData.get('type'),
-            brand: formData.get('brand'),
-            model: formData.get('model'),
-            specifications: formData.get('specifications'),
-            status: formData.get('status'),
-            state_id: parseInt(formData.get('state_id')) || null,
-            security_username: formData.get('security_username')
-        };
-
-            const response = await API.post('/equipment', equipmentData);
-            
-            if (response.success) {
-                UI.showNotification('Equipo creado exitosamente', 'success');
-                this.closeDynamicModal();
-                this.loadEquipmentList();
-            } else {
-                throw new Error(response.message || 'Error guardando equipo');
-            }
-        } catch (error) {
-            console.error('Error guardando equipo:', error);
-            UI.showNotification('Error guardando equipo', 'error');
-        }
-    }
-
-    // Cerrar modal dinámico
-    closeDynamicModal() {
-        if (this.dynamicModal) {
-            document.body.removeChild(this.dynamicModal);
-            this.dynamicModal = null;
-            console.log('🚀 Modal dinámico cerrado');
-        }
-    }
-
-    // Cerrar modal (mantener para compatibilidad)
-    closeModal() {
-        // Cerrar modal dinámico si existe
-        this.closeDynamicModal();
-        
-        // Cerrar modal original
-        const modal = document.getElementById('equipment-modal');
-        if (modal) {
-            modal.style.display = 'none';
+        // Cargar datos si es edición
+        if (equipmentId) {
+            this.loadEquipmentDataForDynamicModal(equipmentId);
         }
         
-        const form = document.getElementById('equipment-form');
-        if (form) {
-            form.reset();
-            form.removeAttribute('data-equipment-id');
-        }
+        console.log('🚀 Modal dinámico mejorado creado y mostrado');
     }
 
-    // Cargar datos del equipo para edición
-    async loadEquipmentData(equipmentId) {
+    // Cargar datos del equipo para el modal dinámico
+    async loadEquipmentDataForDynamicModal(equipmentId) {
         try {
             const response = await API.get(`/equipment/${equipmentId}`);
             if (response.success) {
                 const equipment = response.data;
-                const form = document.getElementById('equipment-form');
+                const form = document.getElementById('dynamic-equipment-form');
                 
                 // Llenar formulario con datos del equipo
                 Object.keys(equipment).forEach(key => {
@@ -583,38 +526,25 @@ class Equipment {
         }
     }
 
-    // Cargar datos para el formulario
-    async loadFormData() {
+    // Guardar equipo desde el modal dinámico mejorado
+    async saveDynamicEquipment(form, equipmentId = null) {
         try {
-            // Cargar estados
-            const states = await API.get('/states');
-            const stateSelect = document.getElementById('equipment-state');
-            if (stateSelect && states.success) {
-                stateSelect.innerHTML = '<option value="">Seleccionar estado</option>';
-                states.data.forEach(state => {
-                    stateSelect.innerHTML += `<option value="${state.id}">${state.name}</option>`;
-                });
-            }
-
-            // Cargar usuarios
-            const users = await API.get('/users');
-            const userSelect = document.getElementById('assigned-to');
-            if (userSelect && users.success) {
-                userSelect.innerHTML = '<option value="">Sin asignar</option>';
-                users.data.forEach(user => {
-                    userSelect.innerHTML += `<option value="${user.id}">${user.full_name}</option>`;
-                });
-            }
-        } catch (error) {
-            console.error('Error cargando datos del formulario:', error);
-        }
-    }
-
-    // Guardar equipo
-    async saveEquipment() {
-        try {
-            const form = document.getElementById('equipment-form');
             const formData = new FormData(form);
+            
+            // Validación básica
+            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id'];
+            const missingFields = [];
+            
+            requiredFields.forEach(field => {
+                if (!formData.get(field)) {
+                    missingFields.push(field);
+                }
+            });
+            
+            if (missingFields.length > 0) {
+                UI.showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
             
             const equipmentData = {
                 inventory_number: formData.get('inventory_number'),
@@ -624,13 +554,17 @@ class Equipment {
                 model: formData.get('model'),
                 specifications: formData.get('specifications'),
                 status: formData.get('status'),
-                state_id: parseInt(formData.get('state_id')),
-                assigned_to: formData.get('assigned_to') || null,
-                security_username: formData.get('security_username')
+                state_id: formData.get('state_id'),
+                assigned_to: formData.get('assigned_to') || null
             };
 
+            // Mostrar loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Guardando...';
+
             // Determinar si es creación o edición
-            const equipmentId = form.getAttribute('data-equipment-id');
             let response;
             
             if (equipmentId) {
@@ -644,15 +578,36 @@ class Equipment {
                     equipmentId ? 'Equipo actualizado exitosamente' : 'Equipo creado exitosamente', 
                     'success'
                 );
-                this.closeModal();
+                this.closeDynamicModal();
                 this.loadEquipmentList();
             } else {
                 throw new Error(response.message || 'Error guardando equipo');
             }
         } catch (error) {
             console.error('Error guardando equipo:', error);
-            UI.showNotification('Error guardando equipo', 'error');
+            UI.showNotification(ApiUtils.handleError(error), 'error');
+        } finally {
+            // Restaurar botón
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save" style="margin-right: 8px;"></i>Guardar Equipo';
+            }
         }
+    }
+
+    // Cerrar modal dinámico
+    closeDynamicModal() {
+        if (this.dynamicModal) {
+            document.body.removeChild(this.dynamicModal);
+            this.dynamicModal = null;
+            console.log('🚀 Modal dinámico cerrado');
+        }
+    }
+
+    // Cerrar modal (mantener para compatibilidad)
+    closeModal() {
+        this.closeDynamicModal();
     }
 
     // Ver detalles del equipo
@@ -739,7 +694,7 @@ class Equipment {
             { key: 'specifications', label: 'Especificaciones' },
             { key: 'status', label: 'Estado' },
             { key: 'state_id', label: 'Estado/Región' },
-            { key: 'security_username', label: 'Usuario de Seguridad' }
+            { key: 'assigned_to', label: 'Responsable del Equipo' }
         ];
 
         systemFields.forEach(field => {
