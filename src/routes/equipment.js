@@ -85,4 +85,13 @@ router.get('/template',
   equipmentController.downloadTemplate
 );
 
+// GET /api/equipment/assigned - Listar equipos con asignaciones (temporal)
+router.get('/assigned', authenticateToken, equipmentController.getAssignedEquipment);
+
+// GET /api/equipment/assigned-dev - Listar equipos con asignaciones (sin autenticación para desarrollo)
+router.get('/assigned-dev', equipmentController.getAssignedEquipment);
+
+// PUT /api/equipment/:id/dev - Actualizar equipo (sin autenticación para desarrollo)
+router.put('/:id/dev', equipmentController.updateEquipment);
+
 module.exports = router; 

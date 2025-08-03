@@ -79,6 +79,71 @@ app.use('/api/states', stateRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
+// Rutas de desarrollo (sin autenticación)
+app.get('/dev/equipment/assigned', async (req, res) => {
+    try {
+        const { executeQuery } = require('./config/database');
+        const query = `
+            SELECT
+                id,
+                inventory_number,
+                name,
+                type,
+                assigned_to,
+                status
+            FROM equipment
+            WHERE assigned_to IS NOT NULL AND assigned_to != ''
+            ORDER BY id ASC
+        `;
+        const equipment = await executeQuery(query);
+        res.json({
+            success: true,
+            data: equipment,
+            count: equipment.length
+        });
+    } catch (error) {
+        console.error('Error al obtener equipos asignados:', error);
+        res.status(500).json({
+            error: 'Error interno del servidor'
+        });
+    }
+});
+
+app.put('/dev/equipment/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { assigned_to } = req.body;
+        const { executeQuery } = require('./config/database');
+
+        // Verificar que el equipo existe
+        const existingQuery = 'SELECT id, inventory_number, name, assigned_to FROM equipment WHERE id = ?';
+        const existing = await executeQuery(existingQuery, [id]);
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                error: 'Equipo no encontrado'
+            });
+        }
+
+        // Actualizar solo el campo assigned_to
+        const updateQuery = 'UPDATE equipment SET assigned_to = ? WHERE id = ?';
+        await executeQuery(updateQuery, [assigned_to || null, id]);
+
+        console.log(`✅ Equipo ${id} actualizado correctamente`);
+
+        res.json({
+            success: true,
+            message: 'Equipo actualizado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error actualizando equipo:', error);
+        res.status(500).json({
+            error: 'Error interno del servidor'
+        });
+    }
+});
+
 // Ruta de salud
 app.get('/health', (req, res) => {
     res.json({
@@ -91,6 +156,11 @@ app.get('/health', (req, res) => {
 // Ruta principal - servir la aplicación frontend
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Ruta específica para equipment-assigned.html
+app.get('/equipment-assigned.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/equipment-assigned.html'));
 });
 
 // Ruta para todas las rutas del frontend (SPA)

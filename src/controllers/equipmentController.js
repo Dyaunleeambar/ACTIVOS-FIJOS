@@ -260,10 +260,10 @@ const createEquipment = async (req, res) => {
 const updateEquipment = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const { inventory_number, name, assigned_to } = req.body;
 
     // Verificar que el equipo existe
-    const existingQuery = 'SELECT id FROM equipment WHERE id = ?';
+    const existingQuery = 'SELECT id, inventory_number, name, assigned_to FROM equipment WHERE id = ?';
     const existing = await executeQuery(existingQuery, [id]);
 
     if (existing.length === 0) {
@@ -272,50 +272,19 @@ const updateEquipment = async (req, res) => {
       });
     }
 
-    // Si se está actualizando el número de inventario, verificar que sea único
-    if (updateData.inventory_number) {
-      const checkQuery = 'SELECT id FROM equipment WHERE inventory_number = ? AND id != ?';
-      const duplicate = await executeQuery(checkQuery, [updateData.inventory_number, id]);
+    // Actualizar solo el campo assigned_to
+    const updateQuery = 'UPDATE equipment SET assigned_to = ? WHERE id = ?';
+    await executeQuery(updateQuery, [assigned_to || null, id]);
 
-      if (duplicate.length > 0) {
-        return res.status(400).json({
-          error: 'El número de inventario ya existe'
-        });
-      }
-    }
-
-    // Construir query de actualización dinámicamente
-    const fields = [];
-    const values = [];
-
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] !== undefined) {
-        fields.push(`${key} = ?`);
-        values.push(updateData[key]);
-      }
-    });
-
-    if (fields.length === 0) {
-      return res.status(400).json({
-        error: 'No hay datos para actualizar'
-      });
-    }
-
-    values.push(id);
-
-    const updateQuery = `UPDATE equipment SET ${fields.join(', ')} WHERE id = ?`;
-    await executeQuery(updateQuery, values);
-
-    // Obtener el equipo actualizado
-    const updatedEquipment = await executeQuery('SELECT * FROM equipment WHERE id = ?', [id]);
+    console.log(`✅ Equipo ${id} actualizado correctamente`);
 
     res.json({
-      message: 'Equipo actualizado exitosamente',
-      equipment: updatedEquipment[0]
+      success: true,
+      message: 'Equipo actualizado correctamente'
     });
 
   } catch (error) {
-    console.error('Error al actualizar equipo:', error);
+    console.error('Error actualizando equipo:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });
@@ -883,6 +852,38 @@ const downloadTemplate = async (req, res) => {
   }
 };
 
+// Función temporal para listar equipos con asignaciones
+const getAssignedEquipment = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        id,
+        inventory_number,
+        name,
+        type,
+        assigned_to,
+        status
+      FROM equipment 
+      WHERE assigned_to IS NOT NULL AND assigned_to != ''
+      ORDER BY id ASC
+    `;
+    
+    const equipment = await executeQuery(query);
+    
+    res.json({
+      success: true,
+      data: equipment,
+      count: equipment.length
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener equipos asignados:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
 module.exports = {
   getAllEquipment,
   getEquipmentById,
@@ -895,5 +896,6 @@ module.exports = {
   confirmImport,
   exportToExcel,
   downloadTemplate,
-  getEquipmentStats
+  getEquipmentStats,
+  getAssignedEquipment
 }; 
