@@ -59,8 +59,8 @@ const validateCreateEquipment = [
     if (value === null || value === undefined || value === '') {
       return true; // Permitir valores nulos/vacíos para campos opcionales
     }
-    return Number.isInteger(Number(value));
-  }).withMessage('ID de usuario asignado debe ser un número entero o estar vacío'),
+    return typeof value === 'string'; // assigned_to es un string (nombre de la persona)
+  }).withMessage('Responsable de equipo debe ser texto o estar vacío'),
   body('security_username').optional().isString().withMessage('Username de seguridad debe ser texto'),
   handleValidationErrors
 ];
@@ -78,8 +78,8 @@ const validateUpdateEquipment = [
     if (value === null || value === undefined || value === '') {
       return true; // Permitir valores nulos/vacíos para campos opcionales
     }
-    return Number.isInteger(Number(value));
-  }).withMessage('ID de usuario asignado debe ser un número entero o estar vacío'),
+    return typeof value === 'string'; // assigned_to es un string (nombre de la persona)
+  }).withMessage('Responsable de equipo debe ser texto o estar vacío'),
   body('security_username').optional().isString().withMessage('Username de seguridad debe ser texto'),
   handleValidationErrors
 ];
