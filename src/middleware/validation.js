@@ -142,6 +142,18 @@ const validateUpdateDisposalProposal = [
   handleValidationErrors
 ];
 
+// Validaciones para exportación (versión permisiva)
+const validateExportFilters = [
+  (req, res, next) => {
+    console.log('🔍 validateExportFilters - Query parameters:', req.query);
+    console.log('🔍 validateExportFilters - Headers:', req.headers);
+    
+    // Permitir cualquier parámetro para diagnóstico
+    console.log('✅ Validación de exportación exitosa (permitiendo todos los parámetros)');
+    next();
+  }
+];
+
 // Validaciones para reportes
 const validateReportFilters = [
   query('state_id').optional().isInt().withMessage('ID de estado debe ser un número entero'),
@@ -179,6 +191,7 @@ module.exports = {
   validateUpdateSecurityData,
   validateCreateDisposalProposal,
   validateUpdateDisposalProposal,
+  validateExportFilters,
   validateReportFilters,
   validateId,
   validateStateId

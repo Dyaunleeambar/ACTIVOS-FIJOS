@@ -8,12 +8,6 @@ const API = {
     request: async function(endpoint, options = {}) {
         const url = this.baseURL + endpoint;
         
-        console.log('🌐 API Request:', {
-            url: url,
-            method: options.method || 'GET',
-            headers: options.headers
-        });
-        
         // Configuración por defecto
         const defaultOptions = {
             method: 'GET',
@@ -27,6 +21,15 @@ const API = {
         // Combinar opciones
         const requestOptions = { ...defaultOptions, ...options };
         
+        console.log('🌐 API Request:', {
+            url: url,
+            method: options.method || 'GET',
+            headers: requestOptions.headers,
+            responseType: options.responseType
+        });
+        
+        console.log('🔍 Auth headers:', ConfigUtils.getAuthHeaders());
+        
         try {
             // Crear timeout promise
             const timeoutPromise = new Promise((_, reject) => {
@@ -37,7 +40,7 @@ const API = {
             const fetchPromise = fetch(url, requestOptions);
             const response = await Promise.race([fetchPromise, timeoutPromise]);
             
-            console.log(' API Response:', {
+            console.log('📡 API Response:', {
                 status: response.status,
                 statusText: response.statusText,
                 url: response.url
@@ -57,10 +60,21 @@ const API = {
                 throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
             }
             
-            // Parsear respuesta
-            const data = await response.json();
-            console.log('✅ API Success Response:', data);
-            return data;
+            // Manejar diferentes tipos de respuesta
+            if (options.responseType === 'blob') {
+                // Para archivos (Excel, PDF, etc.)
+                const blob = await response.blob();
+                console.log('✅ API Blob Response:', {
+                    size: blob.size,
+                    type: blob.type
+                });
+                return blob;
+            } else {
+                // Para JSON por defecto
+                const data = await response.json();
+                console.log('✅ API Success Response:', data);
+                return data;
+            }
             
         } catch (error) {
             console.error('❌ API Error:', error);
@@ -77,12 +91,17 @@ const API = {
     },
     
     // GET request
-    get: function(endpoint, params = {}) {
+    get: function(endpoint, options = {}) {
+        // Extraer responseType de options si existe
+        const { responseType, ...params } = options;
+        
         const queryString = new URLSearchParams(params).toString();
+        // Solo agregar ? si hay parámetros de consulta
         const url = queryString ? `${endpoint}?${queryString}` : endpoint;
         
         return this.request(url, {
-            method: 'GET'
+            method: 'GET',
+            responseType: responseType
         });
     },
     

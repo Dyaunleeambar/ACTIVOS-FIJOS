@@ -6,7 +6,8 @@ const {
   validateCreateEquipment, 
   validateUpdateEquipment, 
   validateId, 
-  validateStateId 
+  validateStateId,
+  validateExportFilters
 } = require('../middleware/validation');
 
 // GET /api/equipment/stats - Obtener estadísticas de equipos
@@ -15,35 +16,24 @@ router.get('/stats', authenticateToken, equipmentController.getEquipmentStats);
 // GET /api/equipment - Obtener todos los equipos
 router.get('/', authenticateToken, equipmentController.getAllEquipment);
 
-// GET /api/equipment/:id - Obtener equipo por ID
-router.get('/:id', authenticateToken, validateId, authorizeEquipmentAccess, equipmentController.getEquipmentById);
-
-// POST /api/equipment - Crear nuevo equipo
-router.post('/', 
+// GET /api/equipment/export - Exportar equipos a Excel (DEBE IR ANTES DE /:id)
+router.get('/export', 
   authenticateToken, 
-  authorizeRole(['admin', 'manager']), 
-  validateCreateEquipment, 
-  equipmentController.createEquipment
+  validateExportFilters,
+  equipmentController.exportToExcel
 );
 
-// PUT /api/equipment/:id - Actualizar equipo
-router.put('/:id', 
+// GET /api/equipment/template - Descargar plantilla Excel
+router.get('/template', 
   authenticateToken, 
-  authorizeRole(['admin', 'manager']), 
-  validateId, 
-  authorizeEquipmentAccess, 
-  validateUpdateEquipment, 
-  equipmentController.updateEquipment
+  equipmentController.downloadTemplate
 );
 
-// DELETE /api/equipment/:id - Eliminar equipo
-router.delete('/:id', 
-  authenticateToken, 
-  authorizeRole(['admin']), 
-  validateId, 
-  authorizeEquipmentAccess, 
-  equipmentController.deleteEquipment
-);
+// GET /api/equipment/assigned - Listar equipos con asignaciones (temporal)
+router.get('/assigned', authenticateToken, equipmentController.getAssignedEquipment);
+
+// GET /api/equipment/assigned-dev - Listar equipos con asignaciones (sin autenticación para desarrollo)
+router.get('/assigned-dev', equipmentController.getAssignedEquipment);
 
 // GET /api/equipment/state/:stateId - Obtener equipos por estado
 router.get('/state/:stateId', 
@@ -73,23 +63,35 @@ router.post('/import',
   equipmentController.confirmImport
 );
 
-// GET /api/equipment/export - Exportar equipos a Excel
-router.get('/export', 
+// GET /api/equipment/:id - Obtener equipo por ID (DEBE IR DESPUÉS DE LAS RUTAS ESPECÍFICAS)
+router.get('/:id', authenticateToken, validateId, authorizeEquipmentAccess, equipmentController.getEquipmentById);
+
+// POST /api/equipment - Crear nuevo equipo
+router.post('/', 
   authenticateToken, 
-  equipmentController.exportToExcel
+  authorizeRole(['admin', 'manager']), 
+  validateCreateEquipment, 
+  equipmentController.createEquipment
 );
 
-// GET /api/equipment/template - Descargar plantilla Excel
-router.get('/template', 
+// PUT /api/equipment/:id - Actualizar equipo
+router.put('/:id', 
   authenticateToken, 
-  equipmentController.downloadTemplate
+  authorizeRole(['admin', 'manager']), 
+  validateId, 
+  authorizeEquipmentAccess, 
+  validateUpdateEquipment, 
+  equipmentController.updateEquipment
 );
 
-// GET /api/equipment/assigned - Listar equipos con asignaciones (temporal)
-router.get('/assigned', authenticateToken, equipmentController.getAssignedEquipment);
-
-// GET /api/equipment/assigned-dev - Listar equipos con asignaciones (sin autenticación para desarrollo)
-router.get('/assigned-dev', equipmentController.getAssignedEquipment);
+// DELETE /api/equipment/:id - Eliminar equipo
+router.delete('/:id', 
+  authenticateToken, 
+  authorizeRole(['admin']), 
+  validateId, 
+  authorizeEquipmentAccess, 
+  equipmentController.deleteEquipment
+);
 
 // PUT /api/equipment/:id/dev - Actualizar equipo (sin autenticación para desarrollo)
 router.put('/:id/dev', equipmentController.updateEquipment);

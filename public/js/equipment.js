@@ -5,27 +5,52 @@
 
 class Equipment {
     constructor() {
-        this.currentStep = 1;
-        this.excelData = null;
-        this.mapping = {};
-        this.validationResults = null;
+        this.equipment = [];
         this.currentPage = 1;
-        this.itemsPerPage = 10;
+        this.itemsPerPage = 20;
         this.filters = {
             search: '',
             type: '',
             status: '',
             state: ''
         };
+        this.currentStep = 1;
+        this.importData = null;
+        this.validationResults = null;
+        this.columnMapping = {};
         
-        this.init();
+        // Mapeo de estados string a números
+        this.stateMapping = {
+            'direccion': 1,
+            'capital': 2,
+            'carabobo': 3,
+            'barinas': 4,
+            'anzoategui': 5,
+            'bolivar': 6,
+            'zulia': 7
+        };
     }
 
+    // Helper para convertir estado string a número
+    getStateId(stateString) {
+        return this.stateMapping[stateString] || null;
+    }
+
+    // Helper para convertir número a estado string
+    getStateString(stateId) {
+        for (const [key, value] of Object.entries(this.stateMapping)) {
+            if (value === stateId) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+    // Inicializar
     init() {
         this.setupEventListeners();
-        this.loadEquipmentList();
         this.loadFilterData();
-        this.loadEquipmentStats();
+        this.loadEquipmentList();
     }
 
     setupEventListeners() {
@@ -225,11 +250,20 @@ class Equipment {
             // Mostrar loading
             tbody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando equipos...</td></tr>';
             
-            // Construir parámetros de filtro
+            // Construir parámetros de filtro con mapeo de estados
+            const filterParams = { ...this.filters };
+            if (filterParams.state) {
+                const stateId = this.getStateId(filterParams.state);
+                if (stateId) {
+                    filterParams.state_id = stateId;
+                    delete filterParams.state; // Eliminar el string y usar el número
+                }
+            }
+            
             const params = new URLSearchParams({
                 page: this.currentPage,
                 limit: this.itemsPerPage,
-                ...this.filters
+                ...filterParams
             });
 
             console.log('🔍 Cargando equipos con parámetros:', params.toString());
@@ -1045,22 +1079,64 @@ class Equipment {
     // Exportar a Excel
     async exportToExcel() {
         try {
-            const params = new URLSearchParams(this.filters);
-            const response = await API.get(`/equipment/export?${params}`, { responseType: 'blob' });
+            console.log('🚀 Iniciando exportación a Excel...');
+            console.log('📊 Filtros actuales:', this.filters);
+            console.log('🔍 Estado de autenticación:', ConfigUtils.isAuthenticated());
+            console.log('🔍 Token disponible:', !!ConfigUtils.getAuthToken());
+            
+            // Filtrar solo los parámetros válidos para la consulta
+            const queryParams = {};
+            if (this.filters.search) queryParams.search = this.filters.search;
+            if (this.filters.type) queryParams.type = this.filters.type;
+            if (this.filters.status) queryParams.status = this.filters.status;
+            if (this.filters.state) {
+                // Convertir string de estado a número
+                const stateId = this.getStateId(this.filters.state);
+                if (stateId) {
+                    queryParams.state_id = stateId;
+                }
+            }
+            
+            console.log('🔍 Parámetros filtrados:', queryParams);
+            console.log('🔍 Tipos de parámetros:', {
+                search: typeof queryParams.search,
+                type: typeof queryParams.type,
+                status: typeof queryParams.status,
+                state_id: typeof queryParams.state_id
+            });
+            
+            const params = new URLSearchParams(queryParams);
+            console.log('🔗 Parámetros de consulta:', params.toString());
+            
+            // Construir la URL solo si hay parámetros
+            const exportUrl = params.toString() ? `/equipment/export?${params}` : '/equipment/export';
+            console.log('🔗 URL completa:', exportUrl);
+            
+            console.log('📡 Realizando petición a la API...');
+            const response = await API.get(exportUrl, { responseType: 'blob' });
+            
+            console.log('✅ Respuesta recibida:', response);
+            console.log('📦 Tipo de respuesta:', typeof response);
+            console.log('📏 Tamaño del blob:', response.size);
+            console.log('🎯 Tipo MIME:', response.type);
             
             const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
+            
+            console.log('📥 Descargando archivo:', link.download);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
             
             UI.showNotification('Exportación completada', 'success');
+            console.log('✅ Exportación completada exitosamente');
         } catch (error) {
-            console.error('Error exportando:', error);
+            console.error('❌ Error exportando:', error);
+            console.error('❌ Stack trace:', error.stack);
             UI.showNotification('Error en exportación', 'error');
         }
     }

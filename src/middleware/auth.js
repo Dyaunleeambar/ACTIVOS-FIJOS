@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { executeQuery } = require('../config/database');
+const { executeQuery } = require('../config/database-sqlite');
 
 // Generar token JWT
 const generateToken = (user) => {
@@ -18,16 +18,21 @@ const generateToken = (user) => {
 // Verificar token JWT
 const authenticateToken = async (req, res, next) => {
     try {
+        console.log('🔍 authenticateToken - Headers:', req.headers);
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         
+        console.log('🔍 authenticateToken - Token encontrado:', !!token);
+        
         if (!token) {
+            console.log('❌ authenticateToken - No token provided');
             return res.status(401).json({
                 error: 'Token de acceso requerido'
             });
         }
         
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('🔍 authenticateToken - Token decodificado:', { userId: decoded.userId, role: decoded.role });
         
         // Verificar que el usuario existe
         const userQuery = `
@@ -38,15 +43,18 @@ const authenticateToken = async (req, res, next) => {
         const users = await executeQuery(userQuery, [decoded.userId]);
         
         if (users.length === 0) {
+            console.log('❌ authenticateToken - Usuario no encontrado');
             return res.status(401).json({
                 error: 'Usuario no encontrado o inactivo'
             });
         }
         
         req.user = users[0];
+        console.log('✅ authenticateToken - Usuario autenticado:', { id: req.user.id, role: req.user.role });
         next();
         
     } catch (error) {
+        console.error('❌ authenticateToken - Error:', error);
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 error: 'Token expirado'

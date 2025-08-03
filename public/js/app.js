@@ -90,12 +90,12 @@ const App = {
             
             // Cargar datos del dashboard
             if (this.currentPage === 'dashboard') {
-                await Dashboard.loadDashboard();
+                await window.Dashboard.loadDashboardData();
             }
             
             // Cargar equipos si estamos en esa página
             if (this.currentPage === 'equipment') {
-                await Equipment.loadEquipment();
+                await window.Equipment.loadEquipmentList();
             }
             
         } catch (error) {
@@ -149,10 +149,10 @@ const App = {
         try {
             switch (pageName) {
                 case 'dashboard':
-                    await Dashboard.loadDashboard();
+                    await window.Dashboard.loadDashboardData();
                     break;
                 case 'equipment':
-                    await Equipment.loadEquipment();
+                    await window.Equipment.loadEquipmentList();
                     break;
                 case 'assignments':
                     // TODO: Implementar carga de asignaciones

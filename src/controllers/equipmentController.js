@@ -1,4 +1,4 @@
-const { executeQuery } = require('../config/database');
+const { executeQuery } = require('../config/database-sqlite');
 const XLSX = require('xlsx');
 const multer = require('multer');
 const path = require('path');
@@ -721,7 +721,13 @@ const confirmImport = async (req, res) => {
 // Exportar a Excel
 const exportToExcel = async (req, res) => {
   try {
+    console.log('🚀 Iniciando exportación a Excel...');
+    console.log('📊 Query parameters:', req.query);
+    console.log('🔍 Headers:', req.headers);
+    
     const { state_id, type, status, search } = req.query;
+
+    console.log('📋 Parámetros extraídos:', { state_id, type, status, search });
 
     // Construir query con filtros
     let whereConditions = [];
@@ -748,6 +754,9 @@ const exportToExcel = async (req, res) => {
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
+    console.log('🔍 Where clause:', whereClause);
+    console.log('📊 Parámetros de consulta:', params);
 
     const query = `
       SELECT 
@@ -768,7 +777,11 @@ const exportToExcel = async (req, res) => {
       ORDER BY e.created_at DESC
     `;
 
+    console.log('📝 Query final:', query);
+
     const equipment = await executeQuery(query, params);
+    
+    console.log('✅ Equipos encontrados:', equipment.length);
 
     // Crear workbook
     const workbook = XLSX.utils.book_new();
@@ -796,14 +809,19 @@ const exportToExcel = async (req, res) => {
     // Configurar headers para descarga
     const filename = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
     
+    console.log('📦 Generando archivo Excel:', filename);
+    console.log('📏 Tamaño del buffer:', buffer.length);
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Length', buffer.length);
 
     res.send(buffer);
+    
+    console.log('✅ Exportación completada exitosamente');
 
   } catch (error) {
-    console.error('Error al exportar equipos:', error);
+    console.error('❌ Error al exportar equipos:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });

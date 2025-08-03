@@ -782,9 +782,9 @@ window.Dashboard = new Dashboard();
 
 // Detectar cambios de tamaño de ventana
 window.addEventListener('resize', () => {
-  const newIsDesktop = Dashboard.detectDesktop();
-  if (newIsDesktop !== Dashboard.isDesktop) {
-    Dashboard.isDesktop = newIsDesktop;
-    Dashboard.setupDesktopOptimizations();
+  const newIsDesktop = window.Dashboard.detectDesktop();
+  if (newIsDesktop !== window.Dashboard.isDesktop) {
+    window.Dashboard.isDesktop = newIsDesktop;
+    window.Dashboard.setupDesktopOptimizations();
   }
 });

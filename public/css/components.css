@@ -3,6 +3,47 @@
    ======================================== */
 
 /* ========================================
+   REPORTE DE RENDIMIENTO
+   ======================================== */
+
+.performance-report {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.report-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--color-gray-50);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-gray-200);
+}
+
+.report-section h4 {
+    margin: 0 0 0.75rem 0;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.report-section p {
+    margin: 0.25rem 0;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.report-section ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.report-section li {
+    margin: 0.25rem 0;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+/* ========================================
    REPORTE DE ACCESIBILIDAD - Desktop First
    ======================================== */
 

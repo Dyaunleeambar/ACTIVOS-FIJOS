@@ -20,6 +20,9 @@ const { initializeDatabase } = require('./config/init-database');
 const { updateDatabase } = require('./config/update-database');
 const { checkDatabase } = require('./config/check-database');
 
+// Importar SQLite temporalmente
+const { initializeDatabase: initSQLite, insertTestData } = require('./config/database-sqlite');
+
 // Crear aplicación Express
 const app = express();
 
@@ -71,6 +74,112 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
+});
+
+// Endpoint de prueba
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'API funcionando correctamente', timestamp: new Date().toISOString() });
+});
+
+// Endpoint de prueba para exportación (sin autenticación)
+app.get('/api/test-export', async (req, res) => {
+    try {
+        console.log('🧪 Test export - Query parameters:', req.query);
+        
+        const { executeQuery } = require('./config/database-sqlite');
+        
+        // Query simple para probar
+        const query = `
+            SELECT 
+                inventory_number,
+                name,
+                type,
+                status,
+                created_at
+            FROM equipment 
+            LIMIT 5
+        `;
+        
+        const equipment = await executeQuery(query);
+        console.log('🧪 Test export - Equipos encontrados:', equipment.length);
+        
+        res.json({
+            success: true,
+            equipment: equipment,
+            count: equipment.length
+        });
+        
+    } catch (error) {
+        console.error('❌ Test export error:', error);
+        res.status(500).json({
+            error: 'Error en test export',
+            details: error.message
+        });
+    }
+});
+
+// Endpoint de prueba para exportación real (sin autenticación)
+app.get('/api/test-export-excel', async (req, res) => {
+    try {
+        console.log('🧪 Test export Excel - Query parameters:', req.query);
+        
+        const { executeQuery } = require('./config/database-sqlite');
+        const XLSX = require('xlsx');
+        
+        // Query simple para probar
+        const query = `
+            SELECT 
+                inventory_number,
+                name,
+                type,
+                status,
+                created_at
+            FROM equipment 
+            LIMIT 5
+        `;
+        
+        const equipment = await executeQuery(query);
+        console.log('🧪 Test export Excel - Equipos encontrados:', equipment.length);
+        
+        // Crear workbook
+        const workbook = XLSX.utils.book_new();
+        
+        // Preparar datos para Excel
+        const excelData = equipment.map(item => ({
+            'Número de Inventario': item.inventory_number,
+            'Nombre del Equipo': item.name,
+            'Tipo': item.type,
+            'Estado': item.status,
+            'Fecha de Creación': item.created_at
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipos');
+
+        // Generar buffer
+        const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+        // Configurar headers para descarga
+        const filename = `test-equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        console.log('📦 Generando archivo Excel de prueba:', filename);
+        console.log('📏 Tamaño del buffer:', buffer.length);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', buffer.length);
+
+        res.send(buffer);
+        
+        console.log('✅ Test export Excel completado exitosamente');
+        
+    } catch (error) {
+        console.error('❌ Test export Excel error:', error);
+        res.status(500).json({
+            error: 'Error en test export Excel',
+            details: error.message
+        });
+    }
 });
 
 // Rutas de la API
@@ -279,11 +388,10 @@ const initializeServer = async () => {
   try {
     console.log('🚀 Iniciando servidor...');
     
-    // Inicializar base de datos
-    await initializeDatabase();
-    
-    // Actualizar estados
-    await updateStates();
+    // Inicializar base de datos SQLite temporalmente
+    console.log('🔧 Inicializando SQLite...');
+    await initSQLite();
+    await insertTestData();
     
     console.log('✅ Servidor inicializado correctamente');
   } catch (error) {
