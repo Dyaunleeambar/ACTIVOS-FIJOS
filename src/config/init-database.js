@@ -44,12 +44,11 @@ const initializeDatabase = async () => {
         specifications TEXT,
         status ENUM('active', 'maintenance', 'out_of_service', 'disposed') DEFAULT 'active',
         state_id INT NOT NULL,
-        assigned_to INT,
-        security_username VARCHAR(50),
+        assigned_to VARCHAR(100),
+        location_details TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (state_id) REFERENCES states(id),
-        FOREIGN KEY (assigned_to) REFERENCES users(id)
+        FOREIGN KEY (state_id) REFERENCES states(id)
       )
     `);
 
@@ -114,8 +113,8 @@ const initializeDatabase = async () => {
         specifications: 'Intel i5-1135G7, 8GB RAM, 256GB SSD, Windows 10 Pro',
         status: 'active',
         state_id: 1,
-        assigned_to: 2,
-        security_username: 'admin'
+        assigned_to: 'Juan Pérez',
+        location_details: 'Oficina principal, piso 2'
       },
       {
         inventory_number: 'INV-002',
@@ -126,8 +125,8 @@ const initializeDatabase = async () => {
         specifications: 'Intel i7-9700, 16GB RAM, 512GB SSD, Windows 10 Pro',
         status: 'active',
         state_id: 1,
-        assigned_to: 3,
-        security_username: 'manager1'
+        assigned_to: 'María García',
+        location_details: 'Sala de reuniones, piso 1'
       },
       {
         inventory_number: 'INV-003',
@@ -138,7 +137,8 @@ const initializeDatabase = async () => {
         specifications: 'Impresora láser monocromática, 38 ppm, red Ethernet',
         status: 'active',
         state_id: 1,
-        security_username: 'consultant1'
+        assigned_to: 'Carlos López',
+        location_details: 'Área de impresión, piso 1'
       },
       {
         inventory_number: 'INV-004',
@@ -149,7 +149,8 @@ const initializeDatabase = async () => {
         specifications: 'Intel Xeon E5-2680 v4, 32GB RAM, 2TB HDD, Windows Server 2019',
         status: 'active',
         state_id: 1,
-        security_username: 'admin'
+        assigned_to: 'Ana Rodríguez',
+        location_details: 'Sala de servidores, sótano'
       },
       {
         inventory_number: 'INV-005',
@@ -160,7 +161,8 @@ const initializeDatabase = async () => {
         specifications: 'Router empresarial, 4 puertos Gigabit, IOS-XE',
         status: 'maintenance',
         state_id: 1,
-        security_username: 'admin'
+        assigned_to: 'Luis Martínez',
+        location_details: 'Sala de telecomunicaciones, piso 3'
       }
     ];
 
@@ -168,12 +170,12 @@ const initializeDatabase = async () => {
       await executeQuery(`
         INSERT IGNORE INTO equipment (
           inventory_number, name, type, brand, model, specifications,
-          status, state_id, assigned_to, security_username
+          status, state_id, assigned_to, location_details
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         item.inventory_number, item.name, item.type, item.brand, item.model,
         item.specifications, item.status, item.state_id, item.assigned_to,
-        item.security_username
+        item.location_details
       ]);
     }
 

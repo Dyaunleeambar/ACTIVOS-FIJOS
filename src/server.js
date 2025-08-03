@@ -17,6 +17,7 @@ const { authenticateToken } = require('./middleware/auth');
 
 // Importar inicialización de base de datos
 const { initializeDatabase } = require('./config/init-database');
+const { updateDatabase } = require('./config/update-database');
 
 // Crear aplicación Express
 const app = express();
@@ -124,6 +125,7 @@ app.listen(PORT, async () => {
     
     // Inicializar base de datos
     try {
+        await updateDatabase();
         await initializeDatabase();
         console.log('✅ Base de datos inicializada correctamente');
     } catch (error) {

@@ -56,15 +56,12 @@ const getAllEquipment = async (req, res) => {
         e.status,
         e.state_id,
         e.assigned_to,
-        e.security_username,
+        e.location_details,
         e.created_at,
         e.updated_at,
-        s.name as state_name,
-        u.full_name as assigned_user_name,
-        u.username as assigned_username
+        s.name as state_name
       FROM equipment e
       LEFT JOIN states s ON e.state_id = s.id
-      LEFT JOIN users u ON e.assigned_to = u.id
       ${req.user.role === 'consultant' ? 'LEFT JOIN assignments a ON e.id = a.equipment_id AND a.returned_at IS NULL' : ''}
       ${whereClause}
       ORDER BY e.created_at DESC
@@ -185,7 +182,8 @@ const createEquipment = async (req, res) => {
       specifications,
       status = 'active',
       state_id,
-      assigned_to
+      assigned_to,
+      location_details
     } = req.body;
 
     console.log('🔍 createEquipment - Datos recibidos:', {
@@ -197,7 +195,8 @@ const createEquipment = async (req, res) => {
       specifications,
       status,
       state_id,
-      assigned_to
+      assigned_to,
+      location_details
     });
 
     // Verificar que el número de inventario sea único
@@ -222,14 +221,14 @@ const createEquipment = async (req, res) => {
     const insertQuery = `
       INSERT INTO equipment (
         inventory_number, name, type, brand, model, specifications,
-        status, state_id, assigned_to
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        status, state_id, assigned_to, location_details
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Filtrar valores undefined y convertirlos a null
     const params = [
       inventory_number, name, type, brand || null, model || null, specifications || null,
-      status, state_id, assigned_to || null
+      status, state_id, assigned_to || null, location_details || null
     ];
 
     console.log('🔍 createEquipment - Query de inserción:', insertQuery);

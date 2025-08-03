@@ -77,8 +77,8 @@ class Equipment {
                     this.filters.type = '';
                     this.filters.status = '';
                 }
-                this.currentPage = 1;
-                this.loadEquipmentList();
+                    this.currentPage = 1;
+                    this.loadEquipmentList();
                 this.updateActiveFilters();
             });
         }
@@ -239,16 +239,16 @@ class Equipment {
             console.log('✅ Respuesta del servidor:', response);
             
             if (response.equipment) {
-                                     this.renderEquipmentTable(response.equipment);
-                     this.renderPagination(response.pagination);
-                     this.updateEquipmentCount(response.pagination.total);
+                this.renderEquipmentTable(response.equipment);
+                this.renderPagination(response.pagination);
+                this.updateEquipmentCount(response.pagination.total);
                      this.updateActiveFilters(); // Actualizar chips de filtros activos
-                 } else {
+            } else {
                      console.warn('⚠️ Respuesta sin datos de equipos:', response);
                      // Si no hay equipos, mostrar tabla vacía
                      this.renderEquipmentTable([]);
                      this.updateActiveFilters(); // Actualizar chips de filtros activos
-                 }
+            }
         } catch (error) {
             console.error('❌ Error cargando equipos:', error);
             
@@ -318,10 +318,7 @@ class Equipment {
                     </div>
                 </td>
                 <td>
-                    ${item.assigned_to_name || '<span style="color: #999;">Sin asignar</span>'}
-                </td>
-                <td>
-                    ${item.security_username || '<span style="color: #999;">N/A</span>'}
+                    ${item.assigned_to || '<span style="color: #999;">Sin asignar</span>'}
                 </td>
                 <td>
                     <div class="table-actions-cell">
@@ -607,19 +604,17 @@ class Equipment {
                             <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Estado/Región *</label>
                             <select name="state_id" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
                                 <option value="">Seleccionar estado</option>
-                                <option value="direccion">Dirección</option>
-                                <option value="capital">Capital</option>
-                                <option value="carabobo">Carabobo</option>
-                                <option value="barinas">Barinas</option>
-                                <option value="anzoategui">Anzoátegui</option>
-                                <option value="bolivar">Bolívar</option>
-                                <option value="zulia">Zulia</option>
+                                <!-- Los estados se cargarán dinámicamente -->
                             </select>
                         </div>
                         <div>
-                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Responsable del Equipo</label>
-                            <input type="text" name="assigned_to" placeholder="Nombre de la persona responsable" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Responsable del Equipo *</label>
+                            <input type="text" name="assigned_to" required placeholder="Nombre de la persona responsable" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
                         </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Detalles de Ubicación *</label>
+                        <textarea name="location_details" required rows="2" placeholder="Especificaciones adicionales de ubicación" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease; resize: vertical;"></textarea>
                     </div>
                 </div>
                 
@@ -672,6 +667,9 @@ class Equipment {
         // Guardar referencia para poder cerrarlo
         this.dynamicModal = dynamicModal;
         
+        // Cargar estados dinámicamente
+        this.loadStatesForModal();
+        
         // Cargar datos si es edición
         if (equipmentId) {
             this.loadEquipmentDataForDynamicModal(equipmentId);
@@ -708,7 +706,7 @@ class Equipment {
             const formData = new FormData(form);
             
             // Validación básica
-            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id'];
+            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to', 'location_details'];
             const missingFields = [];
             
             requiredFields.forEach(field => {
@@ -722,7 +720,7 @@ class Equipment {
                 return;
             }
             
-            // Procesar valores numéricos de forma segura
+            // Procesar valores correctamente
             const stateIdValue = formData.get('state_id');
             const assignedToValue = formData.get('assigned_to');
             
@@ -730,12 +728,13 @@ class Equipment {
                 inventory_number: formData.get('inventory_number'),
                 name: formData.get('name'),
                 type: formData.get('type'),
-                brand: formData.get('brand'),
-                model: formData.get('model'),
-                specifications: formData.get('specifications'),
+                brand: formData.get('brand') || null,
+                model: formData.get('model') || null,
+                specifications: formData.get('specifications') || null,
                 status: formData.get('status'),
                 state_id: stateIdValue && stateIdValue.trim() !== '' ? parseInt(stateIdValue) : null,
-                assigned_to: assignedToValue && assignedToValue.trim() !== '' ? parseInt(assignedToValue) : null
+                assigned_to: assignedToValue && assignedToValue.trim() !== '' ? assignedToValue.trim() : null,
+                location_details: formData.get('location_details') || null
             };
 
             // Debug: mostrar datos que se envían
@@ -1131,6 +1130,46 @@ class Equipment {
             // No mostrar notificación de error al usuario
             // Solo log para debugging
             // La creación del equipo fue exitosa, este error es solo para la recarga
+        }
+    }
+
+    // Cargar estados para el modal
+    async loadStatesForModal() {
+        try {
+            const response = await API.get('/states');
+            if (response.data) {
+                const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
+                if (stateSelect) {
+                    // Mantener la opción por defecto
+                    const defaultOption = stateSelect.querySelector('option[value=""]');
+                    stateSelect.innerHTML = '';
+                    if (defaultOption) {
+                        stateSelect.appendChild(defaultOption);
+                    }
+                    
+                    // Agregar las opciones de estados
+                    response.data.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state.id;
+                        option.textContent = state.name;
+                        stateSelect.appendChild(option);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error cargando estados:', error);
+            // Fallback a estados estáticos si falla la carga
+            const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
+            if (stateSelect) {
+                stateSelect.innerHTML = `
+                    <option value="">Seleccionar estado</option>
+                    <option value="1">Estado 1</option>
+                    <option value="2">Estado 2</option>
+                    <option value="3">Estado 3</option>
+                    <option value="4">Estado 4</option>
+                    <option value="5">Estado 5</option>
+                `;
+            }
         }
     }
 }

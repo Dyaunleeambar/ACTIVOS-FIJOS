@@ -3,180 +3,95 @@ const { executeQuery } = require('./database');
 
 const updateDatabase = async () => {
   try {
-    console.log('🔧 Actualizando base de datos...');
-    console.log('📡 Conectando a la base de datos...');
-    console.log('🔑 Configuración de BD:', {
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      database: process.env.DB_NAME,
-      port: process.env.DB_PORT
-    });
+    console.log('🔧 Actualizando esquema de base de datos...');
 
-    // Verificar si la columna security_username existe
+    // Verificar si la columna assigned_to ya es VARCHAR
     const checkColumnQuery = `
+      SELECT COLUMN_TYPE 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'equipment' 
+      AND COLUMN_NAME = 'assigned_to'
+    `;
+    
+    const columnInfo = await executeQuery(checkColumnQuery);
+    
+    if (columnInfo.length > 0) {
+      const columnType = columnInfo[0].COLUMN_TYPE;
+      console.log('🔍 Tipo actual de assigned_to:', columnType);
+      
+      if (columnType.includes('int')) {
+        console.log('🔄 Cambiando assigned_to de INT a VARCHAR...');
+        
+        // Cambiar assigned_to de INT a VARCHAR
+        await executeQuery(`
+          ALTER TABLE equipment 
+          MODIFY COLUMN assigned_to VARCHAR(100)
+        `);
+        
+        console.log('✅ assigned_to cambiado a VARCHAR(100)');
+      } else {
+        console.log('✅ assigned_to ya es VARCHAR');
+      }
+    }
+
+    // Verificar si existen las columnas de seguridad
+    const checkSecurityColumnsQuery = `
       SELECT COLUMN_NAME 
       FROM INFORMATION_SCHEMA.COLUMNS 
-      WHERE TABLE_SCHEMA = 'sistema_gestion_medios' 
+      WHERE TABLE_SCHEMA = DATABASE() 
       AND TABLE_NAME = 'equipment' 
-      AND COLUMN_NAME = 'security_username'
+      AND COLUMN_NAME IN ('security_username', 'security_password', 'access_details')
     `;
-
-    console.log('🔍 Verificando columna security_username...');
-    const columnExists = await executeQuery(checkColumnQuery);
-    console.log('📊 Resultado de verificación:', columnExists);
-
-    if (columnExists.length === 0) {
-      console.log('➕ Agregando columna security_username a la tabla equipment...');
+    
+    const securityColumns = await executeQuery(checkSecurityColumnsQuery);
+    
+    if (securityColumns.length > 0) {
+      console.log('🔄 Eliminando columnas de seguridad...');
       
-      // Agregar la columna security_username
+      // Eliminar columnas de seguridad si existen
+      for (const column of securityColumns) {
+        const columnName = column.COLUMN_NAME;
+        console.log(`🗑️ Eliminando columna: ${columnName}`);
+        await executeQuery(`ALTER TABLE equipment DROP COLUMN ${columnName}`);
+      }
+      
+      console.log('✅ Columnas de seguridad eliminadas');
+    } else {
+      console.log('✅ No hay columnas de seguridad para eliminar');
+    }
+
+    // Verificar si existe la columna location_details
+    const checkLocationQuery = `
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'equipment' 
+      AND COLUMN_NAME = 'location_details'
+    `;
+    
+    const locationColumn = await executeQuery(checkLocationQuery);
+    
+    if (locationColumn.length === 0) {
+      console.log('🔄 Agregando columna location_details...');
+      
+      // Agregar columna location_details si no existe
       await executeQuery(`
         ALTER TABLE equipment 
-        ADD COLUMN security_username VARCHAR(50) NULL
+        ADD COLUMN location_details TEXT
       `);
       
-      console.log('✅ Columna security_username agregada exitosamente');
+      console.log('✅ Columna location_details agregada');
     } else {
-      console.log('✅ La columna security_username ya existe');
+      console.log('✅ Columna location_details ya existe');
     }
 
-    // Verificar si la tabla assignments existe
-    const checkAssignmentsTable = `
-      SELECT TABLE_NAME 
-      FROM INFORMATION_SCHEMA.TABLES 
-      WHERE TABLE_SCHEMA = 'sistema_gestion_medios' 
-      AND TABLE_NAME = 'assignments'
-    `;
-
-    console.log('🔍 Verificando tabla assignments...');
-    const assignmentsTableExists = await executeQuery(checkAssignmentsTable);
-    console.log('📊 Resultado de verificación assignments:', assignmentsTableExists);
-
-    if (assignmentsTableExists.length === 0) {
-      console.log('➕ Creando tabla assignments...');
-      
-      // Crear tabla assignments
-      await executeQuery(`
-        CREATE TABLE IF NOT EXISTS assignments (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          equipment_id INT NOT NULL,
-          user_id INT NOT NULL,
-          assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          returned_at TIMESTAMP NULL,
-          notes TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          FOREIGN KEY (equipment_id) REFERENCES equipment(id),
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
-      
-      console.log('✅ Tabla assignments creada exitosamente');
-    } else {
-      console.log('✅ La tabla assignments ya existe');
-    }
-
-    // Verificar si la tabla movements existe
-    const checkMovementsTable = `
-      SELECT TABLE_NAME 
-      FROM INFORMATION_SCHEMA.TABLES 
-      WHERE TABLE_SCHEMA = 'sistema_gestion_medios' 
-      AND TABLE_NAME = 'movements'
-    `;
-
-    console.log('🔍 Verificando tabla movements...');
-    const movementsTableExists = await executeQuery(checkMovementsTable);
-    console.log('📊 Resultado de verificación movements:', movementsTableExists);
-
-    if (movementsTableExists.length === 0) {
-      console.log('➕ Creando tabla movements...');
-      
-      // Crear tabla movements
-      await executeQuery(`
-        CREATE TABLE IF NOT EXISTS movements (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          equipment_id INT NOT NULL,
-          movement_type ENUM('in', 'out', 'transfer', 'maintenance', 'disposal') NOT NULL,
-          from_location VARCHAR(100),
-          to_location VARCHAR(100),
-          from_user_id INT,
-          to_user_id INT,
-          movement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          notes TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          FOREIGN KEY (equipment_id) REFERENCES equipment(id),
-          FOREIGN KEY (from_user_id) REFERENCES users(id),
-          FOREIGN KEY (to_user_id) REFERENCES users(id)
-        )
-      `);
-      
-      console.log('✅ Tabla movements creada exitosamente');
-    } else {
-      console.log('✅ La tabla movements ya existe');
-    }
-
-    // Verificar si la tabla disposals existe
-    const checkDisposalsTable = `
-      SELECT TABLE_NAME 
-      FROM INFORMATION_SCHEMA.TABLES 
-      WHERE TABLE_SCHEMA = 'sistema_gestion_medios' 
-      AND TABLE_NAME = 'disposals'
-    `;
-
-    console.log('🔍 Verificando tabla disposals...');
-    const disposalsTableExists = await executeQuery(checkDisposalsTable);
-    console.log('📊 Resultado de verificación disposals:', disposalsTableExists);
-
-    if (disposalsTableExists.length === 0) {
-      console.log('➕ Creando tabla disposals...');
-      
-      // Crear tabla disposals
-      await executeQuery(`
-        CREATE TABLE IF NOT EXISTS disposals (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          equipment_id INT NOT NULL,
-          reason ENUM('damage', 'obsolescence', 'loss', 'other') NOT NULL,
-          description TEXT,
-          proposed_by INT NOT NULL,
-          approved_by INT,
-          status ENUM('pending', 'approved', 'rejected', 'completed') DEFAULT 'pending',
-          proposed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          approved_at TIMESTAMP NULL,
-          completed_at TIMESTAMP NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          FOREIGN KEY (equipment_id) REFERENCES equipment(id),
-          FOREIGN KEY (proposed_by) REFERENCES users(id),
-          FOREIGN KEY (approved_by) REFERENCES users(id)
-        )
-      `);
-      
-      console.log('✅ Tabla disposals creada exitosamente');
-    } else {
-      console.log('✅ La tabla disposals ya existe');
-    }
-
-    console.log('✅ Base de datos actualizada correctamente');
+    console.log('✅ Esquema de base de datos actualizado correctamente');
 
   } catch (error) {
-    console.error('❌ Error actualizando base de datos:', error);
-    console.error('📋 Detalles del error:', error.message);
-    console.error('🔍 Stack trace:', error.stack);
+    console.error('❌ Error actualizando esquema de base de datos:', error);
     throw error;
   }
 };
-
-// Ejecutar la actualización si el archivo se ejecuta directamente
-if (require.main === module) {
-  updateDatabase()
-    .then(() => {
-      console.log('🎉 Actualización completada exitosamente');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('💥 Error en la actualización:', error);
-      process.exit(1);
-    });
-}
 
 module.exports = { updateDatabase }; 

@@ -98,8 +98,8 @@
 
 /* Filtro de estado en el centro */
 .filters-center .filter-state {
-    min-width: 160px;
-    max-width: 200px;
+    min-width: 220px;
+    max-width: 280px;
 }
 
 .filters-center .filter-select {
