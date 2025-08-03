@@ -18,6 +18,7 @@ const { authenticateToken } = require('./middleware/auth');
 // Importar inicialización de base de datos
 const { initializeDatabase } = require('./config/init-database');
 const { updateDatabase } = require('./config/update-database');
+const { checkDatabase } = require('./config/check-database');
 
 // Crear aplicación Express
 const app = express();

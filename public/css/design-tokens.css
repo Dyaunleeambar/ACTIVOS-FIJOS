@@ -439,6 +439,14 @@
   --gradient-primary: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
   --gradient-primary-hover: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-600) 100%);
   
+  /* Gradientes Secundarios */
+  --gradient-secondary: linear-gradient(135deg, var(--color-gray-500) 0%, var(--color-gray-600) 100%);
+  --gradient-secondary-hover: linear-gradient(135deg, var(--color-gray-600) 0%, var(--color-gray-700) 100%);
+  
+  /* Gradientes de Peligro */
+  --gradient-danger: linear-gradient(135deg, var(--color-error-500) 0%, var(--color-error-600) 100%);
+  --gradient-danger-hover: linear-gradient(135deg, var(--color-error-600) 0%, var(--color-error-700) 100%);
+  
   /* Gradientes de Estado */
   --gradient-success: linear-gradient(135deg, var(--color-success-400) 0%, var(--color-success-500) 100%);
   --gradient-warning: linear-gradient(135deg, var(--color-warning-400) 0%, var(--color-warning-500) 100%);

@@ -52,6 +52,24 @@ const initializeDatabase = async () => {
       )
     `);
 
+    // Verificar si ya existen datos en la base de datos
+    const existingEquipment = await executeQuery('SELECT COUNT(*) as count FROM equipment');
+    const existingUsers = await executeQuery('SELECT COUNT(*) as count FROM users');
+    const existingStates = await executeQuery('SELECT COUNT(*) as count FROM states');
+
+    const hasData = existingEquipment[0].count > 0 || existingUsers[0].count > 0 || existingStates[0].count > 0;
+
+    if (hasData) {
+      console.log('📊 Base de datos ya contiene datos:');
+      console.log(`   - Equipos: ${existingEquipment[0].count}`);
+      console.log(`   - Usuarios: ${existingUsers[0].count}`);
+      console.log(`   - Estados: ${existingStates[0].count}`);
+      console.log('✅ Base de datos inicializada (sin insertar datos de ejemplo)');
+      return;
+    }
+
+    console.log('📝 Insertando datos de ejemplo...');
+
     // Insertar estados de ejemplo
     const states = [
       { name: 'Estado 1', code: 'EST1' },
@@ -63,7 +81,7 @@ const initializeDatabase = async () => {
 
     for (const state of states) {
       await executeQuery(
-        'INSERT IGNORE INTO states (name, code) VALUES (?, ?)',
+        'INSERT INTO states (name, code) VALUES (?, ?)',
         [state.name, state.code]
       );
     }
@@ -97,7 +115,7 @@ const initializeDatabase = async () => {
 
     for (const user of users) {
       await executeQuery(
-        'INSERT IGNORE INTO users (username, password, full_name, email, role, state_id) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (username, password, full_name, email, role, state_id) VALUES (?, ?, ?, ?, ?, ?)',
         [user.username, user.password, user.full_name, user.email, user.role, user.state_id]
       );
     }
@@ -168,7 +186,7 @@ const initializeDatabase = async () => {
 
     for (const item of equipment) {
       await executeQuery(`
-        INSERT IGNORE INTO equipment (
+        INSERT INTO equipment (
           inventory_number, name, type, brand, model, specifications,
           status, state_id, assigned_to, location_details
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

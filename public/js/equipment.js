@@ -282,7 +282,7 @@ class Equipment {
                         <div style="padding: 40px;">
                             <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
                             <p>No se encontraron equipos</p>
-                            <button class="btn btn-primary" onclick="Equipment.showCreateForm()">
+                            <button class="btn btn-secondary" onclick="Equipment.showCreateForm()">
                                 <i class="fas fa-plus"></i> Agregar primer equipo
                             </button>
                         </div>
