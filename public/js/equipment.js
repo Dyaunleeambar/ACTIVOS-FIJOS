@@ -29,38 +29,191 @@ class Equipment {
     }
 
     setupEventListeners() {
-        // Búsqueda en tiempo real
+        // Nuevos event listeners para filtros compactos (incluye búsqueda)
+        this.setupCompactFilters();
+        
+        // Event listeners para botones
+        const newEquipmentBtn = document.getElementById('new-equipment-btn');
+        if (newEquipmentBtn) {
+            newEquipmentBtn.addEventListener('click', () => this.showCreateForm());
+        }
+
+        const importBtn = document.getElementById('import-equipment-btn');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => this.showImportModal());
+        }
+
+        const exportBtn = document.getElementById('export-equipment-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => this.exportToExcel());
+        }
+    }
+
+    // Nueva función para configurar filtros compactos
+    setupCompactFilters() {
+        // Búsqueda (ahora en la sección de filtros)
         const searchInput = document.getElementById('search-equipment');
         if (searchInput) {
             searchInput.addEventListener('input', this.debounce(() => {
                 this.filters.search = searchInput.value;
                 this.currentPage = 1;
                 this.loadEquipmentList();
+                this.updateActiveFilters();
             }, 300));
         }
 
-        // Filtros
-        const filterInputs = ['filter-type', 'filter-status', 'filter-state'];
-        filterInputs.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('change', () => {
-                    this.filters[id.replace('filter-', '')] = element.value;
-                    this.currentPage = 1;
-                    this.loadEquipmentList();
-                });
-            }
-        });
-
-        // Archivo Excel
-        const excelFile = document.getElementById('excel-file');
-        if (excelFile) {
-            excelFile.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    this.handleFileUpload(e.target.files[0]);
+        // Filtro combinado Tipo + Estado
+        const filterTypeStatus = document.getElementById('filter-type-status');
+        if (filterTypeStatus) {
+            filterTypeStatus.addEventListener('change', (e) => {
+                const value = e.target.value;
+                if (value.startsWith('type:')) {
+                    this.filters.type = value.replace('type:', '');
+                    this.filters.status = '';
+                } else if (value.startsWith('status:')) {
+                    this.filters.status = value.replace('status:', '');
+                    this.filters.type = '';
+                } else {
+                    this.filters.type = '';
+                    this.filters.status = '';
                 }
+                this.currentPage = 1;
+                this.loadEquipmentList();
+                this.updateActiveFilters();
             });
         }
+
+        // Filtro de Estado/Región
+        const filterState = document.getElementById('filter-state');
+        if (filterState) {
+            filterState.addEventListener('change', (e) => {
+                this.filters.state = e.target.value;
+                this.currentPage = 1;
+                this.loadEquipmentList();
+                this.updateActiveFilters();
+            });
+        }
+    }
+
+    // Función para actualizar chips de filtros activos
+    updateActiveFilters() {
+        const activeFiltersContainer = document.getElementById('active-filters');
+        if (!activeFiltersContainer) return;
+
+        activeFiltersContainer.innerHTML = '';
+
+        const activeFilters = [];
+
+        // Agregar filtros activos
+        if (this.filters.search) {
+            activeFilters.push({
+                type: 'search',
+                label: `Búsqueda: "${this.filters.search}"`,
+                value: this.filters.search
+            });
+        }
+
+        if (this.filters.type) {
+            const typeLabel = this.getTypeLabel(this.filters.type);
+            activeFilters.push({
+                type: 'type',
+                label: `Tipo: ${typeLabel}`,
+                value: this.filters.type
+            });
+        }
+
+        if (this.filters.status) {
+            const statusLabel = this.getStatusLabel(this.filters.status);
+            activeFilters.push({
+                type: 'status',
+                label: `Estado: ${statusLabel}`,
+                value: this.filters.status
+            });
+        }
+
+        if (this.filters.state) {
+            // Obtener el nombre del estado desde el select
+            const stateSelect = document.getElementById('filter-state');
+            let stateLabel = this.filters.state;
+            if (stateSelect) {
+                const selectedOption = stateSelect.querySelector(`option[value="${this.filters.state}"]`);
+                if (selectedOption) {
+                    stateLabel = selectedOption.textContent;
+                }
+            }
+            activeFilters.push({
+                type: 'state',
+                label: `Ubicación: ${stateLabel}`,
+                value: this.filters.state
+            });
+        }
+
+        // Crear chips para cada filtro activo
+        activeFilters.forEach(filter => {
+            const chip = document.createElement('div');
+            chip.className = 'filter-chip';
+            chip.innerHTML = `
+                <span>${filter.label}</span>
+                <button class="remove-chip" onclick="Equipment.removeFilter('${filter.type}')" title="Remover filtro">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            activeFiltersContainer.appendChild(chip);
+        });
+    }
+
+    // Función para remover filtros individuales
+    removeFilter(filterType) {
+        switch (filterType) {
+            case 'search':
+                this.filters.search = '';
+                const searchInput = document.getElementById('search-equipment');
+                if (searchInput) searchInput.value = '';
+                break;
+            case 'type':
+                this.filters.type = '';
+                const typeSelect = document.getElementById('filter-type-status');
+                if (typeSelect) typeSelect.value = '';
+                break;
+            case 'status':
+                this.filters.status = '';
+                const statusSelect = document.getElementById('filter-type-status');
+                if (statusSelect) statusSelect.value = '';
+                break;
+            case 'state':
+                this.filters.state = '';
+                const stateSelect = document.getElementById('filter-state');
+                if (stateSelect) stateSelect.value = '';
+                break;
+        }
+        
+        this.currentPage = 1;
+        this.loadEquipmentList();
+        this.updateActiveFilters();
+    }
+
+    // Función para limpiar todos los filtros
+    clearFilters() {
+        this.filters = {
+            search: '',
+            type: '',
+            status: '',
+            state: ''
+        };
+        this.currentPage = 1;
+
+        // Limpiar inputs
+        const searchInput = document.getElementById('search-equipment');
+        if (searchInput) searchInput.value = '';
+
+        const typeStatusSelect = document.getElementById('filter-type-status');
+        if (typeStatusSelect) typeStatusSelect.value = '';
+
+        const stateSelect = document.getElementById('filter-state');
+        if (stateSelect) stateSelect.value = '';
+
+        this.loadEquipmentList();
+        this.updateActiveFilters();
     }
 
     // Cargar lista de equipos
@@ -86,14 +239,16 @@ class Equipment {
             console.log('✅ Respuesta del servidor:', response);
             
             if (response.equipment) {
-                this.renderEquipmentTable(response.equipment);
-                this.renderPagination(response.pagination);
-                this.updateEquipmentCount(response.pagination.total);
-            } else {
-                console.warn('⚠️ Respuesta sin datos de equipos:', response);
-                // Si no hay equipos, mostrar tabla vacía
-                this.renderEquipmentTable([]);
-            }
+                                     this.renderEquipmentTable(response.equipment);
+                     this.renderPagination(response.pagination);
+                     this.updateEquipmentCount(response.pagination.total);
+                     this.updateActiveFilters(); // Actualizar chips de filtros activos
+                 } else {
+                     console.warn('⚠️ Respuesta sin datos de equipos:', response);
+                     // Si no hay equipos, mostrar tabla vacía
+                     this.renderEquipmentTable([]);
+                     this.updateActiveFilters(); // Actualizar chips de filtros activos
+                 }
         } catch (error) {
             console.error('❌ Error cargando equipos:', error);
             
@@ -909,25 +1064,6 @@ class Equipment {
         this.excelData = null;
         this.mapping = {};
         this.validationResults = null;
-    }
-
-    // Limpiar filtros
-    clearFilters() {
-        this.filters = {
-            search: '',
-            type: '',
-            status: '',
-            state: ''
-        };
-        
-        // Limpiar inputs
-        document.getElementById('search-equipment').value = '';
-        document.getElementById('filter-type').value = '';
-        document.getElementById('filter-status').value = '';
-        document.getElementById('filter-state').value = '';
-        
-        this.currentPage = 1;
-        this.loadEquipmentList();
     }
 
     // Actualizar lista

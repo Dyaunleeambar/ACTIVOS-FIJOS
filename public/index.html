@@ -118,7 +118,7 @@
                 </button>
                 <div class="logo-small">
                     <i class="fas fa-server"></i>
-                    <h1>Sistema de Gestión de Medios Informáticos</h1>
+                    <h2>Sistema de Gestión de Medios Informáticos</h2>
                 </div>
             </div>
             <!-- Botones de acción rápida -->
@@ -215,29 +215,28 @@
 
         <!-- Contenido principal -->
         <main class="app-main">
-            <div class="dashboard-titulo-alertas">
-                <h2>Estadísticas Principales</h2>
-                <!-- Alertas del Sistema -->
-                <div class="alerts-section collapsible-section" data-collapsed="true">
-                    <div class="section-header">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
-                        <button class="collapse-toggle" aria-label="Colapsar sección de alertas del sistema">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
-                    <div class="section-content">
-                        <div id="alerts-container" class="alerts-container">
-                            <!-- Las alertas se cargarán dinámicamente -->
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page-content active dashboard-page">
+                <div class="dashboard-titulo-alertas">
+                    <h2>Estadísticas Principales</h2>
+                    <!-- Alertas del Sistema -->
+                    <div class="alerts-section collapsible-section" data-collapsed="true">
+                        <div class="section-header">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h3>
+                            <button class="collapse-toggle" aria-label="Colapsar sección de alertas del sistema">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="section-content">
+                            <div id="alerts-container" class="alerts-container">
+                                <!-- Las alertas se cargarán dinámicamente -->
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-                         <!-- Dashboard Page -->
-             <div id="dashboard-page" class="page-content active dashboard-page">               
 
-                                 <!-- Estadísticas Principales -->
-                 <div class="dashboard-grid">
+                <!-- Estadísticas Principales -->
+                <div class="dashboard-grid">
                      <div class="card card-stats">
                          <div class="card-body">
                              <div class="stats-icon">
@@ -492,136 +491,79 @@
 
             <!-- Equipment Page -->
             <div id="equipment-page" class="page-content">
-                <!-- Estadísticas por Tipo de Equipo -->
-                <div class="equipment-stats-section">
-                    <!--<h3><i class="fas fa-chart-pie"></i> Resumen por Tipo de Equipo</h3>-->
-                    <div class="equipment-stats-grid">
-                        <div class="card card-stats">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="fas fa-laptop"></i>
-                                </div>
-                                <div class="stats-content">
-                                    <h3 class="stats-number" id="equipment-laptops">8</h3>
-                                    <p class="stats-label">Total de Laptops</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card card-stats">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="fas fa-desktop"></i>
-                                </div>
-                                <div class="stats-content">
-                                    <h3 class="stats-number" id="equipment-pcs">12</h3>
-                                    <p class="stats-label">Total de PC</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card card-stats">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="fas fa-tv"></i>
-                                </div>
-                                <div class="stats-content">
-                                    <h3 class="stats-number" id="equipment-monitors">15</h3>
-                                    <p class="stats-label">Total de Monitores</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card card-stats">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="fas fa-print"></i>
-                                </div>
-                                <div class="stats-content">
-                                    <h3 class="stats-number" id="equipment-printers">5</h3>
-                                    <p class="stats-label">Total de Impresoras</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card card-stats">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="fas fa-sim-card"></i>
-                                </div>
-                                <div class="stats-content">
-                                    <h3 class="stats-number" id="equipment-sims">20</h3>
-                                    <p class="stats-label">Total de SIMs</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card card-stats">
-                            <div class="card-body">
-                                <div class="stats-icon">
-                                    <i class="fas fa-broadcast-tower"></i>
-                                </div>
-                                <div class="stats-content">
-                                    <h3 class="stats-number" id="equipment-radios">10</h3>
-                                    <p class="stats-label">Total de Radios</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="page-header">
-                    <h2>Gestión de Equipos</h2>
-                    <div class="page-actions">
-                        <button class="btn btn-primary" onclick="safeEquipmentCall('showCreateForm')">
-                            <i class="fas fa-plus"></i> Nuevo Equipo
-                        </button>
-                        <button class="btn btn-secondary" onclick="safeEquipmentCall('showImportModal')">
-                            <i class="fas fa-file-excel"></i> Importar Excel
-                        </button>
-                        <button class="btn btn-secondary" onclick="safeEquipmentCall('exportToExcel')">
-                            <i class="fas fa-download"></i> Exportar
-                        </button>
-                        
-                    </div>
-                </div>
-                
-                <!-- Filtros y búsqueda -->
-                <div class="equipment-filters">
-                    <div class="filter-group">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="search-equipment" placeholder="Buscar por inventario, nombre...">
+                    <div class="page-header-content">
+                        <!-- Título a la izquierda -->
+                        <div class="page-title">
+                            <h2>Gestión de Equipos</h2>
                         </div>
-                        <select id="filter-type" class="filter-select">
-                            <option value="">Todos los tipos</option>
-                            <option value="desktop">Desktop</option>
-                            <option value="laptop">Laptop</option>
-                            <option value="printer">Impresora</option>
-                            <option value="server">Servidor</option>
-                            <option value="router">Router</option>
-                            <option value="switch">Switch</option>
-                            <option value="radio_communication">Radio Comunicación</option>
-                            <option value="sim_chip">Chip SIM</option>
-                            <option value="roaming">Roaming</option>
-                            <option value="other">Otro</option>
-                        </select>
-                        <select id="filter-status" class="filter-select">
-                            <option value="">Todos los estados</option>
-                            <option value="active">Activo</option>
-                            <option value="maintenance">Mantenimiento</option>
-                            <option value="out_of_service">Fuera de servicio</option>
-                            <option value="disposed">Desechado</option>
-                        </select>
-                        <select id="filter-state" class="filter-select">
-                            <option value="">Todos los estados/regiones</option>
-                            <!-- Se cargará dinámicamente -->
-                        </select>
-                        <button class="btn btn-secondary" onclick="safeEquipmentCall('clearFilters')">
-                            <i class="fas fa-times"></i> Limpiar
-                        </button>
+                        
+                        <!-- Filtros en el centro -->
+                        <div class="filters-center">
+                            <!-- Búsqueda -->
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="search-equipment" placeholder="Buscar equipos...">
+                            </div>
+                            
+                            <!-- Dropdown combinado para Tipo + Estado -->
+                            <div class="filter-combined">
+                                <select id="filter-type-status" class="filter-select-combined">
+                                    <option value="">Todos los tipos y estados</option>
+                                    <optgroup label="Tipos">
+                                        <option value="type:desktop">Desktop</option>
+                                        <option value="type:laptop">Laptop</option>
+                                        <option value="type:printer">Impresora</option>
+                                        <option value="type:server">Servidor</option>
+                                        <option value="type:router">Router</option>
+                                        <option value="type:switch">Switch</option>
+                                        <option value="type:radio_communication">Radio Comunicación</option>
+                                        <option value="type:sim_chip">Chip SIM</option>
+                                        <option value="type:roaming">Roaming</option>
+                                        <option value="type:other">Otro</option>
+                                    </optgroup>
+                                    <optgroup label="Estados">
+                                        <option value="status:active">Activo</option>
+                                        <option value="status:maintenance">Mantenimiento</option>
+                                        <option value="status:out_of_service">Fuera de Servicio</option>
+                                        <option value="status:disposed">Desechado</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <!-- Filtro de Estado/Región -->
+                            <div class="filter-state">
+                                <select id="filter-state" class="filter-select">
+                                    <option value="">Todos los estados/regiones</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Botón Limpiar -->
+                            <button class="btn btn-outline" onclick="safeEquipmentCall('clearFilters')">
+                                <i class="fas fa-times"></i> Limpiar
+                            </button>
+                        </div>
+                        
+                        <!-- Botones a la derecha -->
+                        <div class="page-actions">
+                            <button class="btn btn-primary" onclick="safeEquipmentCall('showCreateForm')">
+                                <i class="fas fa-plus"></i> Nuevo Equipo
+                            </button>
+                            <button class="btn btn-secondary" onclick="safeEquipmentCall('showImportModal')">
+                                <i class="fas fa-file-excel"></i> Importar Excel
+                            </button>
+                            <button class="btn btn-secondary" onclick="safeEquipmentCall('exportToExcel')">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
+                <!-- Chips de filtros activos -->
+                <div class="active-filters" id="active-filters">
+                    <!-- Se generarán dinámicamente -->
+                </div>
                 
                 
                 <!-- Tabla de equipos -->
