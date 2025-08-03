@@ -172,10 +172,12 @@ const UI = {
             container.id = 'notifications-container';
             container.style.cssText = `
                 position: fixed;
-                top: 20px;
-                right: 20px;
+                top: 80px; /* Below header */
+                right: 20px; /* Right side positioning */
                 z-index: 2002;
-                max-width: 350px;
+                max-width: 400px;
+                width: auto;
+                pointer-events: none;
             `;
             document.body.appendChild(container);
         }
