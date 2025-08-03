@@ -328,7 +328,7 @@ class Equipment {
                         <button class="action-btn edit" onclick="Equipment.showCreateForm(${item.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn delete" onclick="Equipment.deleteEquipment(${item.id})" title="Eliminar">
+                        <button class="action-btn delete" onclick="deleteEquipmentGlobal(${item.id})" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -817,24 +817,75 @@ class Equipment {
 
     // Eliminar equipo
     async deleteEquipment(equipmentId) {
-        const confirmed = await UI.showConfirmDialog(
-            '¿Estás seguro de que quieres eliminar este equipo?',
-            'Esta acción no se puede deshacer.'
-        );
+        console.log('🔍 deleteEquipment llamado con ID:', equipmentId);
+        console.log('🔍 Equipment object:', window.Equipment);
+        console.log('🔍 deleteEquipment method:', window.Equipment?.deleteEquipment);
         
-        if (confirmed) {
-            try {
-                const response = await API.delete(`/equipment/${equipmentId}`);
-                if (response.message) {
-                    UI.showNotification(response.message, 'success');
-                    this.loadEquipmentList();
-                } else {
-                    throw new Error('Error eliminando equipo');
-                }
-            } catch (error) {
-                console.error('Error eliminando equipo:', error);
-                UI.showNotification('Error eliminando equipo', 'error');
+        try {
+            // Verificar que UI está disponible
+            if (!UI || !UI.showConfirmDialog) {
+                console.error('❌ UI o showConfirmDialog no está disponible');
+                alert('Error: UI no está disponible');
+                return;
             }
+            
+            console.log('✅ UI.showConfirmDialog disponible, mostrando diálogo...');
+            
+            // Mostrar diálogo de confirmación
+            const confirmed = await UI.showConfirmDialog(
+                '¿Estás seguro de que quieres eliminar este equipo?',
+                'Esta acción no se puede deshacer. El equipo será eliminado permanentemente de la base de datos.'
+            );
+            
+            console.log('🔍 Resultado del diálogo de confirmación:', confirmed);
+            
+            if (!confirmed) {
+                console.log('❌ Usuario canceló la eliminación');
+                return; // Usuario canceló la acción
+            }
+            
+            console.log('✅ Usuario confirmó, procediendo con eliminación...');
+            
+            // Mostrar loading
+            UI.showNotification('Eliminando equipo...', 'info');
+            
+            // Realizar petición de eliminación
+            const response = await API.delete(`/equipment/${equipmentId}`);
+            
+            console.log('🔍 Respuesta del servidor:', response);
+            
+            if (response.message) {
+                // Mostrar mensaje de éxito
+                UI.showNotification(response.message, 'success');
+                
+                // Recargar la lista de equipos
+                await this.loadEquipmentList();
+                
+                // Actualizar estadísticas si están disponibles
+                if (typeof this.loadEquipmentStats === 'function') {
+                    await this.loadEquipmentStats();
+                }
+            } else {
+                throw new Error('Respuesta inválida del servidor');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error eliminando equipo:', error);
+            
+            // Mostrar mensaje de error específico
+            let errorMessage = 'Error eliminando equipo';
+            
+            if (error.message) {
+                if (error.message.includes('404')) {
+                    errorMessage = 'El equipo no fue encontrado';
+                } else if (error.message.includes('400')) {
+                    errorMessage = 'No se puede eliminar este equipo porque tiene asignaciones activas';
+                } else if (error.message.includes('500')) {
+                    errorMessage = 'Error interno del servidor';
+                }
+            }
+            
+            UI.showNotification(errorMessage, 'error');
         }
     }
 
@@ -1174,17 +1225,43 @@ class Equipment {
     }
 }
 
+// Función global de respaldo para eliminar equipo
+window.deleteEquipmentGlobal = function(equipmentId) {
+    console.log('🔍 deleteEquipmentGlobal llamado con ID:', equipmentId);
+    if (window.Equipment && window.Equipment.deleteEquipment) {
+        return window.Equipment.deleteEquipment(equipmentId);
+    } else {
+        console.error('❌ Equipment no está disponible');
+        alert('Error: Equipment no está disponible. Recargando página...');
+        location.reload();
+    }
+};
+
 // Inicializar módulo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     window.Equipment = new Equipment();
     
     // Hacer métodos disponibles globalmente para compatibilidad
-    window.Equipment.showCreateForm = window.Equipment.showCreateForm.bind(window.Equipment);
-    window.Equipment.viewEquipment = window.Equipment.viewEquipment.bind(window.Equipment);
-    window.Equipment.deleteEquipment = window.Equipment.deleteEquipment.bind(window.Equipment);
-    window.Equipment.goToPage = window.Equipment.goToPage.bind(window.Equipment);
+    const methodsToBind = [
+        'showCreateForm',
+        'viewEquipment', 
+        'deleteEquipment',
+        'goToPage',
+        'clearFilters',
+        'showImportModal',
+        'exportToExcel',
+        'downloadTemplate',
+        'refreshList'
+    ];
+    
+    methodsToBind.forEach(method => {
+        if (window.Equipment[method]) {
+            window.Equipment[method] = window.Equipment[method].bind(window.Equipment);
+        }
+    });
     
     console.log('✅ Equipment inicializado y métodos disponibles globalmente');
+    console.log('🔍 Métodos disponibles:', methodsToBind);
 });
 
  

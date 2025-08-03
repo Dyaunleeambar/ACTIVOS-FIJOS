@@ -9,6 +9,9 @@ const {
   validateStateId 
 } = require('../middleware/validation');
 
+// GET /api/equipment/stats - Obtener estadísticas de equipos
+router.get('/stats', authenticateToken, equipmentController.getEquipmentStats);
+
 // GET /api/equipment - Obtener todos los equipos
 router.get('/', authenticateToken, equipmentController.getAllEquipment);
 

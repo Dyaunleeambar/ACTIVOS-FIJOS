@@ -23,6 +23,25 @@ const updateDatabase = async () => {
       if (columnType.includes('int')) {
         console.log('🔄 Cambiando assigned_to de INT a VARCHAR...');
         
+        // Primero verificar si existe una foreign key constraint
+        const checkForeignKeyQuery = `
+          SELECT CONSTRAINT_NAME 
+          FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+          WHERE TABLE_SCHEMA = DATABASE() 
+          AND TABLE_NAME = 'equipment' 
+          AND COLUMN_NAME = 'assigned_to' 
+          AND REFERENCED_TABLE_NAME IS NOT NULL
+        `;
+        
+        const foreignKeyInfo = await executeQuery(checkForeignKeyQuery);
+        
+        if (foreignKeyInfo.length > 0) {
+          console.log('🔄 Eliminando foreign key constraint...');
+          const constraintName = foreignKeyInfo[0].CONSTRAINT_NAME;
+          await executeQuery(`ALTER TABLE equipment DROP FOREIGN KEY ${constraintName}`);
+          console.log('✅ Foreign key constraint eliminada');
+        }
+        
         // Cambiar assigned_to de INT a VARCHAR
         await executeQuery(`
           ALTER TABLE equipment 

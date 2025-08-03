@@ -328,7 +328,7 @@ const deleteEquipment = async (req, res) => {
     const { id } = req.params;
 
     // Verificar que el equipo existe
-    const existingQuery = 'SELECT id FROM equipment WHERE id = ?';
+    const existingQuery = 'SELECT id, inventory_number, name, assigned_to FROM equipment WHERE id = ?';
     const existing = await executeQuery(existingQuery, [id]);
 
     if (existing.length === 0) {
@@ -337,13 +337,12 @@ const deleteEquipment = async (req, res) => {
       });
     }
 
-    // Verificar que no tenga asignaciones activas
-    const assignmentQuery = 'SELECT id FROM assignments WHERE equipment_id = ? AND returned_at IS NULL';
-    const assignments = await executeQuery(assignmentQuery, [id]);
+    const equipment = existing[0];
 
-    if (assignments.length > 0) {
+    // Verificar que el equipo no esté asignado actualmente
+    if (equipment.assigned_to && equipment.assigned_to.trim() !== '') {
       return res.status(400).json({
-        error: 'No se puede eliminar un equipo que tiene asignaciones activas'
+        error: `No se puede eliminar el equipo "${equipment.name}" porque está asignado a: ${equipment.assigned_to}`
       });
     }
 
@@ -351,11 +350,71 @@ const deleteEquipment = async (req, res) => {
     await executeQuery('DELETE FROM equipment WHERE id = ?', [id]);
 
     res.json({
-      message: 'Equipo eliminado exitosamente'
+      message: `Equipo "${equipment.name}" (${equipment.inventory_number}) eliminado exitosamente`
     });
 
   } catch (error) {
     console.error('Error al eliminar equipo:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+};
+
+// Obtener estadísticas de equipos por tipo
+const getEquipmentStats = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        type,
+        COUNT(*) as total
+      FROM equipment
+      GROUP BY type
+    `;
+
+    const stats = await executeQuery(query);
+
+    // Convertir a formato esperado por el frontend
+    const formattedStats = {
+      laptops: 0,
+      pcs: 0,
+      monitors: 0,
+      printers: 0,
+      sims: 0,
+      radios: 0
+    };
+
+    stats.forEach(stat => {
+      switch (stat.type) {
+        case 'laptop':
+          formattedStats.laptops = stat.total;
+          break;
+        case 'desktop':
+          formattedStats.pcs = stat.total;
+          break;
+        case 'printer':
+          formattedStats.printers = stat.total;
+          break;
+        case 'sim_chip':
+          formattedStats.sims = stat.total;
+          break;
+        case 'radio_communication':
+          formattedStats.radios = stat.total;
+          break;
+        default:
+          // Para otros tipos, asignar a pcs como fallback
+          formattedStats.pcs += stat.total;
+          break;
+      }
+    });
+
+    res.json({
+      success: true,
+      data: formattedStats
+    });
+
+  } catch (error) {
+    console.error('Error al obtener estadísticas de equipos:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });
@@ -835,5 +894,6 @@ module.exports = {
   validateImport,
   confirmImport,
   exportToExcel,
-  downloadTemplate
+  downloadTemplate,
+  getEquipmentStats
 }; 

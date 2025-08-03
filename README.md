@@ -11,6 +11,9 @@ Sistema web para la gestión de activos informáticos de una empresa de servicio
 - **Reportes**: Generación de informes y estadísticas
 - **Gestión de Asignaciones**: Control de asignación de equipos
 - **Propuestas de Baja**: Gestión de bajas de equipos
+- **Filtros Avanzados**: Búsqueda y filtrado inteligente
+- **Importación/Exportación**: Soporte para archivos Excel
+- **Notificaciones en Tiempo Real**: Sistema de alertas y confirmaciones
 
 ## 🛠️ Tecnologías
 
@@ -19,23 +22,25 @@ Sistema web para la gestión de activos informáticos de una empresa de servicio
 - Font Awesome para iconos
 - Chart.js para gráficos
 - Inter font family
+- Sistema de diseño desktop-first
 
 ### Backend
 - Node.js con Express.js
-- MySQL/SQLite para base de datos
+- MySQL para base de datos
 - JWT para autenticación
 - Helmet para seguridad
 - Winston para logging
+- Multer para manejo de archivos
 
 ### Herramientas
 - Nodemon para desarrollo
 - Puppeteer para conversión PDF
-- Multer para manejo de archivos
+- XLSX para manejo de archivos Excel
 
 ## 📋 Requisitos
 
 - Node.js (v14 o superior)
-- MySQL o SQLite
+- MySQL 8.0+
 - NPM o Yarn
 
 ## 🔧 Instalación
@@ -57,7 +62,7 @@ cp env.example .env
 ```
 Editar el archivo `.env` con tus configuraciones:
 ```env
-PORT=3000
+PORT=3001
 NODE_ENV=development
 DB_HOST=localhost
 DB_USER=root
@@ -68,16 +73,19 @@ JWT_SECRET=tu-secret-key
 
 4. **Inicializar la base de datos**
 ```bash
-npm run init-db
+npm start
 ```
+El sistema automáticamente ejecutará las migraciones de base de datos al iniciar.
 
 5. **Iniciar el servidor**
 ```bash
 # Desarrollo
-npm run dev
-
-# Producción
 npm start
+
+# El servidor estará disponible en:
+# Frontend: http://localhost:3001
+# API: http://localhost:3001/api
+# Health Check: http://localhost:3001/health
 ```
 
 ## 📁 Estructura del Proyecto
@@ -85,19 +93,50 @@ npm start
 ```
 ├── public/                 # Frontend estático
 │   ├── css/               # Estilos CSS
+│   │   ├── design-tokens.css    # Variables CSS del sistema
+│   │   ├── styles.css           # Estilos base y layout
+│   │   ├── dashboard.css        # Estilos específicos del dashboard
+│   │   ├── forms.css           # Estilos de formularios
+│   │   ├── components.css      # Componentes reutilizables
+│   │   ├── equipment.css       # Estilos específicos de equipos
+│   │   └── utilities.css       # Utilidades CSS
 │   ├── js/                # JavaScript del cliente
+│   │   ├── config.js          # Configuración global
+│   │   ├── auth.js            # Módulo de autenticación
+│   │   ├── api.js             # Módulo de API
+│   │   ├── ui.js              # Utilidades de UI
+│   │   ├── app.js             # Aplicación principal
+│   │   ├── dashboard.js       # Módulo del dashboard
+│   │   ├── equipment.js       # Módulo de equipos
+│   │   ├── components.js      # Componentes reutilizables
+│   │   ├── accessibility.js   # Funciones de accesibilidad
+│   │   └── performance.js     # Optimizaciones de performance
 │   └── index.html         # Página principal
 ├── src/                   # Backend
 │   ├── config/            # Configuración
+│   │   ├── database.js        # Configuración de base de datos
+│   │   ├── init-database.js   # Inicialización de BD
+│   │   └── update-database.js # Migraciones de BD
 │   ├── controllers/       # Controladores
+│   │   ├── authController.js      # Autenticación
+│   │   ├── dashboardController.js # Dashboard
+│   │   ├── equipmentController.js # Equipos
+│   │   └── stateController.js     # Estados
 │   ├── middleware/        # Middleware
-│   ├── models/           # Modelos de datos
+│   │   ├── auth.js            # Autenticación JWT
+│   │   └── validation.js      # Validación de datos
 │   ├── routes/           # Rutas de la API
-│   ├── services/         # Servicios
+│   │   ├── auth.js            # Rutas de autenticación
+│   │   ├── dashboard.js       # Rutas del dashboard
+│   │   ├── equipment.js       # Rutas de equipos
+│   │   ├── stateRoutes.js     # Rutas de estados
+│   │   └── users.js           # Rutas de usuarios
 │   └── server.js         # Servidor principal
 ├── docs/                 # Documentación
 ├── scripts/              # Scripts de utilidad
-└── templates/            # Plantillas
+├── templates/            # Plantillas
+├── logs/                 # Logs del sistema
+└── testing-scripts/      # Scripts de prueba
 ```
 
 ## 🎯 Funcionalidades Principales
@@ -107,70 +146,112 @@ npm start
 - Gráficos de distribución por tipo
 - Actividad reciente
 - Métricas de rendimiento
+- Actualizaciones en tiempo real
 
 ### Gestión de Equipos
-- Registro de nuevos equipos
-- Edición y actualización
-- Filtros avanzados
-- Búsqueda por múltiples criterios
+- **Registro de nuevos equipos** con modal dinámico
+- **Edición y actualización** con validación en tiempo real
+- **Filtros avanzados** con búsqueda integrada
+- **Búsqueda por múltiples criterios** (inventario, nombre, tipo, estado)
+- **Eliminación con confirmación** y validación de asignaciones
+- **Estados de equipos**: active, maintenance, out_of_service, disposed
+- **Tipos de equipos**: desktop, laptop, printer, server, router, switch, radio_communication, sim_chip, roaming, other
 
 ### Sistema de Usuarios
 - Autenticación JWT
 - Roles de usuario (Admin, Manager, Consultor)
-- Gestión de permisos
+- Gestión de permisos por página
+- Auto-logout por expiración
 
-### Reportes
-- Generación de informes PDF
-- Estadísticas detalladas
-- Exportación de datos
+### Importación/Exportación
+- **Importación desde Excel**: Soporte para archivos .xlsx y .xls
+- **Exportación a Excel**: Con filtros aplicados
+- **Plantilla descargable**: Para facilitar la importación
+- **Validación de datos**: Verificación de campos requeridos y formatos
+
+### Reportes y Estadísticas
+- **Estadísticas en tiempo real**: Por tipo de equipo
+- **Generación de informes PDF**: Con datos filtrados
+- **Exportación de datos**: En formato Excel
+- **Gráficos interactivos**: Con Chart.js
 
 ## 🔐 Seguridad
 
-- Autenticación JWT
+- Autenticación JWT con refresh tokens
 - Helmet para headers de seguridad
 - Rate limiting
-- Validación de datos
+- Validación de datos en frontend y backend
 - Sanitización de inputs
+- Control de acceso basado en roles (RBAC)
+- Protección CSRF
 
 ## 📱 Responsive Design
 
-- Diseño adaptativo para móviles
-- Sidebar flotante
+- **Desktop-first approach**: Optimizado para pantallas grandes
+- Diseño adaptativo para móviles y tablets
+- Sidebar flotante en dispositivos móviles
 - Interfaz optimizada para touch
+- Breakpoints: 1024px (desktop), 1440px (large), 1920px (xl)
+
+## 🎨 Sistema de Diseño
+
+### Design Tokens
+- **Colores**: Paleta profesional con azul primario (#3b82f6) y púrpura secundario (#a855f7)
+- **Tipografía**: Inter como fuente principal
+- **Espaciado**: Sistema de 8px base (0.5rem)
+- **Estados**: Verde (active), Amarillo (maintenance), Rojo (out_of_service), Gris (disposed)
+
+### Componentes
+- **Modales**: Dinámicos con confirmaciones
+- **Notificaciones**: Sistema de alertas en tiempo real
+- **Filtros**: Compactos con chips activos
+- **Tablas**: Responsivas con paginación
+- **Formularios**: Validación en tiempo real
 
 ## 🚀 Scripts Disponibles
 
 ```bash
 npm start          # Iniciar servidor de producción
 npm run dev        # Iniciar servidor de desarrollo
-npm run init-db    # Inicializar base de datos
 npm run convert-docs # Convertir documentación a PDF
 ```
 
 ## 📊 Base de Datos
 
-El sistema soporta tanto MySQL como SQLite:
+### Esquema Principal
 
-### MySQL
+#### Tabla `equipment`
 ```sql
-CREATE DATABASE sistema_gestion_medios;
+CREATE TABLE equipment (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  inventory_number VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  type ENUM('desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other') NOT NULL,
+  brand VARCHAR(50),
+  model VARCHAR(50),
+  specifications TEXT,
+  status ENUM('active', 'maintenance', 'out_of_service', 'disposed') DEFAULT 'active',
+  state_id INT,
+  assigned_to VARCHAR(100),
+  location_details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (state_id) REFERENCES states(id)
+);
 ```
 
-### SQLite
-Se crea automáticamente en `database.sqlite`
-
-## 🔧 Configuración de Desarrollo
-
-1. **Variables de entorno para desarrollo**
-```env
-NODE_ENV=development
-PORT=3000
-DB_TYPE=sqlite
-```
-
-2. **Instalar dependencias de desarrollo**
-```bash
-npm install --save-dev nodemon
+#### Tabla `users`
+```sql
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  role ENUM('admin', 'manager', 'consultant') DEFAULT 'consultant',
+  state_id INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (state_id) REFERENCES states(id)
+);
 ```
 
 ## 📝 API Endpoints
@@ -180,13 +261,59 @@ npm install --save-dev nodemon
 - `POST /api/auth/logout` - Cerrar sesión
 
 ### Equipos
-- `GET /api/equipment` - Listar equipos
+- `GET /api/equipment` - Listar equipos con paginación y filtros
 - `POST /api/equipment` - Crear equipo
 - `PUT /api/equipment/:id` - Actualizar equipo
 - `DELETE /api/equipment/:id` - Eliminar equipo
+- `GET /api/equipment/stats` - Estadísticas por tipo
+- `GET /api/equipment/export` - Exportar a Excel
+- `POST /api/equipment/upload-excel` - Importar desde Excel
+- `GET /api/equipment/template` - Descargar plantilla
+
+### Dashboard
+- `GET /api/dashboard/stats` - Estadísticas generales
+- `GET /api/dashboard/charts` - Datos para gráficos
+- `GET /api/dashboard/equipment-type-stats` - Estadísticas por tipo
 
 ### Estados
 - `GET /api/states` - Listar estados
+
+## 🔧 Configuración de Desarrollo
+
+### Variables de entorno para desarrollo
+```env
+NODE_ENV=development
+PORT=3001
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu-password
+DB_NAME=sistema_gestion_medios
+JWT_SECRET=tu-secret-key
+```
+
+### Migraciones de Base de Datos
+El sistema incluye migraciones automáticas que se ejecutan al iniciar:
+- Conversión de `assigned_to` de INT a VARCHAR
+- Eliminación de columnas de seguridad obsoletas
+- Adición de `location_details`
+
+## 🐛 Correcciones Implementadas
+
+### Problemas Resueltos
+1. **Error de paginación**: Corregido el manejo de parámetros en `getAllEquipment`
+2. **Validación de inventario**: Solucionado el problema de "número ya existe"
+3. **Endpoint de estadísticas**: Agregado `/api/equipment/stats`
+4. **Funcionalidad de eliminación**: Implementada con confirmación modal
+5. **Migración de base de datos**: Corregido el manejo de foreign keys
+6. **Notificaciones**: Sistema mejorado con posicionamiento correcto
+7. **Filtros**: Rediseño completo con búsqueda integrada
+
+### Mejoras de UX/UI
+1. **Modal de confirmación**: Botones funcionales con estilos mejorados
+2. **Filtros compactos**: Diseño optimizado para desktop
+3. **Notificaciones**: Posicionamiento y animaciones mejoradas
+4. **Responsive design**: Desktop-first con adaptaciones móviles
+5. **Accesibilidad**: Cumplimiento WCAG 2.1 AA
 
 ## 🤝 Contribuir
 
@@ -217,5 +344,6 @@ Para soporte técnico, contactar al departamento de IT.
 
 ---
 
-**Versión**: 1.0.0  
-**Última actualización**: Diciembre 2024
+**Versión**: 2.0.0  
+**Última actualización**: Agosto 2025  
+**Estado**: ✅ Funcional - Todas las funcionalidades principales implementadas y probadas

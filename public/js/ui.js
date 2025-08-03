@@ -161,6 +161,8 @@ const UI = {
         const modalOverlay = document.getElementById('modal-overlay');
         if (modalOverlay) {
             modalOverlay.style.display = 'none';
+            // Remover clase de confirmación
+            modalOverlay.classList.remove('modal-confirmation');
         }
     },
     
@@ -385,6 +387,61 @@ const UI = {
         `;
         
         this.showModal('Confirmar', modalContent);
+    },
+
+    // Mostrar diálogo de confirmación (versión async)
+    showConfirmDialog: function(title, message) {
+        console.log('🔍 showConfirmDialog llamado con:', { title, message });
+        
+        return new Promise((resolve) => {
+            const modalContent = `
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 20px;"></i>
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" id="cancel-delete-btn" style="margin-right: 10px;">
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                            <i class="fas fa-trash"></i>
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            console.log('✅ Mostrando modal de confirmación...');
+            this.showModal('Confirmar Eliminación', modalContent);
+            
+            // Agregar clase CSS para estilos específicos
+            const modalOverlay = document.getElementById('modal-overlay');
+            if (modalOverlay) {
+                modalOverlay.classList.add('modal-confirmation');
+            }
+            
+            // Agregar event listeners a los botones
+            setTimeout(() => {
+                const cancelBtn = document.getElementById('cancel-delete-btn');
+                const confirmBtn = document.getElementById('confirm-delete-btn');
+                
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        console.log('🔍 Usuario canceló la eliminación');
+                        this.closeModal();
+                        resolve(false);
+                    });
+                }
+                
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', () => {
+                        console.log('🔍 Usuario confirmó la eliminación');
+                        this.closeModal();
+                        resolve(true);
+                    });
+                }
+            }, 100);
+        });
     },
     
     // Validar formulario
