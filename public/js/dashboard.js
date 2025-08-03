@@ -135,15 +135,28 @@ class Dashboard {
   // Obtener datos del dashboard
   async fetchDashboardData() {
     try {
-      const response = await fetch('/api/dashboard/stats', {
+      // Verificar autenticación
+      if (!ConfigUtils.isAuthenticated()) {
+        console.warn('Usuario no autenticado, usando datos simulados');
+        return this.getMockData();
+      }
+      
+      // Usar la configuración de la API correcta
+      const apiUrl = ConfigUtils.getApiUrl('/dashboard/stats');
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${ConfigUtils.getAuthToken()}`
         }
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.warn('Token expirado o inválido, usando datos simulados');
+          return this.getMockData();
+        }
         throw new Error('Error al obtener datos del dashboard');
       }
 
@@ -152,48 +165,53 @@ class Dashboard {
     } catch (error) {
       console.error('Error al obtener datos del dashboard:', error);
       // Retornar datos simulados en caso de error
-      return {
-        stats: {
-          totalEquipment: 25,
-          activeEquipment: 20,
-          disposalProposals: 2
-        },
-        equipmentByType: {
-          totalLaptops: 8,
-          totalPcs: 12,
-          totalMonitors: 15,
-          totalPrinters: 5,
-          totalSims: 20,
-          totalRadios: 10
-        },
-        alerts: [
-          {
-            type: 'warning',
-            message: '3 equipos requieren mantenimiento preventivo',
-            time: 'hace 2 horas',
-            icon: 'fas fa-tools'
-          },
-          {
-            type: 'warning',
-            message: '1 propuesta de baja pendiente de aprobación',
-            time: 'hace 4 horas',
-            icon: 'fas fa-exclamation-triangle'
-          },
-          {
-            type: 'success',
-            message: 'Sistema funcionando correctamente',
-            time: 'hace 0 minutos',
-            icon: 'fas fa-check-circle'
-          }
-        ],
-        security: {
-          securityEquipment: 15,
-          accessLogs: 12,
-          updatedCredentials: 3,
-          securityAlerts: 0
-        }
-      };
+      return this.getMockData();
     }
+  }
+
+  // Datos simulados para el dashboard
+  getMockData() {
+    return {
+      stats: {
+        totalEquipment: 25,
+        activeEquipment: 20,
+        disposalProposals: 2
+      },
+      equipmentByType: {
+        totalLaptops: 8,
+        totalPcs: 12,
+        totalMonitors: 15,
+        totalPrinters: 5,
+        totalSims: 20,
+        totalRadios: 10
+      },
+      alerts: [
+        {
+          type: 'warning',
+          message: '3 equipos requieren mantenimiento preventivo',
+          time: 'hace 2 horas',
+          icon: 'fas fa-tools'
+        },
+        {
+          type: 'warning',
+          message: '1 propuesta de baja pendiente de aprobación',
+          time: 'hace 4 horas',
+          icon: 'fas fa-exclamation-triangle'
+        },
+        {
+          type: 'success',
+          message: 'Sistema funcionando correctamente',
+          time: 'hace 0 minutos',
+          icon: 'fas fa-check-circle'
+        }
+      ],
+      security: {
+        securityEquipment: 15,
+        accessLogs: 12,
+        updatedCredentials: 3,
+        securityAlerts: 0
+      }
+    };
   }
 
   // Actualizar dashboard con datos
@@ -388,15 +406,36 @@ class Dashboard {
   // Cargar datos de gráficos desde el backend
   async loadChartData() {
     try {
-      const response = await fetch('/api/dashboard/charts', {
+      // Verificar autenticación
+      if (!ConfigUtils.isAuthenticated()) {
+        console.warn('Usuario no autenticado, usando gráficos simulados');
+        this.setupEquipmentTypeChart();
+        this.setupEquipmentStateChart();
+        this.setupEquipmentLocationChart();
+        this.setupOperationalRateChart();
+        return;
+      }
+      
+      // Usar la configuración de la API correcta
+      const apiUrl = ConfigUtils.getApiUrl('/dashboard/charts');
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${ConfigUtils.getAuthToken()}`
         }
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.warn('Token expirado o inválido, usando gráficos simulados');
+          this.setupEquipmentTypeChart();
+          this.setupEquipmentStateChart();
+          this.setupEquipmentLocationChart();
+          this.setupOperationalRateChart();
+          return;
+        }
         throw new Error('Error al obtener datos de gráficos');
       }
 
