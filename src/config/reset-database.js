@@ -1,64 +1,21 @@
 const { executeQuery } = require('./database');
 
-const initializeDatabase = async () => {
+const resetDatabase = async () => {
   try {
-    console.log('🔧 Inicializando base de datos...');
+    console.log('🔄 Reinicializando base de datos con nuevos estados...');
 
-    // Crear tabla de estados si no existe
-    await executeQuery(`
-      CREATE TABLE IF NOT EXISTS states (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        code VARCHAR(10) UNIQUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Crear tabla de usuarios si no existe
-    await executeQuery(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        full_name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE,
-        role ENUM('admin', 'manager', 'consultant') DEFAULT 'consultant',
-        state_id INT,
-        active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (state_id) REFERENCES states(id)
-      )
-    `);
-
-    // Crear tabla de equipos si no existe
-    await executeQuery(`
-      CREATE TABLE IF NOT EXISTS equipment (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        inventory_number VARCHAR(50) UNIQUE NOT NULL,
-        name VARCHAR(200) NOT NULL,
-        type ENUM('desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other') NOT NULL,
-        brand VARCHAR(100),
-        model VARCHAR(100),
-        specifications TEXT,
-        status ENUM('active', 'maintenance', 'out_of_service', 'disposed') DEFAULT 'active',
-        state_id INT NOT NULL,
-        assigned_to VARCHAR(100),
-        location_details TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (state_id) REFERENCES states(id)
-      )
-    `);
-
-    // Siempre actualizar los estados con los nombres venezolanos correctos
-    console.log('🔄 Actualizando estados con nombres venezolanos...');
-    
-    // Limpiar estados existentes
-    console.log('🗑️ Limpiando estados existentes...');
+    // Limpiar datos existentes
+    console.log('🗑️ Limpiando datos existentes...');
+    await executeQuery('DELETE FROM equipment');
+    await executeQuery('DELETE FROM users');
     await executeQuery('DELETE FROM states');
+    
+    // Resetear auto-increment
+    await executeQuery('ALTER TABLE equipment AUTO_INCREMENT = 1');
+    await executeQuery('ALTER TABLE users AUTO_INCREMENT = 1');
     await executeQuery('ALTER TABLE states AUTO_INCREMENT = 1');
+
+    console.log('✅ Datos limpiados correctamente');
 
     // Insertar nuevos estados venezolanos
     console.log('📝 Insertando nuevos estados venezolanos...');
@@ -77,21 +34,6 @@ const initializeDatabase = async () => {
         'INSERT INTO states (name, code) VALUES (?, ?)',
         [state.name, state.code]
       );
-      console.log(`   ✅ Insertado: ${state.name} (${state.code})`);
-    }
-
-    // Verificar si ya existen datos de usuarios y equipos
-    const equipmentCount = await executeQuery('SELECT COUNT(*) as count FROM equipment');
-    const usersCount = await executeQuery('SELECT COUNT(*) as count FROM users');
-
-    const hasData = equipmentCount[0].count > 0 || usersCount[0].count > 0;
-
-    if (hasData) {
-      console.log('📊 Base de datos ya contiene datos:');
-      console.log(`   - Equipos: ${equipmentCount[0].count}`);
-      console.log(`   - Usuarios: ${usersCount[0].count}`);
-      console.log('✅ Base de datos inicializada (sin insertar datos de ejemplo)');
-      return;
     }
 
     // Insertar usuarios de ejemplo
@@ -124,7 +66,7 @@ const initializeDatabase = async () => {
 
     for (const user of users) {
       await executeQuery(
-        'INSERT IGNORE INTO users (username, password, full_name, email, role, state_id) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (username, password, full_name, email, role, state_id) VALUES (?, ?, ?, ?, ?, ?)',
         [user.username, user.password, user.full_name, user.email, user.role, user.state_id]
       );
     }
@@ -196,7 +138,7 @@ const initializeDatabase = async () => {
 
     for (const item of equipment) {
       await executeQuery(`
-        INSERT IGNORE INTO equipment (
+        INSERT INTO equipment (
           inventory_number, name, type, brand, model, specifications,
           status, state_id, assigned_to, location_details
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -207,8 +149,8 @@ const initializeDatabase = async () => {
       ]);
     }
 
-    console.log('✅ Base de datos inicializada correctamente');
-    console.log('📊 Datos de ejemplo insertados:');
+    console.log('✅ Base de datos reinicializada correctamente');
+    console.log('📊 Nuevos datos insertados:');
     console.log('   - 7 estados/regiones venezolanos:');
     states.forEach((state, index) => {
       console.log(`     ${index + 1}. ${state.name} (${state.code})`);
@@ -217,9 +159,9 @@ const initializeDatabase = async () => {
     console.log('   - 5 equipos de ejemplo');
 
   } catch (error) {
-    console.error('❌ Error inicializando base de datos:', error);
+    console.error('❌ Error reinicializando base de datos:', error);
     throw error;
   }
 };
 
-module.exports = { initializeDatabase }; 
+module.exports = { resetDatabase }; 

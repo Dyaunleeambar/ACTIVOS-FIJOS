@@ -103,10 +103,8 @@ app.get('/dev/equipment/assigned', async (req, res) => {
             count: equipment.length
         });
     } catch (error) {
-        console.error('Error al obtener equipos asignados:', error);
-        res.status(500).json({
-            error: 'Error interno del servidor'
-        });
+        console.error('Error al obtener equipos asignados (dev):', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
@@ -114,34 +112,77 @@ app.put('/dev/equipment/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { assigned_to } = req.body;
-        const { executeQuery } = require('./config/database');
 
-        // Verificar que el equipo existe
+        const { executeQuery } = require('./config/database');
         const existingQuery = 'SELECT id, inventory_number, name, assigned_to FROM equipment WHERE id = ?';
         const existing = await executeQuery(existingQuery, [id]);
 
         if (existing.length === 0) {
-            return res.status(404).json({
-                error: 'Equipo no encontrado'
-            });
+            return res.status(404).json({ error: 'Equipo no encontrado' });
         }
 
-        // Actualizar solo el campo assigned_to
         const updateQuery = 'UPDATE equipment SET assigned_to = ? WHERE id = ?';
         await executeQuery(updateQuery, [assigned_to || null, id]);
 
         console.log(`✅ Equipo ${id} actualizado correctamente`);
+        res.json({ success: true, message: 'Equipo actualizado correctamente' });
 
-        res.json({
-            success: true,
-            message: 'Equipo actualizado correctamente'
+    } catch (error) {
+        console.error('Error actualizando equipo (dev):', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Endpoint temporal para actualizar estados
+app.post('/dev/update-states', async (req, res) => {
+    try {
+        const { executeQuery } = require('./config/database');
+        
+        console.log('🔄 Actualizando estados con nombres venezolanos...');
+
+        // Limpiar estados existentes
+        console.log('🗑️ Limpiando estados existentes...');
+        await executeQuery('DELETE FROM states');
+        await executeQuery('ALTER TABLE states AUTO_INCREMENT = 1');
+
+        // Insertar nuevos estados venezolanos
+        console.log('📝 Insertando nuevos estados venezolanos...');
+        const states = [
+            { name: 'Dirección', code: 'DIR' },
+            { name: 'Carabobo', code: 'CAR' },
+            { name: 'Anzoátegui', code: 'ANZ' },
+            { name: 'Bolívar', code: 'BOL' },
+            { name: 'Barinas', code: 'BAR' },
+            { name: 'Zulia', code: 'ZUL' },
+            { name: 'Capital', code: 'CAP' }
+        ];
+
+        for (const state of states) {
+            await executeQuery(
+                'INSERT INTO states (name, code) VALUES (?, ?)',
+                [state.name, state.code]
+            );
+            console.log(`   ✅ Insertado: ${state.name} (${state.code})`);
+        }
+
+        // Verificar que se insertaron correctamente
+        const insertedStates = await executeQuery('SELECT * FROM states ORDER BY name');
+        console.log('\n📊 Estados actualizados:');
+        insertedStates.forEach((state, index) => {
+            console.log(`   ${index + 1}. ${state.name} (${state.code})`);
+        });
+
+        console.log('\n✅ Estados actualizados correctamente');
+        
+        res.json({ 
+            success: true, 
+            message: 'Estados actualizados correctamente',
+            states: insertedStates
         });
 
     } catch (error) {
-        console.error('Error actualizando equipo:', error);
-        res.status(500).json({
-            error: 'Error interno del servidor'
-        });
+        console.error('❌ Error actualizando estados:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
@@ -186,6 +227,72 @@ app.use((err, req, res, next) => {
 
 // Puerto del servidor
 const PORT = process.env.PORT || 3001;
+
+// Función para actualizar estados
+const updateStates = async () => {
+  try {
+    const { executeQuery } = require('./config/database');
+    
+    console.log('🔄 Actualizando estados con nombres venezolanos...');
+
+    // Limpiar estados existentes
+    console.log('🗑️ Limpiando estados existentes...');
+    await executeQuery('DELETE FROM states');
+    await executeQuery('ALTER TABLE states AUTO_INCREMENT = 1');
+
+    // Insertar nuevos estados venezolanos
+    console.log('📝 Insertando nuevos estados venezolanos...');
+    const states = [
+      { name: 'Dirección', code: 'DIR' },
+      { name: 'Carabobo', code: 'CAR' },
+      { name: 'Anzoátegui', code: 'ANZ' },
+      { name: 'Bolívar', code: 'BOL' },
+      { name: 'Barinas', code: 'BAR' },
+      { name: 'Zulia', code: 'ZUL' },
+      { name: 'Capital', code: 'CAP' }
+    ];
+
+    for (const state of states) {
+      await executeQuery(
+        'INSERT INTO states (name, code) VALUES (?, ?)',
+        [state.name, state.code]
+      );
+      console.log(`   ✅ Insertado: ${state.name} (${state.code})`);
+    }
+
+    // Verificar que se insertaron correctamente
+    const insertedStates = await executeQuery('SELECT * FROM states ORDER BY name');
+    console.log('\n📊 Estados actualizados:');
+    insertedStates.forEach((state, index) => {
+      console.log(`   ${index + 1}. ${state.name} (${state.code})`);
+    });
+
+    console.log('\n✅ Estados actualizados correctamente');
+
+  } catch (error) {
+    console.error('❌ Error actualizando estados:', error);
+  }
+};
+
+// Inicializar base de datos y actualizar estados
+const initializeServer = async () => {
+  try {
+    console.log('🚀 Iniciando servidor...');
+    
+    // Inicializar base de datos
+    await initializeDatabase();
+    
+    // Actualizar estados
+    await updateStates();
+    
+    console.log('✅ Servidor inicializado correctamente');
+  } catch (error) {
+    console.error('❌ Error inicializando servidor:', error);
+  }
+};
+
+// Llamar a la inicialización al inicio
+initializeServer();
 
 // Iniciar servidor
 app.listen(PORT, async () => {

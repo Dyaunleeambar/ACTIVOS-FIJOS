@@ -22,10 +22,11 @@ const dbConfig = {
   port: process.env.DB_PORT || 3306,
   charset: 'utf8mb4',
   timezone: '+00:00',
-  acquireTimeout: 60000,
-  timeout: 60000,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  // Configuraciones adicionales para mayor compatibilidad
+  multipleStatements: true,
+  dateStrings: true
 };
 
 // Pool de conexiones
