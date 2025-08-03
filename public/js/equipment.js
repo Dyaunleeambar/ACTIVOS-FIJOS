@@ -81,12 +81,12 @@ class Equipment {
 
             const response = await API.get(`/equipment?${params}`);
             
-            if (response.success) {
-                this.renderEquipmentTable(response.data.equipment);
-                this.renderPagination(response.data.pagination);
-                this.updateEquipmentCount(response.data.pagination.total);
+            if (response.equipment) {
+                this.renderEquipmentTable(response.equipment);
+                this.renderPagination(response.pagination);
+                this.updateEquipmentCount(response.pagination.total);
             } else {
-                throw new Error(response.message || 'Error cargando equipos');
+                throw new Error('Error cargando equipos');
             }
         } catch (error) {
             console.error('Error cargando equipos:', error);
@@ -508,8 +508,8 @@ class Equipment {
     async loadEquipmentDataForDynamicModal(equipmentId) {
         try {
             const response = await API.get(`/equipment/${equipmentId}`);
-            if (response.success) {
-                const equipment = response.data;
+            if (response.equipment) {
+                const equipment = response.equipment;
                 const form = document.getElementById('dynamic-equipment-form');
                 
                 // Llenar formulario con datos del equipo
@@ -546,6 +546,10 @@ class Equipment {
                 return;
             }
             
+            // Procesar valores numéricos de forma segura
+            const stateIdValue = formData.get('state_id');
+            const assignedToValue = formData.get('assigned_to');
+            
             const equipmentData = {
                 inventory_number: formData.get('inventory_number'),
                 name: formData.get('name'),
@@ -554,9 +558,12 @@ class Equipment {
                 model: formData.get('model'),
                 specifications: formData.get('specifications'),
                 status: formData.get('status'),
-                state_id: formData.get('state_id'),
-                assigned_to: formData.get('assigned_to') || null
+                state_id: stateIdValue && stateIdValue.trim() !== '' ? parseInt(stateIdValue) : null,
+                assigned_to: assignedToValue && assignedToValue.trim() !== '' ? parseInt(assignedToValue) : null
             };
+
+            // Debug: mostrar datos que se envían
+            console.log('🔍 Datos que se envían al servidor:', equipmentData);
 
             // Mostrar loading state
             const submitBtn = form.querySelector('button[type="submit"]');
@@ -573,15 +580,13 @@ class Equipment {
                 response = await API.post('/equipment', equipmentData);
             }
             
-            if (response.success) {
-                UI.showNotification(
-                    equipmentId ? 'Equipo actualizado exitosamente' : 'Equipo creado exitosamente', 
-                    'success'
-                );
+            // El servidor devuelve directamente el objeto con message y equipment
+            if (response.message) {
+                UI.showNotification(response.message, 'success');
                 this.closeDynamicModal();
                 this.loadEquipmentList();
             } else {
-                throw new Error(response.message || 'Error guardando equipo');
+                throw new Error('Respuesta inesperada del servidor');
             }
         } catch (error) {
             console.error('Error guardando equipo:', error);
@@ -614,8 +619,10 @@ class Equipment {
     async viewEquipment(equipmentId) {
         try {
             const response = await API.get(`/equipment/${equipmentId}`);
-            if (response.success) {
-                this.showEquipmentDetails(response.data);
+            if (response.equipment) {
+                this.showEquipmentDetails(response.equipment);
+            } else {
+                throw new Error('No se encontró el equipo');
             }
         } catch (error) {
             console.error('Error cargando detalles del equipo:', error);
@@ -639,11 +646,11 @@ class Equipment {
         if (confirmed) {
             try {
                 const response = await API.delete(`/equipment/${equipmentId}`);
-                if (response.success) {
-                    UI.showNotification('Equipo eliminado exitosamente', 'success');
+                if (response.message) {
+                    UI.showNotification(response.message, 'success');
                     this.loadEquipmentList();
                 } else {
-                    throw new Error(response.message || 'Error eliminando equipo');
+                    throw new Error('Error eliminando equipo');
                 }
             } catch (error) {
                 console.error('Error eliminando equipo:', error);

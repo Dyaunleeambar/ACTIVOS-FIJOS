@@ -67,7 +67,58 @@ const getAllEquipment = async (req, res) => {
       LIMIT ? OFFSET ?
     `;
 
-    params.push(parseInt(limit), offset);
+    // Debug: mostrar valores recibidos
+    console.log('🔍 getAllEquipment - Valores recibidos:', { limit, offset, page });
+    console.log('🔍 getAllEquipment - Tipos:', { 
+      limitType: typeof limit, 
+      offsetType: typeof offset, 
+      pageType: typeof page 
+    });
+    
+    // Asegurar que los parámetros sean números válidos y no undefined
+    let limitParam = 20;
+    let offsetParam = 0;
+    
+    // Procesar limit
+    if (limit !== undefined && limit !== null && limit !== '') {
+      const parsedLimit = parseInt(limit);
+      if (!isNaN(parsedLimit)) {
+        limitParam = parsedLimit;
+      }
+    }
+    
+    // Procesar offset
+    if (offset !== undefined && offset !== null && offset !== '') {
+      const parsedOffset = parseInt(offset);
+      if (!isNaN(parsedOffset)) {
+        offsetParam = parsedOffset;
+      }
+    }
+    
+    console.log('🔍 getAllEquipment - Valores procesados:', { limitParam, offsetParam });
+    
+    // Verificar que los valores sean números válidos
+    if (isNaN(limitParam) || isNaN(offsetParam)) {
+      console.log('❌ getAllEquipment - Valores inválidos:', { limitParam, offsetParam });
+      return res.status(400).json({
+        error: 'Parámetros de paginación inválidos'
+      });
+    }
+    
+    // Asegurar que los valores sean números positivos
+    limitParam = Math.max(1, Math.min(100, limitParam)); // Entre 1 y 100
+    offsetParam = Math.max(0, offsetParam); // Mínimo 0
+    
+    // Asegurar que los parámetros sean números enteros
+    limitParam = Math.floor(limitParam);
+    offsetParam = Math.floor(offsetParam);
+    
+    params.push(limitParam, offsetParam);
+    console.log('🔍 getAllEquipment - Parámetros finales:', params);
+    console.log('🔍 getAllEquipment - Tipos de parámetros finales:', { 
+      limitParamType: typeof limitParam, 
+      offsetParamType: typeof offsetParam 
+    });
 
     const equipment = await executeQuery(query, params);
 
@@ -181,10 +232,13 @@ const createEquipment = async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const result = await executeQuery(insertQuery, [
-      inventory_number, name, type, brand, model, specifications,
-      status, state_id, assigned_to
-    ]);
+    // Filtrar valores undefined y convertirlos a null
+    const params = [
+      inventory_number, name, type, brand || null, model || null, specifications || null,
+      status, state_id, assigned_to || null
+    ];
+
+    const result = await executeQuery(insertQuery, params);
 
     // Obtener el equipo creado
     const newEquipment = await executeQuery('SELECT * FROM equipment WHERE id = ?', [result.insertId]);

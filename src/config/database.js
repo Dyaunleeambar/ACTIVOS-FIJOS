@@ -62,7 +62,22 @@ const executeQuery = async (query, params = []) => {
   let connection;
   try {
     connection = await getConnection();
-    const [results] = await connection.execute(query, params);
+    
+    // Asegurar que los parámetros sean del tipo correcto
+    const processedParams = params.map(param => {
+      if (param === undefined) {
+        return null;
+      }
+      if (typeof param === 'number') {
+        return param;
+      }
+      if (typeof param === 'string' && param.trim() === '') {
+        return null;
+      }
+      return param;
+    });
+    
+    const [results] = await connection.execute(query, processedParams);
     return results;
   } catch (error) {
     dbLogger.error('Error al ejecutar query:', { query, params, error: error.message });

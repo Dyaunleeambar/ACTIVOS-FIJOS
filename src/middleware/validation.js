@@ -49,8 +49,18 @@ const validateCreateEquipment = [
   body('model').optional().isString().withMessage('Modelo debe ser texto'),
   body('specifications').optional().isString().withMessage('Especificaciones debe ser texto'),
   body('status').optional().isIn(['active', 'maintenance', 'out_of_service', 'disposed']).withMessage('Estado inválido'),
-  body('state_id').isInt().withMessage('ID de estado es requerido y debe ser un número entero'),
-  body('assigned_to').optional().isInt().withMessage('ID de usuario asignado debe ser un número entero'),
+  body('state_id').optional().custom((value) => {
+    if (value === null || value === undefined || value === '') {
+      return true; // Permitir valores nulos/vacíos para campos opcionales
+    }
+    return Number.isInteger(Number(value));
+  }).withMessage('ID de estado debe ser un número entero o estar vacío'),
+  body('assigned_to').optional().custom((value) => {
+    if (value === null || value === undefined || value === '') {
+      return true; // Permitir valores nulos/vacíos para campos opcionales
+    }
+    return Number.isInteger(Number(value));
+  }).withMessage('ID de usuario asignado debe ser un número entero o estar vacío'),
   body('security_username').optional().isString().withMessage('Username de seguridad debe ser texto'),
   handleValidationErrors
 ];
@@ -64,7 +74,12 @@ const validateUpdateEquipment = [
   body('specifications').optional().isString().withMessage('Especificaciones debe ser texto'),
   body('status').optional().isIn(['active', 'maintenance', 'out_of_service', 'disposed']).withMessage('Estado inválido'),
   body('state_id').optional().isInt().withMessage('ID de estado debe ser un número entero'),
-  body('assigned_to').optional().isInt().withMessage('ID de usuario asignado debe ser un número entero'),
+  body('assigned_to').optional().custom((value) => {
+    if (value === null || value === undefined || value === '') {
+      return true; // Permitir valores nulos/vacíos para campos opcionales
+    }
+    return Number.isInteger(Number(value));
+  }).withMessage('ID de usuario asignado debe ser un número entero o estar vacío'),
   body('security_username').optional().isString().withMessage('Username de seguridad debe ser texto'),
   handleValidationErrors
 ];
