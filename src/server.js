@@ -67,6 +67,9 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Middleware para manejar archivos (multer) - REMOVIDO DE AQUÍ
+// Se manejará en las rutas específicas
+
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, '../public')));
 

@@ -81,33 +81,33 @@ const ConfigUtils = {
     
     // Obtener token de autenticación
     getAuthToken: () => {
-        return localStorage.getItem(CONFIG.TOKEN_KEY);
+        return sessionStorage.getItem(CONFIG.TOKEN_KEY);
     },
     
     // Guardar token de autenticación
     setAuthToken: (token) => {
-        localStorage.setItem(CONFIG.TOKEN_KEY, token);
+        sessionStorage.setItem(CONFIG.TOKEN_KEY, token);
     },
     
     // Eliminar token de autenticación
     removeAuthToken: () => {
-        localStorage.removeItem(CONFIG.TOKEN_KEY);
+        sessionStorage.removeItem(CONFIG.TOKEN_KEY);
     },
     
     // Obtener datos del usuario
     getUserData: () => {
-        const userData = localStorage.getItem(CONFIG.USER_KEY);
+        const userData = sessionStorage.getItem(CONFIG.USER_KEY);
         return userData ? JSON.parse(userData) : null;
     },
     
     // Guardar datos del usuario
     setUserData: (userData) => {
-        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(userData));
+        sessionStorage.setItem(CONFIG.USER_KEY, JSON.stringify(userData));
     },
     
     // Eliminar datos del usuario
     removeUserData: () => {
-        localStorage.removeItem(CONFIG.USER_KEY);
+        sessionStorage.removeItem(CONFIG.USER_KEY);
     },
     
     // Verificar si el usuario está autenticado

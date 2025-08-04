@@ -5,25 +5,92 @@ const Auth = {
     currentUser: null,
     
     // Inicializar autenticación
-    init: function() {
-        this.checkAuthStatus();
+    init: async function() {
+        await this.checkAuthStatus();
         this.setupEventListeners();
     },
     
     // Verificar estado de autenticación
-    checkAuthStatus: function() {
+    checkAuthStatus: async function() {
+        console.log('🔍 Iniciando verificación de autenticación...');
+        
         const token = ConfigUtils.getAuthToken();
         const userData = ConfigUtils.getUserData();
         
-        if (token && userData) {
-            this.isAuthenticated = true;
-            this.currentUser = userData;
-            this.showApp();
-        } else {
+        console.log('📋 Token encontrado:', !!token);
+        console.log('👤 Datos de usuario encontrados:', !!userData);
+        
+        // Si no hay token o datos de usuario, mostrar login
+        if (!token || !userData) {
+            console.log('❌ No hay token o datos de usuario, mostrando login');
+            this.isAuthenticated = false;
+            this.currentUser = null;
+            this.showLogin();
+            return;
+        }
+        
+        // Mostrar pantalla de carga mientras valida
+        console.log('⏳ Mostrando pantalla de carga...');
+        this.showLoading();
+        
+        // Validar token con el servidor
+        try {
+            console.log('🔐 Validando token con el servidor...');
+            const isValid = await this.verifyToken();
+            
+            console.log('✅ Resultado de validación:', isValid);
+            
+            if (isValid) {
+                // Token válido - mostrar aplicación
+                console.log('✅ Token válido, mostrando aplicación');
+                this.isAuthenticated = true;
+                this.currentUser = userData;
+                this.showApp();
+            } else {
+                // Token inválido - limpiar datos y mostrar login
+                console.log('🔄 Token inválido, limpiando sesión...');
+                ConfigUtils.removeAuthToken();
+                ConfigUtils.removeUserData();
+                this.isAuthenticated = false;
+                this.currentUser = null;
+                this.showLogin();
+            }
+        } catch (error) {
+            console.error('❌ Error validando token:', error);
+            // En caso de error de conexión, limpiar sesión por seguridad
+            console.log('🔄 Error de conexión, limpiando sesión por seguridad...');
+            ConfigUtils.removeAuthToken();
+            ConfigUtils.removeUserData();
             this.isAuthenticated = false;
             this.currentUser = null;
             this.showLogin();
         }
+    },
+    
+    // Verificar estado de autenticación (versión sin validación de servidor)
+    checkAuthStatusSimple: function() {
+        console.log('🔍 Iniciando verificación simple de autenticación...');
+        
+        const token = ConfigUtils.getAuthToken();
+        const userData = ConfigUtils.getUserData();
+        
+        console.log('📋 Token encontrado:', !!token);
+        console.log('👤 Datos de usuario encontrados:', !!userData);
+        
+        // Si no hay token o datos de usuario, mostrar login
+        if (!token || !userData) {
+            console.log('❌ No hay token o datos de usuario, mostrando login');
+            this.isAuthenticated = false;
+            this.currentUser = null;
+            this.showLogin();
+            return;
+        }
+        
+        // Si hay token y datos, mostrar aplicación (sin validar con servidor)
+        console.log('✅ Token y datos encontrados, mostrando aplicación');
+        this.isAuthenticated = true;
+        this.currentUser = userData;
+        this.showApp();
     },
     
     // Configurar event listeners
@@ -148,6 +215,9 @@ const Auth = {
         this.isAuthenticated = false;
         this.currentUser = null;
         
+        // Limpiar estado de navegación
+        this.clearNavigationState();
+        
         // Mostrar login
         this.showLogin();
         
@@ -162,6 +232,13 @@ const Auth = {
         document.getElementById('loading-screen').style.display = 'none';
     },
     
+    // Mostrar pantalla de carga
+    showLoading: function() {
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('loading-screen').style.display = 'flex';
+    },
+    
     // Mostrar aplicación
     showApp: function() {
         document.getElementById('login-page').style.display = 'none';
@@ -171,10 +248,55 @@ const Auth = {
         // Actualizar información del usuario
         this.updateUserInfo();
         
+        // Forzar navegación al Dashboard después del login
+        this.redirectToDashboard();
+        
         // Inicializar aplicación
         if (window.App) {
             App.init();
         }
+    },
+    
+    // Redirigir al Dashboard
+    redirectToDashboard: function() {
+        console.log('🏠 Redirigiendo al Dashboard...');
+        
+        // Limpiar hash anterior y establecer dashboard
+        window.location.hash = '#dashboard';
+        
+        // Si la aplicación ya está inicializada, navegar directamente
+        if (window.App && window.App.navigateToPage) {
+            window.App.navigateToPage('dashboard');
+        } else {
+            // Si la aplicación no está inicializada, esperar un poco y intentar de nuevo
+            setTimeout(() => {
+                if (window.App && window.App.navigateToPage) {
+                    window.App.navigateToPage('dashboard');
+                } else {
+                    // Fallback: usar UI.showPage directamente
+                    if (window.UI && window.UI.showPage) {
+                        window.UI.showPage('dashboard');
+                    }
+                }
+            }, 100);
+        }
+        
+        console.log('✅ Redirección al Dashboard completada');
+    },
+    
+    // Limpiar estado de navegación
+    clearNavigationState: function() {
+        console.log('🧹 Limpiando estado de navegación...');
+        
+        // Limpiar hash de la URL
+        window.location.hash = '';
+        
+        // Limpiar cualquier estado de navegación en la aplicación
+        if (window.App) {
+            window.App.currentPage = 'dashboard';
+        }
+        
+        console.log('✅ Estado de navegación limpiado');
     },
     
     // Actualizar información del usuario en la UI
@@ -230,21 +352,43 @@ const Auth = {
     // Verificar token
     verifyToken: async function() {
         try {
+            console.log('🔐 Iniciando verificación de token...');
+            console.log('🌐 URL de verificación:', ConfigUtils.getApiUrl('/auth/verify'));
+            
+            // Agregar timeout de 5 segundos
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                console.log('⏰ Timeout alcanzado, abortando...');
+                controller.abort();
+            }, 5000);
+            
             const response = await fetch(ConfigUtils.getApiUrl('/auth/verify'), {
                 method: 'GET',
-                headers: ConfigUtils.getAuthHeaders()
+                headers: ConfigUtils.getAuthHeaders(),
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
+            
+            console.log('📡 Respuesta del servidor:', response.status, response.statusText);
             
             if (response.ok) {
                 const data = await response.json();
+                console.log('📄 Datos de respuesta:', data);
                 if (data.valid) {
+                    console.log('✅ Token válido confirmado por servidor');
                     return true;
+                } else {
+                    console.log('❌ Token inválido según servidor');
+                    return false;
                 }
+            } else {
+                console.log('❌ Error en respuesta del servidor:', response.status);
+                return false;
             }
             
-            return false;
         } catch (error) {
-            console.error('Error verificando token:', error);
+            console.error('❌ Error verificando token:', error);
             return false;
         }
     },
@@ -388,13 +532,148 @@ const Auth = {
     // Obtener ID del estado del usuario (para managers)
     getUserStateId: function() {
         return this.currentUser ? this.currentUser.state_id : null;
+    },
+    
+    // Función para limpiar sesión manualmente (útil para testing)
+    clearSession: function() {
+        console.log('🧹 Limpiando sesión manualmente...');
+        ConfigUtils.removeAuthToken();
+        ConfigUtils.removeUserData();
+        this.isAuthenticated = false;
+        this.currentUser = null;
+        this.showLogin();
+        console.log('✅ Sesión limpiada, mostrando login');
+    },
+    
+    // Función para limpiar sessionStorage completamente
+    clearSessionStorage: function() {
+        console.log('🧹 Limpiando sessionStorage completamente...');
+        sessionStorage.clear();
+        console.log('✅ sessionStorage limpiado');
+        this.clearSession();
+    },
+    
+    // Función para cambiar modo de validación
+    setValidationMode: function(useServer = true) {
+        if (useServer) {
+            console.log('🔧 Cambiando a modo validación con servidor');
+            this.checkAuthStatus = this.checkAuthStatusWithServer;
+        } else {
+            console.log('🔧 Cambiando a modo validación sin servidor');
+            this.checkAuthStatus = this.checkAuthStatusSimple;
+        }
+    },
+    
+    // Guardar referencia a la función original
+    checkAuthStatusWithServer: async function() {
+        const token = ConfigUtils.getAuthToken();
+        const userData = ConfigUtils.getUserData();
+        
+        // Si no hay token o datos de usuario, mostrar login
+        if (!token || !userData) {
+            this.isAuthenticated = false;
+            this.currentUser = null;
+            this.showLogin();
+            return;
+        }
+        
+        // Mostrar pantalla de carga mientras valida
+        this.showLoading();
+        
+        // Validar token con el servidor
+        try {
+            const isValid = await this.verifyToken();
+            
+            if (isValid) {
+                // Token válido - mostrar aplicación
+                this.isAuthenticated = true;
+                this.currentUser = userData;
+                this.showApp();
+            } else {
+                // Token inválido - limpiar datos y mostrar login
+                ConfigUtils.removeAuthToken();
+                ConfigUtils.removeUserData();
+                this.isAuthenticated = false;
+                this.currentUser = null;
+                this.showLogin();
+            }
+        } catch (error) {
+            console.error('❌ Error validando token:', error);
+            // En caso de error de conexión, limpiar sesión por seguridad
+            ConfigUtils.removeAuthToken();
+            ConfigUtils.removeUserData();
+            this.isAuthenticated = false;
+            this.currentUser = null;
+            this.showLogin();
+        }
     }
 };
 
 // Inicializar autenticación cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    Auth.init();
+document.addEventListener('DOMContentLoaded', async () => {
+    await Auth.init();
 });
 
 // Exportar módulo de autenticación
-window.Auth = Auth; 
+window.Auth = Auth;
+
+// Funciones de debug globales (para testing desde consola)
+window.debugAuth = {
+    // Limpiar sesión
+    clearSession: () => {
+        Auth.clearSession();
+    },
+    
+    // Limpiar sessionStorage completamente
+    clearSessionStorage: () => {
+        Auth.clearSessionStorage();
+    },
+    
+    // Limpiar estado de navegación
+    clearNavigation: () => {
+        Auth.clearNavigationState();
+    },
+    
+    // Redirigir al Dashboard
+    goToDashboard: () => {
+        Auth.redirectToDashboard();
+    },
+    
+    // Verificar estado actual
+    checkStatus: () => {
+        console.log('🔍 Estado actual de autenticación:');
+        console.log('Token:', !!ConfigUtils.getAuthToken());
+        console.log('User Data:', !!ConfigUtils.getUserData());
+        console.log('Is Authenticated:', Auth.isAuthenticated);
+        console.log('Current User:', Auth.currentUser);
+    },
+    
+    // Forzar validación de token
+    forceVerify: async () => {
+        console.log('🔐 Forzando verificación de token...');
+        const result = await Auth.verifyToken();
+        console.log('Resultado:', result);
+        return result;
+    },
+    
+    // Cambiar modo de validación
+    setValidationMode: (useServer) => {
+        Auth.setValidationMode(useServer);
+    },
+    
+    // Mostrar login
+    showLogin: () => {
+        Auth.showLogin();
+    },
+    
+    // Mostrar app
+    showApp: () => {
+        Auth.showApp();
+    },
+    
+    // Reinicializar autenticación
+    reinit: async () => {
+        console.log('🔄 Reinicializando autenticación...');
+        await Auth.init();
+    }
+}; 

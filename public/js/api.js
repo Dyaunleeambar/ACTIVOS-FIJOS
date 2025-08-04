@@ -107,10 +107,22 @@ const API = {
     
     // POST request
     post: function(endpoint, data = {}) {
-        return this.request(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        // Verificar si es FormData (para subida de archivos)
+        if (data instanceof FormData) {
+            return this.request(endpoint, {
+                method: 'POST',
+                body: data,
+                headers: {
+                    ...ConfigUtils.getAuthHeaders()
+                    // No incluir Content-Type para FormData, el navegador lo establece automáticamente
+                }
+            });
+        } else {
+            return this.request(endpoint, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        }
     },
     
     // PUT request

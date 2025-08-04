@@ -497,24 +497,27 @@ const upload = multer({
 // Subir archivo Excel
 const uploadExcel = async (req, res) => {
   try {
-    upload.single('file')(req, res, async (err) => {
-      if (err) {
-        return res.status(400).json({
-          error: err.message
-        });
-      }
+    console.log('🚀 Iniciando uploadExcel...');
+    console.log('📊 Headers:', req.headers);
+    console.log('📋 Content-Type:', req.headers['content-type']);
+    console.log('📁 Archivo recibido:', req.file);
 
-      if (!req.file) {
-        return res.status(400).json({
-          error: 'No se proporcionó ningún archivo'
-        });
-      }
+    if (!req.file) {
+      console.error('❌ No se proporcionó archivo');
+      return res.status(400).json({
+        error: 'No se proporcionó ningún archivo'
+      });
+    }
 
+    try {
       // Leer el archivo Excel
+      console.log('📖 Leyendo archivo Excel:', req.file.path);
       const workbook = XLSX.readFile(req.file.path);
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      console.log('📊 Datos leídos:', data.length, 'filas');
 
       if (data.length < 2) {
         return res.status(400).json({
@@ -526,8 +529,14 @@ const uploadExcel = async (req, res) => {
       const columns = data[0];
       const rows = data.slice(1);
 
+      console.log('📋 Columnas encontradas:', columns);
+      console.log('📊 Filas de datos:', rows.length);
+
       // Limpiar archivo temporal
-      fs.unlinkSync(req.file.path);
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+        console.log('🗑️ Archivo temporal eliminado');
+      }
 
       res.json({
         success: true,
@@ -538,9 +547,20 @@ const uploadExcel = async (req, res) => {
         }
       });
 
-    });
+    } catch (excelError) {
+      console.error('❌ Error procesando Excel:', excelError);
+      
+      // Limpiar archivo temporal en caso de error
+      if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        error: 'Error al procesar el archivo Excel. Verifique que sea un archivo válido.'
+      });
+    }
   } catch (error) {
-    console.error('Error al procesar archivo Excel:', error);
+    console.error('❌ Error general en uploadExcel:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });

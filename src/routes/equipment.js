@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const equipmentController = require('../controllers/equipmentController');
 const { authenticateToken, authorizeRole, authorizeEquipmentAccess } = require('../middleware/auth');
 const { 
@@ -9,6 +12,37 @@ const {
   validateStateId,
   validateExportFilters
 } = require('../middleware/validation');
+
+// Configuración de multer para subida de archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'equipment-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['.xlsx', '.xls'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos Excel (.xlsx, .xls)'), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
 
 // GET /api/equipment/stats - Obtener estadísticas de equipos
 router.get('/stats', authenticateToken, equipmentController.getEquipmentStats);
@@ -46,6 +80,7 @@ router.get('/state/:stateId',
 router.post('/upload-excel', 
   authenticateToken, 
   authorizeRole(['admin', 'manager']), 
+  upload.single('file'),
   equipmentController.uploadExcel
 );
 
