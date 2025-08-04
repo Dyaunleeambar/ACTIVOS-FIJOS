@@ -308,12 +308,12 @@ const deleteEquipment = async (req, res) => {
 
     const equipment = existing[0];
 
-    // Verificar que el equipo no esté asignado actualmente
-    if (equipment.assigned_to && equipment.assigned_to.trim() !== '') {
-      return res.status(400).json({
-        error: `No se puede eliminar el equipo "${equipment.name}" porque está asignado a: ${equipment.assigned_to}`
-      });
-    }
+    // Verificar que el equipo no esté asignado actualmente (OPCIONAL - Comentado para permitir eliminación)
+    // if (equipment.assigned_to && equipment.assigned_to.trim() !== '') {
+    //   return res.status(400).json({
+    //     error: `No se puede eliminar el equipo "${equipment.name}" porque está asignado a: ${equipment.assigned_to}`
+    //   });
+    // }
 
     // Eliminar equipo
     await executeQuery('DELETE FROM equipment WHERE id = ?', [id]);

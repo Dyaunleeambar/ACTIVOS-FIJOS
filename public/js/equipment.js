@@ -851,9 +851,20 @@ class Equipment {
 
     // Eliminar equipo
     async deleteEquipment(equipmentId) {
+        // Convertir ID a número entero
+        const id = parseInt(equipmentId, 10);
+        
         console.log('🔍 deleteEquipment llamado con ID:', equipmentId);
+        console.log('🔍 ID convertido a número:', id);
         console.log('🔍 Equipment object:', window.Equipment);
         console.log('🔍 deleteEquipment method:', window.Equipment?.deleteEquipment);
+        
+        // Validar que el ID sea un número válido
+        if (isNaN(id) || id <= 0) {
+            console.error('❌ ID inválido:', equipmentId);
+            UI.showNotification('ID de equipo inválido', 'error');
+            return;
+        }
         
         try {
             // Verificar que UI está disponible
@@ -883,8 +894,8 @@ class Equipment {
             // Mostrar loading
             UI.showNotification('Eliminando equipo...', 'info');
             
-            // Realizar petición de eliminación
-            const response = await API.delete(`/equipment/${equipmentId}`);
+            // Realizar petición de eliminación con ID convertido
+            const response = await API.delete(`/equipment/${id}`);
             
             console.log('🔍 Respuesta del servidor:', response);
             
@@ -913,7 +924,12 @@ class Equipment {
                 if (error.message.includes('404')) {
                     errorMessage = 'El equipo no fue encontrado';
                 } else if (error.message.includes('400')) {
-                    errorMessage = 'No se puede eliminar este equipo porque tiene asignaciones activas';
+                    // Intentar extraer el mensaje específico del servidor
+                    if (error.response && error.response.data && error.response.data.error) {
+                        errorMessage = error.response.data.error;
+                    } else {
+                        errorMessage = 'No se puede eliminar este equipo porque tiene asignaciones activas';
+                    }
                 } else if (error.message.includes('500')) {
                     errorMessage = 'Error interno del servidor';
                 }
