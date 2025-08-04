@@ -3,15 +3,15 @@
    ======================================== */
 
 class PerformanceOptimizer {
-    constructor() {
+  constructor() {
         this.isSlowNetwork = false;
         this.networkSpeed = 'fast';
-        this.init();
-    }
+    this.init();
+  }
 
-    init() {
+  init() {
         this.detectNetworkSpeed();
-        this.setupPerformanceMonitoring();
+    this.setupPerformanceMonitoring();
     }
 
     // Detectar velocidad de red
@@ -33,12 +33,12 @@ class PerformanceOptimizer {
         window.addEventListener('error', (e) => {
             if (e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT') {
                 console.warn('⚠️ Error cargando recurso:', e.target.src || e.target.href);
-            }
-        });
-    }
+      }
+    });
+  }
 
     // Generar reporte de rendimiento
-    generatePerformanceReport() {
+  generatePerformanceReport() {
         return {
             networkSpeed: this.networkSpeed,
             isSlowNetwork: this.isSlowNetwork,
@@ -48,43 +48,43 @@ class PerformanceOptimizer {
     }
 
     // Mostrar reporte de rendimiento
-    showPerformanceReport() {
-        const report = this.generatePerformanceReport();
-        
-        const modal = document.createElement('div');
+  showPerformanceReport() {
+    const report = this.generatePerformanceReport();
+    
+    const modal = document.createElement('div');
         modal.className = 'modal show';
-        modal.innerHTML = `
-            <div class="modal-overlay"></div>
-            <div class="modal-container">
-                <div class="modal-header">
+    modal.innerHTML = `
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
                     <h3><i class="fas fa-tachometer-alt"></i> Reporte de Rendimiento</h3>
                     <button class="modal-close" data-modal-close>&times;</button>
-                </div>
-                <div class="modal-body">
+        </div>
+        <div class="modal-body">
                     <div class="performance-report">
                         <div class="report-section">
                             <h4>Información de Red</h4>
                             <p><strong>Velocidad:</strong> ${report.networkSpeed}</p>
                             <p><strong>Red lenta:</strong> ${report.isSlowNetwork ? 'Sí' : 'No'}</p>
-                        </div>
-                        
+          </div>
+          
                         <div class="report-section">
-                            <h4>Recomendaciones</h4>
-                            <ul>
+              <h4>Recomendaciones</h4>
+              <ul>
                                 ${report.isSlowNetwork ? 
                                     '<li>✅ Optimizaciones de red lenta aplicadas</li><li>💡 Considera usar una conexión más rápida</li>' : 
                                     '<li>✅ Rendimiento óptimo detectado</li>'}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline" data-modal-close>Cerrar</button>
-                </div>
+              </ul>
             </div>
-        `;
+                    </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" data-modal-close>Cerrar</button>
+        </div>
+      </div>
+    `;
 
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
         
         // Cerrar modal
         const closeBtn = modal.querySelector('[data-modal-close]');

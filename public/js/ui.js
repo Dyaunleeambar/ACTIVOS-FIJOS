@@ -395,15 +395,15 @@ const UI = {
         
         return new Promise((resolve) => {
             const modalContent = `
-                <div class="text-center">
+                <div style="text-align: center;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 20px;"></i>
-                    <h3>${title}</h3>
-                    <p>${message}</p>
-                    <div class="form-actions" style="margin-top: 20px;">
-                        <button type="button" class="btn btn-secondary" id="cancel-delete-btn" style="margin-right: 10px;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #333;">${title}</h3>
+                    <p style="margin: 0 0 24px 0; color: #666; font-size: 14px; line-height: 1.5;">${message}</p>
+                    <div class="form-actions" style="display: flex; justify-content: center; gap: 12px;">
+                        <button type="button" class="btn btn-secondary" id="cancel-delete-btn" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        <button type="button" class="btn btn-danger" id="confirm-delete-btn" style="background: #ef4444; color: white; border: 1px solid #ef4444; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
                             <i class="fas fa-trash"></i>
                             Eliminar
                         </button>

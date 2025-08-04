@@ -926,9 +926,64 @@ class Equipment {
     // Importación desde Excel
     showImportModal() {
         const modal = document.getElementById('import-modal');
-        modal.style.display = 'block';
+        modal.style.display = 'flex';
         this.currentStep = 1;
         this.showImportStep(1);
+        
+        // Agregar event listeners para cerrar el modal
+        this.setupImportModalListeners();
+    }
+
+    // Configurar event listeners del modal de importación
+    setupImportModalListeners() {
+        const modal = document.getElementById('import-modal');
+        if (!modal) return;
+        
+        // Remover event listeners existentes para evitar duplicados
+        const newModal = modal.cloneNode(true);
+        modal.parentNode.replaceChild(newModal, modal);
+        
+        // Obtener referencias actualizadas
+        const updatedModal = document.getElementById('import-modal');
+        const closeBtn = updatedModal.querySelector('.modal-close');
+        
+        // Cerrar con el botón X
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeImportModal();
+            });
+        }
+        
+        // Cerrar haciendo clic en el overlay
+        updatedModal.addEventListener('click', (e) => {
+            if (e.target === updatedModal) {
+                this.closeImportModal();
+            }
+        });
+        
+        // Cerrar con ESC
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                this.closeImportModal();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+        
+        // Event listener para subida de archivo
+        const fileInput = document.getElementById('excel-file');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.handleFileUpload(file);
+                }
+            });
+        }
+        
+        console.log('✅ Event listeners del modal de importación configurados');
     }
 
     // Manejar subida de archivo
@@ -1185,11 +1240,56 @@ class Equipment {
 
     closeImportModal() {
         const modal = document.getElementById('import-modal');
-        modal.style.display = 'none';
-        this.currentStep = 1;
-        this.excelData = null;
-        this.mapping = {};
-        this.validationResults = null;
+        if (modal) {
+            modal.style.display = 'none';
+            
+            // Limpiar estado del modal
+            this.currentStep = 1;
+            this.excelData = null;
+            this.mapping = {};
+            this.validationResults = null;
+            
+            // Resetear pasos de importación
+            document.querySelectorAll('.import-step').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Mostrar primer paso
+            const firstStep = document.getElementById('import-step-1');
+            if (firstStep) {
+                firstStep.classList.add('active');
+            }
+            
+            // Resetear botones
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const confirmBtn = document.getElementById('confirm-btn');
+            
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'block';
+            if (confirmBtn) confirmBtn.style.display = 'none';
+            
+            // Limpiar archivo seleccionado
+            const fileInput = document.getElementById('excel-file');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
+            // Limpiar mapeo de columnas
+            const mappingTbody = document.getElementById('mapping-tbody');
+            if (mappingTbody) {
+                mappingTbody.innerHTML = '';
+            }
+            
+            // Limpiar resultados de validación
+            const validCount = document.getElementById('valid-count');
+            const errorCount = document.getElementById('error-count');
+            const errorsContainer = document.getElementById('validation-errors');
+            
+            if (validCount) validCount.textContent = '0';
+            if (errorCount) errorCount.textContent = '0';
+            if (errorsContainer) errorsContainer.innerHTML = '';
+        }
     }
 
     // Actualizar lista
