@@ -392,17 +392,6 @@ const initializeServer = async () => {
     console.log('🔧 Inicializando SQLite...');
     await initSQLite();
     
-    // Verificar si ya existen datos antes de insertar datos de prueba
-    const { executeQuery } = require('./config/database-sqlite');
-    const equipmentCount = await executeQuery('SELECT COUNT(*) as count FROM equipment');
-    
-    if (equipmentCount[0].count === 0) {
-      console.log('📝 No hay equipos en la base de datos, insertando datos de prueba...');
-      await insertTestData();
-    } else {
-      console.log(`✅ Base de datos ya contiene ${equipmentCount[0].count} equipos, omitiendo datos de prueba`);
-    }
-    
     console.log('✅ Servidor inicializado correctamente');
   } catch (error) {
     console.error('❌ Error inicializando servidor:', error);

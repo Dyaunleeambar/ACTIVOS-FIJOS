@@ -141,12 +141,9 @@ const getEquipmentById = async (req, res) => {
         e.assigned_to,
         e.created_at,
         e.updated_at,
-        s.name as state_name,
-        u.full_name as assigned_user_name,
-        u.username as assigned_username
+        s.name as state_name
       FROM equipment e
       LEFT JOIN states s ON e.state_id = s.id
-      LEFT JOIN users u ON e.assigned_to = u.id
       WHERE e.id = ?
     `;
 
@@ -426,12 +423,9 @@ const getEquipmentByState = async (req, res) => {
         e.assigned_to,
         e.created_at,
         e.updated_at,
-        s.name as state_name,
-        u.full_name as assigned_user_name,
-        u.username as assigned_username
+        s.name as state_name
       FROM equipment e
       LEFT JOIN states s ON e.state_id = s.id
-      LEFT JOIN users u ON e.assigned_to = u.id
       ${whereClause}
       ORDER BY e.created_at DESC
       LIMIT ? OFFSET ?
@@ -768,11 +762,10 @@ const exportToExcel = async (req, res) => {
         e.specifications,
         e.status,
         s.name as state_name,
-        u.full_name as assigned_user_name,
+        e.assigned_to,
         e.created_at
       FROM equipment e
       LEFT JOIN states s ON e.state_id = s.id
-      LEFT JOIN users u ON e.assigned_to = u.id
       ${whereClause}
       ORDER BY e.created_at DESC
     `;
@@ -796,7 +789,7 @@ const exportToExcel = async (req, res) => {
       'Especificaciones': item.specifications || '',
       'Estado': item.status,
       'Estado/Región': item.state_name || '',
-      'Asignado a': item.assigned_user_name || '',
+      'Asignado a': item.assigned_to || '',
       'Fecha de Creación': item.created_at
     }));
 
