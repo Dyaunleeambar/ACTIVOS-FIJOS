@@ -231,7 +231,7 @@
    ======================================== */
 
 .dashboard-grid {
-  display: grid;
+    display: grid;
   gap: var(--spacing-6);
   margin-bottom: var(--spacing-8);
   width: 100%;
@@ -467,9 +467,9 @@
   height: 100%;
   min-height: 140px;
   width: 100%;
-  display: flex;
+    display: flex;
   flex-direction: column;
-  justify-content: space-between;
+    justify-content: space-between;
   box-shadow: var(--shadow-sm);
 }
 
@@ -482,7 +482,7 @@
 .card-stats .card-body {
   padding: var(--spacing-8);
   display: flex;
-  align-items: center;
+    align-items: center;
   gap: var(--spacing-6);
   height: 100%;
   width: 100%;
@@ -519,7 +519,7 @@
 .stats-label {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  margin: 0;
+    margin: 0;
   line-height: 1.4;
 }
 
@@ -540,7 +540,7 @@
 
 .metric-item {
   flex: 1;
-  text-align: center;
+    text-align: center;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3);
@@ -824,7 +824,7 @@
 }
 
 .charts-grid {
-  display: grid;
+    display: grid;
   gap: var(--spacing-6);
   width: 100%;
 }
@@ -880,7 +880,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  text-align: center;
+    text-align: center;
   pointer-events: none;
   z-index: 10;
 }
@@ -902,9 +902,9 @@
 @media (min-width: 1024px) {
   .charts-grid {
     grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .chart-container canvas {
+}
+
+.chart-container canvas {
     height: 350px ;
   }
 }
@@ -939,7 +939,7 @@
 /* Mobile: 1 columna */
 @media (max-width: 767px) {
   .charts-grid {
-    grid-template-columns: 1fr;
+        grid-template-columns: 1fr;
     gap: var(--spacing-4);
   }
   
@@ -950,9 +950,9 @@
   .chart-container h3 {
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-3);
-  }
-  
-  .chart-container canvas {
+    }
+    
+    .chart-container canvas {
     height: 250px ;
   }
 }
@@ -1086,7 +1086,7 @@
     align-items: center;
     justify-content: center;
   width: 32px;
-  height: 32px;
+    height: 32px;
   background: none;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-md);
@@ -1738,7 +1738,7 @@
   margin: 0;
   color: var(--color-text-primary);
   font-size: var(--font-size-2xl);
-  font-weight: 600;
+    font-weight: 600;
 }
 
 /* Estilos para la sección de alertas como línea desplegable */
@@ -1753,9 +1753,9 @@
 }
 
 .dashboard-titulo-alertas .alerts-section .section-header {
-  display: flex;
+    display: flex;
   justify-content: space-between;
-  align-items: center;
+    align-items: center;
   padding: var(--spacing-4) var(--spacing-6);
   background: var(--color-background-primary);
   border-bottom: 1px solid var(--color-border);
@@ -1790,9 +1790,9 @@
   padding: var(--spacing-2);
   border-radius: var(--border-radius-sm);
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .dashboard-titulo-alertas .alerts-section .collapse-toggle:hover {

@@ -652,9 +652,13 @@ const validateImport = async (req, res) => {
 // Confirmar importación
 const confirmImport = async (req, res) => {
   try {
+    console.log('🚀 Iniciando confirmación de importación...');
+    console.log('📊 Datos recibidos:', { mapping: req.body.mapping, dataLength: req.body.data?.length, validation: req.body.validation });
+    
     const { mapping, data, validation } = req.body;
 
     if (!mapping || !data || !validation) {
+      console.error('❌ Datos faltantes:', { mapping: !!mapping, data: !!data, validation: !!validation });
       return res.status(400).json({
         error: 'Datos de mapeo, datos y validación son requeridos'
       });
@@ -664,9 +668,14 @@ const confirmImport = async (req, res) => {
     let duplicates = 0;
     let errors = 0;
 
+    console.log('📋 Procesando', data.length, 'filas de datos...');
+
     // Procesar cada fila válida
-    for (const row of data) {
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
       try {
+        console.log(`📝 Procesando fila ${i + 1}:`, row);
+        
         const mappedData = {};
 
         // Mapear datos según el mapping
@@ -677,11 +686,14 @@ const confirmImport = async (req, res) => {
           }
         });
 
+        console.log('🗺️ Datos mapeados:', mappedData);
+
         // Verificar si el número de inventario ya existe
         const existingQuery = 'SELECT id FROM equipment WHERE inventory_number = ?';
         const existing = await executeQuery(existingQuery, [mappedData.inventory_number]);
 
         if (existing.length > 0) {
+          console.log('⚠️ Duplicado encontrado:', mappedData.inventory_number);
           duplicates++;
           continue;
         }
@@ -694,7 +706,7 @@ const confirmImport = async (req, res) => {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
-        await executeQuery(insertQuery, [
+        const insertParams = [
           mappedData.inventory_number,
           mappedData.name,
           mappedData.type,
@@ -704,15 +716,21 @@ const confirmImport = async (req, res) => {
           mappedData.status,
           mappedData.state_id,
           mappedData.assigned_to || null
-        ]);
+        ];
+
+        console.log('💾 Insertando equipo:', insertParams);
+        await executeQuery(insertQuery, insertParams);
+        console.log('✅ Equipo insertado exitosamente');
 
         imported++;
 
       } catch (error) {
-        console.error('Error al importar fila:', error);
+        console.error(`❌ Error al importar fila ${i + 1}:`, error);
         errors++;
       }
     }
+
+    console.log('📊 Resultados de importación:', { imported, duplicates, errors, total: data.length });
 
     res.json({
       success: true,
@@ -725,7 +743,7 @@ const confirmImport = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error al confirmar importación:', error);
+    console.error('❌ Error al confirmar importación:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });

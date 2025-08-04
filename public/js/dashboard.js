@@ -177,7 +177,7 @@ class Dashboard {
         activeEquipment: 20,
         disposalProposals: 2
       },
-      equipmentByType: {
+                equipmentByType: {
         totalLaptops: 8,
         totalPcs: 12,
         totalMonitors: 15,
@@ -456,9 +456,9 @@ class Dashboard {
 
   // Gráfico de equipos por tipo
   setupEquipmentTypeChart(data) {
-    const ctx = document.getElementById('equipment-type-chart');
-    if (!ctx) return;
-
+        const ctx = document.getElementById('equipment-type-chart');
+        if (!ctx) return;
+        
     // Usar datos del backend si están disponibles, sino usar datos simulados
     const chartData = data || [
       { type: 'desktop', count: 8 },
@@ -471,14 +471,14 @@ class Dashboard {
 
     const labels = chartData.map(item => item.type.charAt(0).toUpperCase() + item.type.slice(1));
     const values = chartData.map(item => item.count);
-
-    new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: values,
-          backgroundColor: [
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
             '#3b82f6',
             '#8b5cf6',
             '#06b6d4',
@@ -486,25 +486,25 @@ class Dashboard {
             '#f59e0b',
             '#ef4444'
           ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
             position: 'bottom'
-          }
-        }
-      }
-    });
+                    }
+                }
+            }
+        });
   }
-
+    
   // Gráfico de equipos por estado
   setupEquipmentStateChart(data) {
-    const ctx = document.getElementById('equipment-state-chart');
-    if (!ctx) return;
-
+        const ctx = document.getElementById('equipment-state-chart');
+        if (!ctx) return;
+        
     // Usar datos del backend si están disponibles, sino usar datos simulados
     const chartData = data || [
       { status: 'active', count: 20 },
@@ -521,37 +521,37 @@ class Dashboard {
       }
     });
     const values = chartData.map(item => item.count);
-
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
           label: 'Cantidad',
-          data: values,
-          backgroundColor: [
+                    data: values,
+                    backgroundColor: [
             '#10b981',
             '#f59e0b',
             '#ef4444',
             '#6b7280'
           ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
             beginAtZero: true
-          }
-        }
-      }
-    });
+                    }
+                }
+            }
+        });
   }
 
   // Gráfico de equipos por ubicación

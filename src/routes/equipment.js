@@ -112,6 +112,12 @@ router.post('/validate-import',
 
 // POST /api/equipment/import - Confirmar importación
 router.post('/import', 
+  (req, res, next) => {
+    console.log('🚀 Petición POST /api/equipment/import recibida');
+    console.log('📊 Headers:', req.headers);
+    console.log('📋 Body:', req.body);
+    next();
+  },
   authenticateToken, 
   authorizeRole(['admin', 'manager']), 
   equipmentController.confirmImport

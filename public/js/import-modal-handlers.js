@@ -4,8 +4,18 @@
  */
 const ImportModalHandlers = {
     
+    // Bandera para evitar inicialización múltiple
+    initialized: false,
+    
     // Inicializar todos los event listeners
     init: function() {
+        // Evitar inicialización múltiple
+        if (this.initialized) {
+            console.log('⚠️ ImportModalHandlers ya inicializado, saltando...');
+            return;
+        }
+        
+        console.log('🔧 Inicializando event listeners del modal de importación...');
         console.log('🔧 Inicializando event listeners del modal de importación...');
         console.log('🔍 Verificando elementos del DOM...');
         
@@ -25,7 +35,15 @@ const ImportModalHandlers = {
         this.setupImportSteps();
         this.setupGeneralHandlers();
         
+        // Marcar como inicializado
+        this.initialized = true;
         console.log('✅ Event listeners inicializados correctamente');
+    },
+    
+    // Función para resetear la inicialización (útil para testing)
+    reset: function() {
+        this.initialized = false;
+        console.log('🔄 ImportModalHandlers reseteado');
     },
     
     // Configurar el upload de archivos
@@ -68,18 +86,8 @@ const ImportModalHandlers = {
             });
         }
         
-        // Botón descargar plantilla
-        const downloadBtn = document.querySelector('button[data-action="download-template"]');
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (window.Equipment && window.Equipment.downloadTemplate) {
-                    window.Equipment.downloadTemplate();
-                } else {
-                    console.error('❌ Equipment.downloadTemplate no disponible');
-                }
-            });
-        }
+        // Botón descargar plantilla - Se maneja en setupGeneralHandlers
+        // No necesitamos un event listener específico aquí
     },
     
     // Configurar botones de pasos de importación
@@ -186,12 +194,25 @@ const ImportModalHandlers = {
     }
 };
 
+// Función para esperar a que Equipment esté disponible
+function waitForEquipment() {
+    if (window.Equipment) {
+        console.log('✅ Equipment disponible, inicializando handlers...');
+        ImportModalHandlers.init();
+    } else {
+        console.log('⏳ Equipment no disponible, esperando...');
+        setTimeout(waitForEquipment, 100);
+    }
+}
+
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    ImportModalHandlers.init();
+    console.log('🔧 DOM listo, esperando Equipment...');
+    waitForEquipment();
 });
 
 // También inicializar cuando se muestre el modal (por si se carga dinámicamente)
 document.addEventListener('importModalShown', function() {
+    console.log('🔧 Modal mostrado, inicializando handlers...');
     ImportModalHandlers.init();
 }); 

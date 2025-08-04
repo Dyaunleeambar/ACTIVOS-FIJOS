@@ -273,15 +273,18 @@ class Equipment {
             console.log('✅ Respuesta del servidor:', response);
             
             if (response.equipment) {
+                console.log('✅ Equipos encontrados:', response.equipment.length);
                 this.renderEquipmentTable(response.equipment);
                 this.renderPagination(response.pagination);
                 this.updateEquipmentCount(response.pagination.total);
-                     this.updateActiveFilters(); // Actualizar chips de filtros activos
+                this.updateActiveFilters(); // Actualizar chips de filtros activos
             } else {
-                     console.warn('⚠️ Respuesta sin datos de equipos:', response);
-                     // Si no hay equipos, mostrar tabla vacía
-                     this.renderEquipmentTable([]);
-                     this.updateActiveFilters(); // Actualizar chips de filtros activos
+                console.warn('⚠️ Respuesta sin datos de equipos:', response);
+                // Si no hay equipos, mostrar tabla vacía
+                this.renderEquipmentTable([]);
+                this.renderPagination({ currentPage: 1, totalPages: 0, total: 0, limit: 20, hasNextPage: false, hasPrevPage: false });
+                this.updateEquipmentCount(0);
+                this.updateActiveFilters(); // Actualizar chips de filtros activos
             }
         } catch (error) {
             console.error('❌ Error cargando equipos:', error);
@@ -1006,13 +1009,14 @@ class Equipment {
     }
 
     // Manejar subida de archivo
-    async handleFileUpload(file) {
+        async handleFileUpload(file) {
         try {
+            console.log('🚀 INICIANDO PROCESO DE IMPORTACIÓN');
             console.log('📁 Subiendo archivo:', file.name, 'Tamaño:', file.size);
             console.log('🔍 Tipo de archivo:', file.type);
             console.log('🔍 Estado de autenticación:', ConfigUtils.isAuthenticated());
             console.log('🔍 Token disponible:', !!ConfigUtils.getAuthToken());
-            
+
             const formData = new FormData();
             formData.append('file', file);
 
@@ -1023,15 +1027,17 @@ class Equipment {
             }
 
             console.log('🌐 Headers de autenticación:', ConfigUtils.getAuthHeaders());
-            
+
             const response = await API.post('/equipment/upload-excel', formData);
             
-            console.log('📊 Respuesta del servidor:', response);
-            
+                        console.log('📊 Respuesta del servidor:', response);
+
             if (response.success) {
                 this.excelData = response.data;
                 console.log('✅ Datos Excel procesados:', this.excelData);
+                console.log('🔄 Avanzando al siguiente paso...');
                 this.nextImportStep();
+                console.log('✅ PASO 1 COMPLETADO - Archivo procesado');
             } else {
                 const errorMessage = response.error || response.message || 'Error procesando archivo';
                 console.error('❌ Error en respuesta:', errorMessage);
@@ -1112,23 +1118,30 @@ class Equipment {
     // Validar datos de importación
     async validateImportData() {
         try {
+            console.log('🔍 INICIANDO VALIDACIÓN DE DATOS');
             const mapping = this.getMapping();
+            console.log('🗺️ Mapeo obtenido:', mapping);
+            
             const validationData = {
                 mapping: mapping,
                 data: this.excelData.data
             };
+            console.log('📋 Datos de validación:', validationData);
 
             const response = await API.post('/equipment/validate-import', validationData);
+            console.log('📊 Respuesta de validación:', response);
             
             if (response.success) {
                 this.validationResults = response.data;
+                console.log('✅ Resultados de validación:', this.validationResults);
                 this.displayValidationResults();
                 this.nextImportStep();
+                console.log('✅ PASO 2 COMPLETADO - Validación completada');
             } else {
                 throw new Error(response.message || 'Error en validación');
             }
         } catch (error) {
-            console.error('Error validando datos:', error);
+            console.error('❌ Error validando datos:', error);
             UI.showNotification('Error en validación de datos', 'error');
         }
     }
@@ -1152,26 +1165,45 @@ class Equipment {
     // Confirmar importación
     async confirmImport() {
         try {
+            console.log('🚀 Iniciando confirmación de importación...');
+            console.log('📊 Datos de mapeo:', this.getMapping());
+            console.log('📋 Datos a importar:', this.excelData.data.length, 'filas');
+            console.log('✅ Resultados de validación:', this.validationResults);
+            
             const importData = {
                 mapping: this.getMapping(),
                 data: this.excelData.data,
                 validation: this.validationResults
             };
 
+            console.log('📦 Datos de importación:', importData);
+            console.log('🌐 URL de importación:', '/equipment/import');
+            console.log('🔍 Headers de autenticación:', ConfigUtils.getAuthHeaders());
+            
             const response = await API.post('/equipment/import', importData);
             
+            console.log('📡 Respuesta del servidor:', response);
+            
             if (response.success) {
+                console.log('✅ Importación exitosa:', response.data);
+                
                 UI.showNotification(
                     `Importación completada: ${response.data.imported} equipos`, 
                     'success'
                 );
+                
+                console.log('🔒 Cerrando modal...');
                 this.closeImportModal();
-                this.loadEquipmentList();
+                
+                console.log('🔄 Recargando lista de equipos...');
+                await this.loadEquipmentList();
+                
+                console.log('✅ Proceso de importación completado');
             } else {
                 throw new Error(response.message || 'Error en importación');
             }
         } catch (error) {
-            console.error('Error en importación:', error);
+            console.error('❌ Error en importación:', error);
             UI.showNotification('Error en importación', 'error');
         }
     }

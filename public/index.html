@@ -127,13 +127,13 @@
                 <h1 id="page-title">Dashboard</h1>
             </div>
             
-            <div class="header-right">                
+                <div class="header-right">
                 <div class="user-menu">
                     <button class="user-menu-btn" id="user-menu-btn">
-                        <div class="user-info">
-                            <span id="user-name">Usuario</span>
-                            <span id="user-role">Rol</span>
-                        </div>
+                    <div class="user-info">
+                        <span id="user-name">Usuario</span>
+                        <span id="user-role">Rol</span>
+                    </div>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="user-dropdown" id="user-dropdown">
@@ -155,7 +155,7 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div>            
         </header>
 
         <!-- Sidebar Overlay -->
@@ -173,32 +173,32 @@
                 <ul class="nav-list">
                     <li class="nav-item">
                         <a href="#dashboard" class="nav-link active" data-page="dashboard">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#equipment" class="nav-link" data-page="equipment">
-                            <i class="fas fa-desktop"></i> Equipos
+                        <i class="fas fa-desktop"></i> Equipos
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#assignments" class="nav-link" data-page="assignments">
-                            <i class="fas fa-users"></i> Asignaciones
+                        <i class="fas fa-users"></i> Asignaciones
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#reports" class="nav-link" data-page="reports">
-                            <i class="fas fa-chart-bar"></i> Reportes
+                        <i class="fas fa-chart-bar"></i> Reportes
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#security" class="nav-link" data-page="security">
-                            <i class="fas fa-shield-alt"></i> Seguridad
+                        <i class="fas fa-shield-alt"></i> Seguridad
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#disposal" class="nav-link" data-page="disposal">
-                            <i class="fas fa-trash"></i> Propuestas de Baja
+                        <i class="fas fa-trash"></i> Propuestas de Baja
                         </a>
                     </li>
                 </ul>
@@ -457,26 +457,26 @@
                 <div class="quick-actions">
                     <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
                     <div class="actions-grid">
-                        <a href="#equipment" class="quick-action-btn" onclick="UI.showPage('equipment')">
-                            <i class="fas fa-plus"></i>
-                            <span>Agregar Equipo</span>
-                        </a>
-                        <a href="#assignments" class="quick-action-btn" onclick="UI.showPage('assignments')">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Asignar Equipo</span>
-                        </a>
-                        <a href="#reports" class="quick-action-btn" onclick="UI.showPage('reports')">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Generar Reporte</span>
-                        </a>
-                        <a href="#disposal" class="quick-action-btn" onclick="UI.showPage('disposal')">
-                            <i class="fas fa-trash"></i>
-                            <span>Propuestas de Baja</span>
-                        </a>
-                        <a href="#security" class="quick-action-btn" onclick="UI.showPage('security')">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Control de Seguridad</span>
-                        </a>
+                                                 <a href="#equipment" class="quick-action-btn" data-action="show-page" data-page="equipment">
+                             <i class="fas fa-plus"></i>
+                             <span>Agregar Equipo</span>
+                         </a>
+                         <a href="#assignments" class="quick-action-btn" data-action="show-page" data-page="assignments">
+                             <i class="fas fa-user-plus"></i>
+                             <span>Asignar Equipo</span>
+                         </a>
+                         <a href="#reports" class="quick-action-btn" data-action="show-page" data-page="reports">
+                             <i class="fas fa-chart-bar"></i>
+                             <span>Generar Reporte</span>
+                         </a>
+                         <a href="#disposal" class="quick-action-btn" data-action="show-page" data-page="disposal">
+                             <i class="fas fa-trash"></i>
+                             <span>Propuestas de Baja</span>
+                         </a>
+                         <a href="#security" class="quick-action-btn" data-action="show-page" data-page="security">
+                             <i class="fas fa-shield-alt"></i>
+                             <span>Control de Seguridad</span>
+                         </a>
                     </div>
                 </div>
             </div>
@@ -531,24 +531,24 @@
                                 </select>
                             </div>
                             
-                            <!-- Botón Limpiar -->
-                            <button class="btn btn-outline" onclick="safeEquipmentCall('clearFilters')">
-                                <i class="fas fa-times"></i> Limpiar
-                            </button>
+                                                         <!-- Botón Limpiar -->
+                             <button class="btn btn-outline" data-action="clear-filters">
+                                 <i class="fas fa-times"></i> Limpiar
+                             </button>
                         </div>
                         
-                        <!-- Botones a la derecha -->
-                        <div class="page-actions">
-                            <button class="btn btn-secondary" onclick="safeEquipmentCall('showCreateForm')">
-                                <i class="fas fa-plus"></i> Nuevo Equipo
-                            </button>
-                            <button class="btn btn-secondary" onclick="safeEquipmentCall('showImportModal')">
-                                <i class="fas fa-file-excel"></i> Importar Excel
-                            </button>
-                            <button class="btn btn-secondary" onclick="safeEquipmentCall('exportToExcel')">
-                                <i class="fas fa-download"></i> Exportar
-                            </button>
-                        </div>
+                                                 <!-- Botones a la derecha -->
+                         <div class="page-actions">
+                             <button class="btn btn-secondary" data-action="show-create-form">
+                                 <i class="fas fa-plus"></i> Nuevo Equipo
+                             </button>
+                             <button class="btn btn-secondary" data-action="show-import-modal">
+                                 <i class="fas fa-file-excel"></i> Importar Excel
+                             </button>
+                             <button class="btn btn-secondary" data-action="export-to-excel">
+                                 <i class="fas fa-download"></i> Exportar
+                             </button>
+                         </div>
                     </div>
                 </div>
                 
@@ -564,11 +564,11 @@
                         <div class="table-info">
                             <span id="equipment-count">0</span> equipos encontrados
                         </div>
-                        <div class="table-actions">
-                            <button class="btn btn-secondary" onclick="safeEquipmentCall('refreshList')">
-                                <i class="fas fa-sync-alt"></i> Actualizar
-                            </button>
-                        </div>
+                                                 <div class="table-actions">
+                             <button class="btn btn-secondary" data-action="refresh-list">
+                                 <i class="fas fa-sync-alt"></i> Actualizar
+                             </button>
+                         </div>
                     </div>
                     
                     <div class="table-responsive">
@@ -633,7 +633,7 @@
                     <h2>Propuestas de Baja</h2>
                 </div>
                 <div id="disposal-content">
-                    <!-- El contenido se cargará dinámicamente -->
+                <!-- El contenido se cargará dinámicamente -->
                 </div>
             </div>
         </main>
@@ -802,6 +802,8 @@
     <script src="js/app.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/equipment.js"></script>
+    <script src="js/import-modal-handlers.js"></script>
+    <script src="js/app-handlers.js"></script>
     <!-- Scripts de testing comentados para evitar ejecución automática -->
     <!-- <script src="js/test-equipment.js"></script> -->
     <!-- <script src="js/test-navigation.js"></script> -->
@@ -809,7 +811,6 @@
     <!-- <script src="debug-validation.js"></script> -->
     <!-- <script src="debug-validation-details.js"></script> -->
     <!-- <script src="debug-form-data.js"></script> -->
-         <script src="js/import-modal-handlers.js"></script>
      <script src="js/test-modal-import.js"></script>
      <script src="js/test-modal-delete.js"></script>
 </body>
