@@ -81,6 +81,25 @@ router.post('/upload-excel',
   authenticateToken, 
   authorizeRole(['admin', 'manager']), 
   upload.single('file'),
+  (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+      console.error('❌ Error de Multer:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+          error: 'El archivo es demasiado grande. Máximo 5MB'
+        });
+      }
+      return res.status(400).json({
+        error: 'Error al subir archivo: ' + err.message
+      });
+    } else if (err) {
+      console.error('❌ Error de validación de archivo:', err);
+      return res.status(400).json({
+        error: err.message
+      });
+    }
+    next();
+  },
   equipmentController.uploadExcel
 );
 

@@ -71,9 +71,22 @@ const API = {
                 return blob;
             } else {
                 // Para JSON por defecto
-                const data = await response.json();
-                console.log('✅ API Success Response:', data);
-                return data;
+                try {
+                    const data = await response.json();
+                    console.log('✅ API Success Response:', data);
+                    return data;
+                } catch (jsonError) {
+                    // Si no se puede parsear como JSON, intentar como texto
+                    const textData = await response.text();
+                    console.log('⚠️ API Text Response (no JSON):', textData);
+                    
+                    // Si es FormData o contenido no JSON, devolver un objeto con el texto
+                    return {
+                        success: false,
+                        error: 'Respuesta del servidor no válida',
+                        rawData: textData
+                    };
+                }
             }
             
         } catch (error) {
@@ -120,7 +133,11 @@ const API = {
         } else {
             return this.request(endpoint, {
                 method: 'POST',
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                headers: {
+                    ...ConfigUtils.getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                }
             });
         }
     },
@@ -129,7 +146,11 @@ const API = {
     put: function(endpoint, data = {}) {
         return this.request(endpoint, {
             method: 'PUT',
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            headers: {
+                ...ConfigUtils.getAuthHeaders(),
+                'Content-Type': 'application/json'
+            }
         });
     },
     

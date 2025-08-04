@@ -948,6 +948,9 @@ class Equipment {
         
         // Agregar event listeners para cerrar el modal
         this.setupImportModalListeners();
+        
+        // Disparar evento para que los handlers se inicialicen
+        document.dispatchEvent(new Event('importModalShown'));
     }
 
     // Configurar event listeners del modal de importación
@@ -1005,20 +1008,56 @@ class Equipment {
     // Manejar subida de archivo
     async handleFileUpload(file) {
         try {
+            console.log('📁 Subiendo archivo:', file.name, 'Tamaño:', file.size);
+            console.log('🔍 Tipo de archivo:', file.type);
+            console.log('🔍 Estado de autenticación:', ConfigUtils.isAuthenticated());
+            console.log('🔍 Token disponible:', !!ConfigUtils.getAuthToken());
+            
             const formData = new FormData();
             formData.append('file', file);
 
+            console.log('📦 FormData creado:', formData);
+            console.log('📦 FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}:`, value);
+            }
+
+            console.log('🌐 Headers de autenticación:', ConfigUtils.getAuthHeaders());
+            
             const response = await API.post('/equipment/upload-excel', formData);
+            
+            console.log('📊 Respuesta del servidor:', response);
             
             if (response.success) {
                 this.excelData = response.data;
+                console.log('✅ Datos Excel procesados:', this.excelData);
                 this.nextImportStep();
             } else {
-                throw new Error(response.message || 'Error procesando archivo');
+                const errorMessage = response.error || response.message || 'Error procesando archivo';
+                console.error('❌ Error en respuesta:', errorMessage);
+                throw new Error(errorMessage);
             }
         } catch (error) {
-            console.error('Error procesando archivo:', error);
-            UI.showNotification('Error procesando archivo Excel', 'error');
+            console.error('❌ Error procesando archivo:', error);
+            
+            // Mostrar mensaje de error más específico
+            let errorMessage = 'Error procesando archivo Excel';
+            
+            if (error.message.includes('400')) {
+                errorMessage = 'El archivo no es válido. Verifique que sea un archivo Excel (.xlsx, .xls)';
+            } else if (error.message.includes('413')) {
+                errorMessage = 'El archivo es demasiado grande. Máximo 5MB';
+            } else if (error.message.includes('401')) {
+                errorMessage = 'Sesión expirada. Por favor inicie sesión nuevamente';
+            } else if (error.message.includes('403')) {
+                errorMessage = 'No tiene permisos para importar equipos';
+            } else if (error.message.includes('Respuesta del servidor no válida')) {
+                errorMessage = 'Error en el servidor. Intente nuevamente';
+            } else if (error.message.includes('No se proporcionó ningún archivo')) {
+                errorMessage = 'Error: No se pudo procesar el archivo. Verifique que esté autenticado y el archivo sea válido';
+            }
+            
+            UI.showNotification(errorMessage, 'error');
         }
     }
 
@@ -1138,13 +1177,34 @@ class Equipment {
     }
 
     // Descargar plantilla
-    downloadTemplate() {
-        const link = document.createElement('a');
-        link.href = '/templates/equipment-template.xlsx';
-        link.download = 'plantilla-equipos.xlsx';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    async downloadTemplate() {
+        try {
+            console.log('📥 Descargando plantilla Excel...');
+            
+            const response = await API.get('/equipment/template', { responseType: 'blob' });
+            
+            console.log('✅ Plantilla descargada:', response);
+            
+            const blob = new Blob([response], { 
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+            });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'plantilla-equipos.xlsx';
+            
+            console.log('📥 Descargando archivo:', link.download);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            UI.showNotification('Plantilla descargada exitosamente', 'success');
+            console.log('✅ Plantilla descargada exitosamente');
+        } catch (error) {
+            console.error('❌ Error descargando plantilla:', error);
+            UI.showNotification('Error descargando plantilla', 'error');
+        }
     }
 
     // Exportar a Excel

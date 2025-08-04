@@ -119,7 +119,6 @@ const ConfigUtils = {
     getAuthHeaders: () => {
         const token = ConfigUtils.getAuthToken();
         return {
-            'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : ''
         };
     },

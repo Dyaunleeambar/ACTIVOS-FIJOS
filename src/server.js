@@ -63,9 +63,26 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Middleware para parsing de JSON
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Middleware para parsing de JSON (excluir rutas de archivos)
+app.use((req, res, next) => {
+    // No procesar JSON para rutas que manejan archivos
+    if (req.path.includes('/upload-excel') || req.path.includes('/upload')) {
+        return next();
+    }
+    
+    // Para otras rutas, usar el middleware de JSON
+    express.json({ limit: '10mb' })(req, res, next);
+});
+
+app.use((req, res, next) => {
+    // No procesar URL encoded para rutas que manejan archivos
+    if (req.path.includes('/upload-excel') || req.path.includes('/upload')) {
+        return next();
+    }
+    
+    // Para otras rutas, usar el middleware de URL encoded
+    express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
+});
 
 // Middleware para manejar archivos (multer) - REMOVIDO DE AQUÍ
 // Se manejará en las rutas específicas
@@ -82,6 +99,19 @@ app.use((req, res, next) => {
 // Endpoint de prueba
 app.get('/api/test', (req, res) => {
     res.json({ message: 'API funcionando correctamente', timestamp: new Date().toISOString() });
+});
+
+// Endpoint de prueba para upload
+app.post('/api/test-upload', (req, res) => {
+    console.log('🧪 Test upload - Headers:', req.headers);
+    console.log('🧪 Test upload - Body type:', typeof req.body);
+    console.log('🧪 Test upload - Body:', req.body);
+    res.json({ 
+        message: 'Test upload funcionando',
+        bodyType: typeof req.body,
+        hasBody: !!req.body,
+        headers: req.headers
+    });
 });
 
 // Endpoint de prueba para exportación (sin autenticación)

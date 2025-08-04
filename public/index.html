@@ -644,7 +644,7 @@
         <div class="modal-content" style="background-color: white; border-radius: 12px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; z-index: 10000000; padding: 0;">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; border-bottom: 1px solid #e1e5e9; background: #f8fafc; border-radius: 12px 12px 0 0;">
                 <h3 style="margin: 0; color: #333; font-size: 20px; font-weight: 600;">Importar Equipos desde Excel</h3>
-                <button class="modal-close" onclick="Equipment.closeImportModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 8px; border-radius: 6px; transition: all 0.2s ease;">
+                                 <button class="modal-close" data-action="close-modal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 8px; border-radius: 6px; transition: all 0.2s ease;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -659,7 +659,7 @@
                     <div class="import-section" style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
                         <div class="file-upload-area">
                             <input type="file" id="excel-file" accept=".xlsx,.xls" style="display: none;">
-                            <div class="upload-zone" onclick="document.getElementById('excel-file').click()" style="border: 2px dashed #e1e5e9; border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s ease; background: white;">
+                                                         <div class="upload-zone" data-action="upload-file" style="border: 2px dashed #e1e5e9; border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s ease; background: white;">
                                 <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #3b82f6; margin-bottom: 16px;"></i>
                                 <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 500; color: #333;">Haz clic para seleccionar archivo Excel</p>
                                 <small style="color: #666; font-size: 14px;">Formatos soportados: .xlsx, .xls</small>
@@ -668,7 +668,7 @@
                         
                         <div class="template-download" style="margin-top: 24px; padding: 16px; border: 1px solid #e1e5e9; border-radius: 8px; background: white;">
                             <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #333;">¿No tienes una plantilla?</h5>
-                            <button type="button" class="btn btn-secondary" onclick="Equipment.downloadTemplate()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s ease;">
+                                                         <button type="button" class="btn btn-secondary" data-action="download-template" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s ease;">
                                 <i class="fas fa-download"></i> Descargar Plantilla
                             </button>
                         </div>
@@ -763,13 +763,13 @@
             </div>
             
             <div class="import-actions" style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 24px 32px; border-top: 1px solid #e1e5e9; background: #f8fafc;">
-                <button type="button" class="btn btn-secondary" onclick="Equipment.previousImportStep()" id="prev-btn" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                                 <button type="button" class="btn btn-secondary" data-action="previous-step" id="prev-btn" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
                     Anterior
                 </button>
-                <button type="button" class="btn btn-primary" onclick="Equipment.nextImportStep()" id="next-btn" style="background: #3b82f6; color: white; border: 1px solid #3b82f6; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                                 <button type="button" class="btn btn-primary" data-action="next-step" id="next-btn" style="background: #3b82f6; color: white; border: 1px solid #3b82f6; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
                     Siguiente
                 </button>
-                <button type="button" class="btn btn-success" onclick="Equipment.confirmImport()" id="confirm-btn" style="display: none; background: #22c55e; color: white; border: 1px solid #22c55e; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                                 <button type="button" class="btn btn-success" data-action="confirm-import" id="confirm-btn" style="display: none; background: #22c55e; color: white; border: 1px solid #22c55e; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
                     <i class="fas fa-upload"></i> Confirmar Importación
                 </button>
             </div>
@@ -809,7 +809,8 @@
     <!-- <script src="debug-validation.js"></script> -->
     <!-- <script src="debug-validation-details.js"></script> -->
     <!-- <script src="debug-form-data.js"></script> -->
-    <script src="js/test-modal-import.js"></script>
-    <script src="js/test-modal-delete.js"></script>
+         <script src="js/import-modal-handlers.js"></script>
+     <script src="js/test-modal-import.js"></script>
+     <script src="js/test-modal-delete.js"></script>
 </body>
 </html> 

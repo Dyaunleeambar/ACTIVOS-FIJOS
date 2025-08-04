@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Autenticación</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug de Autenticación</h1>
+    
+    <div class="debug-section info">
+        <h3>📋 Estado de SessionStorage</h3>
+        <div id="session-storage"></div>
+    </div>
+    
+    <div class="debug-section info">
+        <h3>🔐 Token de Autenticación</h3>
+        <div id="token-info"></div>
+    </div>
+    
+    <div class="debug-section info">
+        <h3>👤 Datos de Usuario</h3>
+        <div id="user-info"></div>
+    </div>
+    
+    <div class="debug-section info">
+        <h3>🌐 Test de API</h3>
+        <button onclick="testAPI()">Probar API</button>
+        <div id="api-test"></div>
+    </div>
+
+    <script>
+        // Configuración
+        const CONFIG = {
+            TOKEN_KEY: 'auth_token',
+            USER_KEY: 'user_data',
+            API_BASE_URL: 'http://localhost:3001/api'
+        };
+
+        // Funciones de utilidad
+        function getAuthToken() {
+            return sessionStorage.getItem(CONFIG.TOKEN_KEY);
+        }
+
+        function getUserData() {
+            const userData = sessionStorage.getItem(CONFIG.USER_KEY);
+            return userData ? JSON.parse(userData) : null;
+        }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+        }
+
+        // Mostrar información de sessionStorage
+        function showSessionStorage() {
+            const container = document.getElementById('session-storage');
+            const items = {};
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                items[key] = sessionStorage.getItem(key);
+            }
+            
+            container.innerHTML = `
+                <h4>Claves en SessionStorage:</h4>
+                <pre>${JSON.stringify(items, null, 2)}</pre>
+            `;
+        }
+
+        // Mostrar información del token
+        function showTokenInfo() {
+            const container = document.getElementById('token-info');
+            const token = getAuthToken();
+            
+            if (token) {
+                try {
+                    // Decodificar JWT (solo la parte del payload)
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    container.innerHTML = `
+                        <h4>✅ Token encontrado</h4>
+                        <p><strong>Token:</strong> ${token.substring(0, 50)}...</p>
+                        <p><strong>Expira:</strong> ${new Date(payload.exp * 1000).toLocaleString()}</p>
+                        <p><strong>Emitido:</strong> ${new Date(payload.iat * 1000).toLocaleString()}</p>
+                        <p><strong>Usuario:</strong> ${payload.username || 'N/A'}</p>
+                        <p><strong>Rol:</strong> ${payload.role || 'N/A'}</p>
+                        <pre>${JSON.stringify(payload, null, 2)}</pre>
+                    `;
+                } catch (error) {
+                    container.innerHTML = `
+                        <h4>⚠️ Token encontrado pero no se puede decodificar</h4>
+                        <p><strong>Token:</strong> ${token}</p>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    `;
+                }
+            } else {
+                container.innerHTML = `
+                    <h4>❌ No hay token</h4>
+                    <p>No se encontró token de autenticación en sessionStorage.</p>
+                `;
+            }
+        }
+
+        // Mostrar información del usuario
+        function showUserInfo() {
+            const container = document.getElementById('user-info');
+            const userData = getUserData();
+            
+            if (userData) {
+                container.innerHTML = `
+                    <h4>✅ Datos de usuario encontrados</h4>
+                    <pre>${JSON.stringify(userData, null, 2)}</pre>
+                `;
+            } else {
+                container.innerHTML = `
+                    <h4>❌ No hay datos de usuario</h4>
+                    <p>No se encontraron datos de usuario en sessionStorage.</p>
+                `;
+            }
+        }
+
+        // Probar API
+        async function testAPI() {
+            const container = document.getElementById('api-test');
+            container.innerHTML = '<p>🔄 Probando API...</p>';
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/auth/verify`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.text();
+                
+                container.innerHTML = `
+                    <h4>📡 Respuesta de API</h4>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>Headers:</strong></p>
+                    <pre>${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}</pre>
+                    <p><strong>Response:</strong></p>
+                    <pre>${data}</pre>
+                `;
+                
+            } catch (error) {
+                container.innerHTML = `
+                    <h4>❌ Error en API</h4>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        // Inicializar debug
+        window.onload = function() {
+            showSessionStorage();
+            showTokenInfo();
+            showUserInfo();
+        };
+    </script>
+</body>
+</html> 
