@@ -52,6 +52,13 @@ class Equipment {
             console.warn('⚠️ Equipment ya fue inicializado, se previene doble inicialización.');
             return;
         }
+        
+        // Verificar si el usuario está autenticado antes de inicializar
+        if (!window.Auth || !window.Auth.isAuthenticated) {
+            console.log('⛔ Usuario no autenticado, Equipment no se inicializa automáticamente');
+            return;
+        }
+        
         window.equipmentInitialized = true;
         console.log('🔧 Inicializando Equipment...');
         
@@ -61,7 +68,7 @@ class Equipment {
         // Configurar event listeners
         this.setupEventListeners();
         
-        // Cargar datos
+        // Cargar datos solo si el usuario está autenticado
         this.loadFilterData();
         // Usar debounce para la carga inicial de equipos
         if (!this._debouncedLoadEquipmentList) {
@@ -1664,29 +1671,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Crear instancia de Equipment
     window.Equipment = new Equipment();
     
-    // Inicializar Equipment automáticamente con manejo de errores
-    if (window.Equipment && typeof window.Equipment.init === 'function') {
-        console.log('🔧 Inicializando Equipment automáticamente...');
+    // Solo inicializar Equipment si el usuario está autenticado
+    if (window.Auth && window.Auth.isAuthenticated) {
+        console.log('🔧 Usuario autenticado, inicializando Equipment...');
         
-        try {
-            window.Equipment.init();
-            console.log('✅ Equipment inicializado correctamente');
-        } catch (error) {
-            console.error('❌ Error durante la inicialización de Equipment:', error);
-            
-            // Intentar reinicializar después de un delay
-            setTimeout(() => {
-                console.log('🔄 Intentando reinicialización...');
-                try {
-                    window.Equipment.init();
-                    console.log('✅ Equipment reinicializado correctamente');
-                } catch (retryError) {
-                    console.error('❌ Error en reinicialización:', retryError);
-                }
-            }, 1000);
+        if (window.Equipment && typeof window.Equipment.init === 'function') {
+            try {
+                window.Equipment.init();
+                console.log('✅ Equipment inicializado correctamente');
+            } catch (error) {
+                console.error('❌ Error durante la inicialización de Equipment:', error);
+                
+                // Intentar reinicializar después de un delay
+                setTimeout(() => {
+                    console.log('🔄 Intentando reinicialización...');
+                    try {
+                        window.Equipment.init();
+                        console.log('✅ Equipment reinicializado correctamente');
+                    } catch (retryError) {
+                        console.error('❌ Error en reinicialización:', retryError);
+                    }
+                }, 1000);
+            }
+        } else {
+            console.error('❌ Error: Equipment o método init no disponible');
         }
     } else {
-        console.error('❌ Error: Equipment o método init no disponible');
+        console.log('⛔ Usuario no autenticado, Equipment no se inicializa automáticamente');
     }
     
     // Hacer métodos disponibles globalmente para compatibilidad
