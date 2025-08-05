@@ -419,7 +419,7 @@ class Equipment {
                         <div style="padding: 40px;">
                             <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
                             <p>No se encontraron equipos</p>
-                            <button class="btn btn-secondary" onclick="Equipment.showCreateForm()">
+                            <button class="btn btn-secondary" onclick="editEquipmentGlobal()">
                                 <i class="fas fa-plus"></i> Agregar primer equipo
                             </button>
                         </div>
@@ -462,7 +462,7 @@ class Equipment {
                         <button class="action-btn view" onclick="Equipment.viewEquipment(${item.id})" title="Ver detalles">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn edit" onclick="Equipment.showCreateForm(${item.id})" title="Editar">
+                        <button class="action-btn edit" onclick="safeEquipmentCall('showCreateForm', ${item.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="action-btn delete" onclick="deleteEquipmentGlobal(${item.id})" title="Eliminar">
@@ -1657,6 +1657,18 @@ window.deleteEquipmentGlobal = function(equipmentId) {
     console.log('🔍 deleteEquipmentGlobal llamado con ID:', equipmentId);
     if (window.Equipment && window.Equipment.deleteEquipment) {
         return window.Equipment.deleteEquipment(equipmentId);
+    } else {
+        console.error('❌ Equipment no está disponible');
+        alert('Error: Equipment no está disponible. Recargando página...');
+        location.reload();
+    }
+};
+
+// Función global de respaldo para editar equipo
+window.editEquipmentGlobal = function(equipmentId) {
+    console.log('🔍 editEquipmentGlobal llamado con ID:', equipmentId);
+    if (window.Equipment && window.Equipment.showCreateForm) {
+        return window.Equipment.showCreateForm(equipmentId);
     } else {
         console.error('❌ Equipment no está disponible');
         alert('Error: Equipment no está disponible. Recargando página...');
