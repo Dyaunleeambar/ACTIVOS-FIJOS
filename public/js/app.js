@@ -100,7 +100,7 @@ const App = {
             
         } catch (error) {
             console.error('Error cargando datos iniciales:', error);
-            ApiUtils.handleError(error);
+            ApiUtils.handleError(error, false); // No ejecutar logout automático
         }
     },
     
@@ -172,7 +172,7 @@ const App = {
             }
         } catch (error) {
             console.error(`Error cargando datos de ${pageName}:`, error);
-            ApiUtils.handleError(error);
+            ApiUtils.handleError(error, false); // No ejecutar logout automático
         }
     },
     

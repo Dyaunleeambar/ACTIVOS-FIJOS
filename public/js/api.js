@@ -92,10 +92,9 @@ const API = {
         } catch (error) {
             console.error('❌ API Error:', error);
             
-            // Manejar errores específicos
+            // Manejar errores específicos sin ejecutar logout automático
             if (error.message.includes('401')) {
-                // Token expirado o inválido
-                Auth.handleLogout();
+                // Token expirado o inválido - solo lanzar el error para que sea manejado por las funciones específicas
                 throw new Error('Sesión expirada. Por favor inicie sesión nuevamente.');
             }
             
@@ -254,14 +253,17 @@ const API = {
 // Utilidades de API
 const ApiUtils = {
     // Manejar errores de API
-    handleError: function(error) {
+    handleError: function(error, autoLogout = true) {
         console.error('API Error:', error);
         
         let message = 'Error de conexión';
         
         if (error.message.includes('401')) {
             message = 'Sesión expirada. Por favor inicie sesión nuevamente.';
-            Auth.handleLogout();
+            // Solo ejecutar logout automático si se especifica
+            if (autoLogout) {
+                Auth.handleLogout();
+            }
         } else if (error.message.includes('403')) {
             message = 'No tiene permisos para realizar esta acción.';
         } else if (error.message.includes('404')) {
@@ -276,7 +278,9 @@ const ApiUtils = {
             message = error.message || 'Error desconocido.';
         }
         
-        UI.showNotification(message, 'error');
+        if (autoLogout) {
+            UI.showNotification(message, 'error');
+        }
         return message;
     },
     

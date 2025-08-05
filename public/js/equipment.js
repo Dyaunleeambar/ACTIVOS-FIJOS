@@ -289,20 +289,8 @@ class Equipment {
         } catch (error) {
             console.error('❌ Error cargando equipos:', error);
             
-            // Solo mostrar error al usuario si showErrors es true
-            if (showErrors) {
-                // Mostrar error más específico
-                let errorMessage = 'Error cargando equipos';
-                if (error.message.includes('500')) {
-                    errorMessage = 'Error interno del servidor al cargar equipos';
-                } else if (error.message.includes('401')) {
-                    errorMessage = 'Sesión expirada';
-                } else if (error.message.includes('403')) {
-                    errorMessage = 'Sin permisos para ver equipos';
-                }
-                
-                UI.showNotification(errorMessage, 'error');
-            }
+            // Siempre usar la nueva función auxiliar para manejar errores
+            this.handleEquipmentError(error, 'carga de equipos');
             
             this.renderEquipmentTable([]);
         }
@@ -733,7 +721,9 @@ class Equipment {
             }
         } catch (error) {
             console.error('Error cargando datos del equipo:', error);
-            UI.showNotification('Error cargando datos del equipo', 'error');
+            
+            // Usar la nueva función auxiliar para manejar errores
+            this.handleEquipmentError(error, 'carga de datos del equipo');
         }
     }
 
@@ -806,7 +796,15 @@ class Equipment {
             }
         } catch (error) {
             console.error('Error guardando equipo:', error);
-            UI.showNotification(ApiUtils.handleError(error), 'error');
+            
+            // Usar la nueva función auxiliar para manejar errores
+            const errorHandled = this.handleEquipmentError(error, 'guardado de equipo');
+            
+            // Si es un error de autenticación, cerrar el modal
+            if (!errorHandled) {
+                this.closeDynamicModal();
+                return;
+            }
         } finally {
             // Restaurar botón
             const submitBtn = form.querySelector('button[type="submit"]');
@@ -1462,6 +1460,10 @@ class Equipment {
             console.log('✅ Lista de equipos actualizada');
         } catch (error) {
             console.error('❌ Error refrescando lista:', error);
+            
+            // Usar la nueva función auxiliar para manejar errores
+            this.handleEquipmentError(error, 'refresco de lista de equipos');
+            
             // No mostrar notificación de error al usuario
             // Solo log para debugging
             // La creación del equipo fue exitosa, este error es solo para la recarga
@@ -1493,6 +1495,10 @@ class Equipment {
             }
         } catch (error) {
             console.error('Error cargando estados:', error);
+            
+            // Usar la nueva función auxiliar para manejar errores
+            this.handleEquipmentError(error, 'carga de estados');
+            
             // Fallback a estados estáticos si falla la carga
             const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
             if (stateSelect) {
@@ -1506,6 +1512,31 @@ class Equipment {
                 `;
             }
         }
+    }
+
+    // Función auxiliar para manejar errores sin logout automático
+    handleEquipmentError(error, context = 'operación') {
+        console.error(`Error en ${context}:`, error);
+        
+        let errorMessage = `Error en ${context}`;
+        
+        if (error.message.includes('401')) {
+            errorMessage = 'Sesión expirada. Por favor inicie sesión nuevamente.';
+            // No ejecutar logout automático, solo mostrar el mensaje
+            UI.showNotification(errorMessage, 'error');
+            return false; // Indicar que hubo error de autenticación
+        } else if (error.message.includes('403')) {
+            errorMessage = `No tiene permisos para realizar esta ${context}.`;
+        } else if (error.message.includes('422')) {
+            errorMessage = 'Datos inválidos. Por favor verifique la información.';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Error interno del servidor. Intente nuevamente.';
+        } else {
+            errorMessage = error.message || `Error desconocido en ${context}.`;
+        }
+        
+        UI.showNotification(errorMessage, 'error');
+        return true; // Indicar que el error fue manejado
     }
 }
 

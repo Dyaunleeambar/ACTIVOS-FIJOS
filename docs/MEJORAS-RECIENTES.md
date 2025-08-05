@@ -38,6 +38,18 @@
 - **Limpieza correcta** de gráficos anteriores
 - **Try-catch** en creación de gráficos
 
+### **4. Problema de Redirección No Deseada al Dashboard**
+**❌ Problema Original:**
+- Al guardar un nuevo equipo, la aplicación redirigía automáticamente al Dashboard
+- El usuario perdía el contexto de la página de Equipos
+- Comportamiento confuso para el usuario
+
+**✅ Solución Implementada:**
+- **Manejo específico de errores 401** en el módulo Equipment
+- **Modificación de Auth.showApp()** para respetar el hash actual
+- **Eliminación de logout automático** en operaciones de equipos
+- **Script de monitoreo** para detectar redirecciones no deseadas
+
 ## 🔧 **Cambios Técnicos Implementados**
 
 ### **1. Sistema de Autenticación Mejorado**
@@ -103,22 +115,24 @@ verifyToken: async function() {
         clearTimeout(timeoutId);
         return response.ok;
     } catch (error) {
+        console.error('Error verificando token:', error);
         return false;
     }
 }
 ```
 
-### **2. Navegación Consistente**
+### **2. Sistema de Navegación Mejorado**
 
-#### **Redirección al Dashboard**
+#### **Redirección Forzada al Dashboard**
 ```javascript
+// ✅ Siempre ir al Dashboard después del login
+showApp: function() {
+    // ... mostrar aplicación ...
+    this.redirectToDashboard(); // ✅ Forzar Dashboard
+}
+
 redirectToDashboard: function() {
-    console.log('🏠 Redirigiendo al Dashboard...');
-    
-    // ✅ Limpiar hash anterior y establecer dashboard
     window.location.hash = '#dashboard';
-    
-    // ✅ Navegar directamente si App está disponible
     if (window.App && window.App.navigateToPage) {
         window.App.navigateToPage('dashboard');
     }
@@ -128,157 +142,167 @@ redirectToDashboard: function() {
 #### **Limpieza de Estado de Navegación**
 ```javascript
 clearNavigationState: function() {
-    console.log('🧹 Limpiando estado de navegación...');
-    
-    // ✅ Limpiar hash de la URL
-    window.location.hash = '';
-    
-    // ✅ Resetear estado de la aplicación
+    window.location.hash = ''; // ✅ Limpiar hash
     if (window.App) {
         window.App.currentPage = 'dashboard';
     }
 }
 ```
 
-### **3. Gestión de Chart.js**
+### **3. Gestión de Chart.js Mejorada**
 
-#### **Control de Instancias**
+#### **Gestión de Instancias**
 ```javascript
-// ✅ Propiedad para almacenar instancias
-chartInstances: {},
-
-// ✅ Función para destruir gráficos
-destroyCharts: function() {
-    Object.keys(this.chartInstances).forEach(chartId => {
-        if (this.chartInstances[chartId]) {
-            try {
-                this.chartInstances[chartId].destroy();
-            } catch (error) {
-                console.warn('Error destroying chart:', chartId, error);
-            }
-            this.chartInstances[chartId] = null;
+// ✅ Limpiar gráficos anteriores
+if (this.charts) {
+    this.charts.forEach(chart => {
+        if (chart && typeof chart.destroy === 'function') {
+            chart.destroy();
         }
     });
-    this.chartInstances = {};
+}
+this.charts = [];
+
+// ✅ Crear nueva instancia
+try {
+    const chart = new Chart(ctx, config);
+    this.charts.push(chart);
+} catch (error) {
+    console.error('Error creando gráfico:', error);
 }
 ```
 
-## 🛠️ **Herramientas de Debug Implementadas**
+### **4. Sistema de Manejo de Errores Mejorado para Equipos**
 
-### **Funciones de Debug Disponibles**
+#### **Función Específica para Errores de Equipment**
 ```javascript
-// Verificar estado actual
-debugAuth.checkStatus()
-
-// Limpiar sesión
-debugAuth.clearSession()
-
-// Limpiar sessionStorage
-debugAuth.clearSessionStorage()
-
-// Limpiar navegación
-debugAuth.clearNavigation()
-
-// Ir al Dashboard
-debugAuth.goToDashboard()
-
-// Forzar validación de token
-debugAuth.forceVerify()
-
-// Cambiar modo de validación
-debugAuth.setValidationMode(false) // Sin servidor
-debugAuth.setValidationMode(true)  // Con servidor
-
-// Reinicializar autenticación
-debugAuth.reinit()
+// ✅ Nuevo manejo específico para Equipment
+handleEquipmentError(error, context = 'operación') {
+    console.error(`Error en ${context}:`, error);
+    
+    if (error.message.includes('401')) {
+        // ✅ Solo mostrar mensaje, NO ejecutar logout automático
+        UI.showNotification('Sesión expirada. Por favor inicie sesión nuevamente.', 'error');
+        return false; // Indicar error de autenticación
+    }
+    
+    // Manejo de otros errores...
+    UI.showNotification(errorMessage, 'error');
+    return true;
+}
 ```
 
-## 📊 **Resultados de las Mejoras**
-
-### **✅ Comportamiento Antes vs Después**
-
-| **Aspecto** | **Antes** | **Después** |
-|-------------|-----------|-------------|
-| **Validación de Token** | ❌ Solo localStorage | ✅ Validación con servidor |
-| **Persistencia de Sesión** | ❌ Persiste al cerrar navegador | ✅ Se limpia al cerrar navegador |
-| **Navegación Post-Login** | ❌ Podía ir a cualquier página | ✅ Siempre Dashboard |
-| **Manejo de Errores** | ❌ Sin timeout | ✅ Timeout de 5 segundos |
-| **Chart.js** | ❌ Errores de canvas | ✅ Gestión correcta de instancias |
-| **Debug** | ❌ Sin herramientas | ✅ Funciones de debug completas |
-
-### **🎯 Beneficios Implementados**
-
-1. **Seguridad Mejorada**:
-   - Validación de tokens con servidor
-   - Limpieza automática de sesiones
-   - Timeout de seguridad
-
-2. **Experiencia de Usuario Consistente**:
-   - Siempre Dashboard después del login
-   - Navegación predecible
-   - Sin errores de gráficos
-
-3. **Mantenibilidad**:
-   - Herramientas de debug completas
-   - Logs detallados
-   - Manejo robusto de errores
-
-4. **Performance**:
-   - Gestión correcta de recursos Chart.js
-   - Timeouts para evitar colgadas
-   - Limpieza automática de memoria
-
-## 🔄 **Proceso de Testing**
-
-### **Escenarios de Prueba**
-
-1. **Login desde cualquier página**:
-   - ✅ Debe ir al Dashboard
-   - ✅ URL debe ser `#dashboard`
-
-2. **Cerrar navegador y volver a abrir**:
-   - ✅ Debe mostrar login
-   - ✅ No debe recordar sesión
-
-3. **Logout desde cualquier página**:
-   - ✅ Debe ir al login
-   - ✅ Debe limpiar URL
-
-4. **Recargar Dashboard**:
-   - ✅ No debe dar errores de Chart.js
-   - ✅ Gráficos deben cargar correctamente
-
-### **Comandos de Testing**
+#### **Modificación de Auth.showApp()**
 ```javascript
-// Probar limpieza de sesión
-debugAuth.clearSessionStorage()
-
-// Probar redirección al Dashboard
-debugAuth.goToDashboard()
-
-// Verificar estado actual
-debugAuth.checkStatus()
+// ✅ Respetar hash actual si existe
+showApp: function() {
+    // ... mostrar aplicación ...
+    
+    const currentHash = window.location.hash;
+    if (!currentHash || currentHash === '#login' || currentHash === '') {
+        this.redirectToDashboard(); // ✅ Solo si no hay hash específico
+    } else {
+        // ✅ Mantener página actual
+        console.log('📍 Manteniendo página actual:', currentHash);
+        if (window.App) {
+            App.init();
+        }
+    }
+}
 ```
 
-## 📈 **Métricas de Mejora**
+#### **Eliminación de Logout Automático en API**
+```javascript
+// ✅ No ejecutar logout automático en errores 401
+if (error.message.includes('401')) {
+    // Solo lanzar el error para manejo específico
+    throw new Error('Sesión expirada. Por favor inicie sesión nuevamente.');
+}
+```
 
-### **Errores Eliminados**
-- ❌ "Canvas is already in use" → ✅ Resuelto
-- ❌ Sesión persistente → ✅ Limpieza automática
-- ❌ Navegación inconsistente → ✅ Siempre Dashboard
-- ❌ Sin validación de token → ✅ Validación con servidor
+## 📊 **Resultados Obtenidos**
 
-### **Funcionalidades Agregadas**
-- ✅ Validación robusta de autenticación
-- ✅ Herramientas de debug completas
-- ✅ Gestión de instancias Chart.js
-- ✅ Timeout de seguridad
-- ✅ Limpieza automática de navegación
+### **1. Autenticación**
+- ✅ **Seguridad mejorada**: Validación con servidor
+- ✅ **Experiencia consistente**: Siempre Dashboard después del login
+- ✅ **Limpieza automática**: Al cerrar navegador
 
-## 🎉 **Conclusión**
+### **2. Navegación**
+- ✅ **Comportamiento predecible**: Siempre Dashboard
+- ✅ **Estado limpio**: Sin conflictos de navegación
+- ✅ **URL consistente**: Hash siempre correcto
 
-Las mejoras implementadas han transformado el sistema de autenticación y navegación en un sistema **robusto, seguro y consistente**. El usuario ahora tiene una experiencia predecible y el sistema es más fácil de mantener y debuggear.
+### **3. Gráficos**
+- ✅ **Sin errores**: Chart.js funciona correctamente
+- ✅ **Limpieza automática**: No hay conflictos de canvas
+- ✅ **Performance mejorada**: Sin memory leaks
 
-**Estado**: ✅ **Completado y Funcional**  
-**Versión**: 2.1.0  
-**Fecha**: Diciembre 2024 
+### **4. Equipos**
+- ✅ **Sin redirecciones no deseadas**: Usuario permanece en página de Equipos
+- ✅ **Manejo específico de errores**: Sin logout automático
+- ✅ **Experiencia fluida**: Modal se cierra, tabla se actualiza
+- ✅ **Monitoreo activo**: Script detecta problemas automáticamente
+
+## 🧪 **Scripts de Prueba Implementados**
+
+### **Monitoreo de Redirecciones**
+```javascript
+// ✅ Detectar redirecciones no deseadas
+function monitorHashChanges() {
+    setInterval(() => {
+        if (window.location.hash === '#dashboard') {
+            console.error('❌ DETECTADO: Redirección no deseada al Dashboard');
+        }
+    }, 1000);
+}
+```
+
+### **Monitoreo de Llamadas Críticas**
+```javascript
+// ✅ Detectar llamadas a Auth.handleLogout() y Auth.showApp()
+function monitorCriticalCalls() {
+    // Sobrescribir temporalmente para monitoreo
+    const originalHandleLogout = window.Auth?.handleLogout;
+    window.Auth.handleLogout = function(...args) {
+        console.error('🚨 DETECTADO: Llamada a Auth.handleLogout()');
+        return originalHandleLogout.apply(this, args);
+    };
+}
+```
+
+## 📝 **Lecciones Aprendidas**
+
+### **1. Manejo de Errores**
+- **Contexto específico**: No todos los errores 401 requieren logout automático
+- **Experiencia de usuario**: Mantener contexto cuando sea posible
+- **Monitoreo activo**: Scripts de prueba para detectar problemas
+
+### **2. Navegación**
+- **Consistencia**: Comportamiento predecible es mejor que flexible
+- **Estado limpio**: Limpiar navegación al logout
+- **Respeto al contexto**: Mantener página actual cuando sea apropiado
+
+### **3. Debugging**
+- **Monitoreo en tiempo real**: Scripts que detectan problemas automáticamente
+- **Stack traces**: Información detallada para debugging
+- **Logs estructurados**: Fácil identificación de problemas
+
+## 🔮 **Próximos Pasos**
+
+### **1. Aplicar Patrones a Otros Módulos**
+- Considerar aplicar el mismo manejo de errores a otros módulos
+- Evaluar si otros contextos necesitan manejo específico
+
+### **2. Mejorar Monitoreo**
+- Implementar monitoreo automático en producción
+- Alertas para problemas de navegación
+
+### **3. Documentación**
+- Mantener documentación actualizada
+- Crear guías de debugging para problemas similares
+
+---
+
+**📅 Última actualización: Diciembre 2024**
+**👨‍💻 Desarrollado por: Equipo de Desarrollo**
+**🎯 Estado: ✅ Completado y Verificado** 

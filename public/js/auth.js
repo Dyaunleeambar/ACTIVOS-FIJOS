@@ -248,12 +248,16 @@ const Auth = {
         // Actualizar información del usuario
         this.updateUserInfo();
         
-        // Forzar navegación al Dashboard después del login
-        this.redirectToDashboard();
-        
-        // Inicializar aplicación
-        if (window.App) {
-            App.init();
+        // Solo redirigir al Dashboard si no hay hash específico o si estamos en login
+        const currentHash = window.location.hash;
+        if (!currentHash || currentHash === '#login' || currentHash === '') {
+            this.redirectToDashboard();
+        } else {
+            // Si ya hay un hash específico, solo inicializar la aplicación
+            console.log('📍 Manteniendo página actual:', currentHash);
+            if (window.App) {
+                App.init();
+            }
         }
     },
     

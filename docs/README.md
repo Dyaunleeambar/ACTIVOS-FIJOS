@@ -66,6 +66,10 @@ Sistema web completo para la gestión de activos informáticos de una empresa de
 - [`docs/README-Backend.md`](docs/README-Backend.md) - Documentación del backend
 - [`docs/criterios-aceptacion.md`](docs/criterios-aceptacion.md) - Criterios de aceptación
 
+### **📋 Casos de Estudio y Soluciones**
+- [`docs/CASO-ESTUDIO-REDIRECCION-EQUIPOS.md`](docs/CASO-ESTUDIO-REDIRECCION-EQUIPOS.md) - Resolución de redirección no deseada al Dashboard
+- [`SOLUCION-REDIRECCION-EQUIPOS.md`](SOLUCION-REDIRECCION-EQUIPOS.md) - Documentación técnica de la solución
+
 ## 🛠️ **Instalación y Configuración**
 
 ### **Prerrequisitos**
