@@ -172,7 +172,7 @@ function checkCurrentState() {
 window.autoFixEquipmentLoad = autoFixEquipmentLoad;
 window.forceEquipmentLoad = forceEquipmentLoad;
 window.checkCurrentState = checkCurrentState;
-window.startMonitoring = startMonitoring;
+// Eliminar startMonitoring();
 
 // Inicializar auto-corrección
 document.addEventListener('DOMContentLoaded', () => {
@@ -181,15 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('   - autoFixEquipmentLoad() - Aplicar corrección automática');
     console.log('   - forceEquipmentLoad() - Forzar carga de equipos');
     console.log('   - checkCurrentState() - Verificar estado actual');
-    console.log('   - startMonitoring() - Iniciar monitoreo continuo');
-    
-    // Iniciar monitoreo automático
-    startMonitoring();
-    
-    // Verificar estado después de un delay
+    // Solo ejecutar autoFixEquipmentLoad una vez tras la carga inicial
     setTimeout(() => {
+        if (window.Auth && !window.Auth.isAuthenticated) {
+            console.log('⛔ Usuario no autenticado, no se ejecuta auto-corrección');
+            return;
+        }
+        autoFixEquipmentLoad();
         checkCurrentState();
-    }, 3000);
+    }, 2000);
 });
 
 // Escuchar cambios de hash para verificar después de navegación

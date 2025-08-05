@@ -48,6 +48,11 @@ class Equipment {
 
     // Inicializar
     init() {
+        if (window.equipmentInitialized) {
+            console.warn('⚠️ Equipment ya fue inicializado, se previene doble inicialización.');
+            return;
+        }
+        window.equipmentInitialized = true;
         console.log('🔧 Inicializando Equipment...');
         
         // Limpiar estado antes de inicializar
@@ -58,7 +63,11 @@ class Equipment {
         
         // Cargar datos
         this.loadFilterData();
-        this.loadEquipmentList();
+        // Usar debounce para la carga inicial de equipos
+        if (!this._debouncedLoadEquipmentList) {
+            this._debouncedLoadEquipmentList = this.debounce(() => this.loadEquipmentList(), 1000);
+        }
+        this._debouncedLoadEquipmentList();
         
         console.log('✅ Equipment inicializado correctamente');
     }
@@ -382,6 +391,14 @@ class Equipment {
             
             this.renderEquipmentTable([]);
         }
+    }
+
+    // Sobrescribir loadEquipmentList para usar debounce en llamadas externas
+    loadEquipmentListDebounced() {
+        if (!this._debouncedLoadEquipmentList) {
+            this._debouncedLoadEquipmentList = this.debounce(() => this.loadEquipmentList(), 1000);
+        }
+        this._debouncedLoadEquipmentList();
     }
 
     // Renderizar tabla de equipos
