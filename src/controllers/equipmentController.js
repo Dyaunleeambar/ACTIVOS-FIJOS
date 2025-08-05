@@ -7,7 +7,7 @@ const fs = require('fs');
 // Obtener todos los equipos con filtros
 const getAllEquipment = async (req, res) => {
   try {
-    const { state_id, type, status, page = 1, limit = 20 } = req.query;
+    const { state_id, type, status, search, page = 1, limit = 20 } = req.query;
     
     // Convertir y validar parámetros de paginación
     const pageNum = Math.max(1, parseInt(page) || 1);
@@ -39,6 +39,19 @@ const getAllEquipment = async (req, res) => {
     if (status) {
       whereConditions.push('e.status = ?');
       params.push(status);
+    }
+
+    // Agregar búsqueda
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      whereConditions.push(`(
+        e.inventory_number LIKE ? OR 
+        e.name LIKE ? OR 
+        e.brand LIKE ? OR 
+        e.model LIKE ? OR
+        e.assigned_to LIKE ?
+      )`);
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';

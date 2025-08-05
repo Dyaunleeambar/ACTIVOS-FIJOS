@@ -19,7 +19,7 @@ class Equipment {
         this.validationResults = null;
         this.columnMapping = {};
         
-        // Mapeo de estados string a números
+        // Mapeo de estados para conversión
         this.stateMapping = {
             'direccion': 1,
             'capital': 2,
@@ -48,9 +48,59 @@ class Equipment {
 
     // Inicializar
     init() {
+        console.log('🔧 Inicializando Equipment...');
+        
+        // Limpiar estado antes de inicializar
+        this.cleanState();
+        
+        // Configurar event listeners
         this.setupEventListeners();
+        
+        // Cargar datos
         this.loadFilterData();
         this.loadEquipmentList();
+        
+        console.log('✅ Equipment inicializado correctamente');
+    }
+
+    // Nueva función para limpiar estado
+    cleanState() {
+        console.log('🧹 Limpiando estado de Equipment...');
+        
+        // Resetear filtros
+        this.filters = {
+            search: '',
+            type: '',
+            status: '',
+            state: ''
+        };
+        
+        // Resetear paginación
+        this.currentPage = 1;
+        
+        // Limpiar inputs del DOM si existen
+        const searchInput = document.getElementById('search-equipment');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        
+        const typeStatusFilter = document.getElementById('filter-type-status');
+        if (typeStatusFilter) {
+            typeStatusFilter.value = '';
+        }
+        
+        const stateFilter = document.getElementById('filter-state');
+        if (stateFilter) {
+            stateFilter.value = '';
+        }
+        
+        // Limpiar chips de filtros activos
+        const activeFiltersContainer = document.getElementById('active-filters');
+        if (activeFiltersContainer) {
+            activeFiltersContainer.innerHTML = '';
+        }
+        
+        console.log('✅ Estado limpiado');
     }
 
     setupEventListeners() {
@@ -76,21 +126,42 @@ class Equipment {
 
     // Nueva función para configurar filtros compactos
     setupCompactFilters() {
+        console.log('🔧 Configurando filtros compactos...');
+        
         // Búsqueda (ahora en la sección de filtros)
         const searchInput = document.getElementById('search-equipment');
         if (searchInput) {
-            searchInput.addEventListener('input', this.debounce(() => {
-                this.filters.search = searchInput.value;
-                this.currentPage = 1;
-                this.loadEquipmentList();
-                this.updateActiveFilters();
-            }, 300));
+            console.log('✅ Campo de búsqueda encontrado, configurando event listener...');
+            
+            // Crear debounce manual para búsqueda
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                console.log('🔍 Evento input detectado en búsqueda:', e.target.value);
+                
+                // Limpiar timeout anterior
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                // Configurar nuevo timeout
+                searchTimeout = setTimeout(() => {
+                    console.log('⏰ Ejecutando búsqueda con debounce...');
+                    this.filters.search = e.target.value;
+                    this.currentPage = 1;
+                    this.loadEquipmentList();
+                    this.updateActiveFilters();
+                }, 300);
+            });
+        } else {
+            console.error('❌ Campo de búsqueda no encontrado');
         }
 
         // Filtro combinado Tipo + Estado
         const filterTypeStatus = document.getElementById('filter-type-status');
         if (filterTypeStatus) {
+            console.log('✅ Filtro tipo/estado encontrado, configurando event listener...');
             filterTypeStatus.addEventListener('change', (e) => {
+                console.log('🔍 Evento change detectado en filtro tipo/estado:', e.target.value);
                 const value = e.target.value;
                 if (value.startsWith('type:')) {
                     this.filters.type = value.replace('type:', '');
@@ -102,22 +173,30 @@ class Equipment {
                     this.filters.type = '';
                     this.filters.status = '';
                 }
-                    this.currentPage = 1;
-                    this.loadEquipmentList();
+                this.currentPage = 1;
+                this.loadEquipmentList();
                 this.updateActiveFilters();
             });
+        } else {
+            console.error('❌ Filtro tipo/estado no encontrado');
         }
 
         // Filtro de Estado/Región
         const filterState = document.getElementById('filter-state');
         if (filterState) {
+            console.log('✅ Filtro estado encontrado, configurando event listener...');
             filterState.addEventListener('change', (e) => {
+                console.log('🔍 Evento change detectado en filtro estado:', e.target.value);
                 this.filters.state = e.target.value;
                 this.currentPage = 1;
                 this.loadEquipmentList();
                 this.updateActiveFilters();
             });
+        } else {
+            console.error('❌ Filtro estado no encontrado');
         }
+        
+        console.log('✅ Configuración de filtros completada');
     }
 
     // Función para actualizar chips de filtros activos
@@ -239,6 +318,15 @@ class Equipment {
 
         this.loadEquipmentList();
         this.updateActiveFilters();
+    }
+
+    // Hacer removeFilter disponible globalmente
+    static removeFilter(filterType) {
+        if (window.Equipment && window.Equipment.removeFilter) {
+            window.Equipment.removeFilter(filterType);
+        } else {
+            console.error('❌ Equipment.removeFilter no disponible');
+        }
     }
 
     // Cargar lista de equipos
@@ -1554,7 +1642,35 @@ window.deleteEquipmentGlobal = function(equipmentId) {
 
 // Inicializar módulo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Creando instancia de Equipment...');
+    
+    // Crear instancia de Equipment
     window.Equipment = new Equipment();
+    
+    // Inicializar Equipment automáticamente con manejo de errores
+    if (window.Equipment && typeof window.Equipment.init === 'function') {
+        console.log('🔧 Inicializando Equipment automáticamente...');
+        
+        try {
+            window.Equipment.init();
+            console.log('✅ Equipment inicializado correctamente');
+        } catch (error) {
+            console.error('❌ Error durante la inicialización de Equipment:', error);
+            
+            // Intentar reinicializar después de un delay
+            setTimeout(() => {
+                console.log('🔄 Intentando reinicialización...');
+                try {
+                    window.Equipment.init();
+                    console.log('✅ Equipment reinicializado correctamente');
+                } catch (retryError) {
+                    console.error('❌ Error en reinicialización:', retryError);
+                }
+            }, 1000);
+        }
+    } else {
+        console.error('❌ Error: Equipment o método init no disponible');
+    }
     
     // Hacer métodos disponibles globalmente para compatibilidad
     const methodsToBind = [
@@ -1566,7 +1682,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'showImportModal',
         'exportToExcel',
         'downloadTemplate',
-        'refreshList'
+        'refreshList',
+        'cleanState'  // Agregar el nuevo método
     ];
     
     methodsToBind.forEach(method => {
