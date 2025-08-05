@@ -253,10 +253,23 @@ const Auth = {
         if (!currentHash || currentHash === '#login' || currentHash === '') {
             this.redirectToDashboard();
         } else {
-            // Si ya hay un hash específico, solo inicializar la aplicación
+            // Si ya hay un hash específico, inicializar la aplicación y cargar datos
             console.log('📍 Manteniendo página actual:', currentHash);
             if (window.App) {
                 App.init();
+                
+                // Si estamos en la página de equipos, asegurar que se carguen los datos
+                if (currentHash === '#equipment') {
+                    console.log('📊 Detectada página de equipos, asegurando carga de datos...');
+                    setTimeout(() => {
+                        if (window.Equipment && window.Equipment.loadEquipmentList) {
+                            console.log('📊 Cargando equipos después del login...');
+                            window.Equipment.loadEquipmentList();
+                        } else {
+                            console.warn('⚠️ Equipment no disponible después del login');
+                        }
+                    }, 1000);
+                }
             }
         }
     },

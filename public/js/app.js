@@ -149,10 +149,28 @@ const App = {
         try {
             switch (pageName) {
                 case 'dashboard':
-                    await window.Dashboard.loadDashboardData();
+                    if (window.Dashboard && window.Dashboard.loadDashboardData) {
+                        await window.Dashboard.loadDashboardData();
+                    } else {
+                        console.warn('⚠️ Dashboard no está disponible');
+                    }
                     break;
                 case 'equipment':
-                    await window.Equipment.loadEquipmentList();
+                    // Verificar que Equipment esté disponible y esperar si es necesario
+                    if (window.Equipment && window.Equipment.loadEquipmentList) {
+                        console.log('📊 Cargando equipos desde App.loadPageData...');
+                        await window.Equipment.loadEquipmentList();
+                    } else {
+                        console.warn('⚠️ Equipment no está disponible, esperando inicialización...');
+                        // Esperar a que Equipment se inicialice
+                        await this.waitForEquipment();
+                        if (window.Equipment && window.Equipment.loadEquipmentList) {
+                            console.log('📊 Equipment disponible, cargando equipos...');
+                            await window.Equipment.loadEquipmentList();
+                        } else {
+                            console.error('❌ Equipment no se pudo inicializar');
+                        }
+                    }
                     break;
                 case 'assignments':
                     // TODO: Implementar carga de asignaciones
@@ -174,6 +192,32 @@ const App = {
             console.error(`Error cargando datos de ${pageName}:`, error);
             ApiUtils.handleError(error, false); // No ejecutar logout automático
         }
+    },
+    
+    // Esperar a que Equipment esté disponible
+    waitForEquipment: function() {
+        return new Promise((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            const checkEquipment = () => {
+                attempts++;
+                console.log(`🔍 Verificando Equipment (intento ${attempts}/${maxAttempts})...`);
+                
+                if (window.Equipment && window.Equipment.loadEquipmentList) {
+                    console.log('✅ Equipment disponible');
+                    resolve();
+                } else if (attempts >= maxAttempts) {
+                    console.error('❌ Equipment no se pudo inicializar después de múltiples intentos');
+                    resolve();
+                } else {
+                    console.log('⏳ Equipment no disponible, esperando...');
+                    setTimeout(checkEquipment, 500);
+                }
+            };
+            
+            checkEquipment();
+        });
     },
     
     // Cargar estados
