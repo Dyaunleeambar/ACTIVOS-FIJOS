@@ -209,6 +209,32 @@ const createEquipment = async (req, res) => {
       location_details
     });
 
+    // Validación de campos obligatorios
+    const requiredFields = {
+      inventory_number: 'Número de inventario',
+      name: 'Nombre del equipo',
+      type: 'Tipo',
+      brand: 'Marca',
+      model: 'Modelo',
+      status: 'Estado',
+      state_id: 'Estado/Región',
+      assigned_to: 'Responsable del equipo'
+    };
+
+    const missingFields = [];
+    for (const [field, label] of Object.entries(requiredFields)) {
+      if (!req.body[field] || req.body[field].trim() === '') {
+        missingFields.push(label);
+      }
+    }
+
+    if (missingFields.length > 0) {
+      console.log('❌ createEquipment - Campos obligatorios faltantes:', missingFields);
+      return res.status(400).json({
+        error: `Campos obligatorios faltantes: ${missingFields.join(', ')}`
+      });
+    }
+
     // Verificar que el número de inventario sea único
     const checkQuery = 'SELECT id FROM equipment WHERE inventory_number = ?';
     console.log('🔍 createEquipment - Query de validación:', checkQuery);
@@ -237,8 +263,8 @@ const createEquipment = async (req, res) => {
 
     // Filtrar valores undefined y convertirlos a null
     const params = [
-      inventory_number, name, type, brand || null, model || null, specifications || null,
-      status, state_id, assigned_to || null, location_details || null
+      inventory_number, name, type, brand, model, specifications || null,
+      status, state_id, assigned_to, location_details || null
     ];
 
     console.log('🔍 createEquipment - Query de inserción:', insertQuery);
@@ -270,7 +296,32 @@ const createEquipment = async (req, res) => {
 const updateEquipment = async (req, res) => {
   try {
     const { id } = req.params;
-    const { inventory_number, name, assigned_to } = req.body;
+    const {
+      inventory_number,
+      name,
+      type,
+      brand,
+      model,
+      specifications,
+      status,
+      state_id,
+      assigned_to,
+      location_details
+    } = req.body;
+
+    console.log('🔍 updateEquipment - Datos recibidos:', {
+      id,
+      inventory_number,
+      name,
+      type,
+      brand,
+      model,
+      specifications,
+      status,
+      state_id,
+      assigned_to,
+      location_details
+    });
 
     // Verificar que el equipo existe
     const existingQuery = 'SELECT id, inventory_number, name, assigned_to FROM equipment WHERE id = ?';
@@ -282,19 +333,83 @@ const updateEquipment = async (req, res) => {
       });
     }
 
-    // Actualizar solo el campo assigned_to
-    const updateQuery = 'UPDATE equipment SET assigned_to = ? WHERE id = ?';
-    await executeQuery(updateQuery, [assigned_to || null, id]);
+    // Validación de campos obligatorios
+    const requiredFields = {
+      inventory_number: 'Número de inventario',
+      name: 'Nombre del equipo',
+      type: 'Tipo',
+      brand: 'Marca',
+      model: 'Modelo',
+      status: 'Estado',
+      state_id: 'Estado/Región',
+      assigned_to: 'Responsable del equipo'
+    };
 
-    console.log(`✅ Equipo ${id} actualizado correctamente`);
+    const missingFields = [];
+    for (const [field, label] of Object.entries(requiredFields)) {
+      if (!req.body[field] || req.body[field].trim() === '') {
+        missingFields.push(label);
+      }
+    }
+
+    if (missingFields.length > 0) {
+      console.log('❌ updateEquipment - Campos obligatorios faltantes:', missingFields);
+      return res.status(400).json({
+        error: `Campos obligatorios faltantes: ${missingFields.join(', ')}`
+      });
+    }
+
+    // Verificar que el número de inventario sea único (excluyendo el equipo actual)
+    const checkQuery = 'SELECT id FROM equipment WHERE inventory_number = ? AND id != ?';
+    const duplicate = await executeQuery(checkQuery, [inventory_number, id]);
+
+    if (duplicate.length > 0) {
+      console.log('❌ updateEquipment - Número de inventario ya existe:', inventory_number);
+      return res.status(400).json({
+        error: 'El número de inventario ya existe'
+      });
+    }
+
+    // Actualizar equipo
+    const updateQuery = `
+      UPDATE equipment SET 
+        inventory_number = ?, 
+        name = ?, 
+        type = ?, 
+        brand = ?, 
+        model = ?, 
+        specifications = ?,
+        status = ?, 
+        state_id = ?, 
+        assigned_to = ?, 
+        location_details = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `;
+
+    const params = [
+      inventory_number, name, type, brand, model, specifications || null,
+      status, state_id, assigned_to, location_details || null, id
+    ];
+
+    console.log('🔍 updateEquipment - Query de actualización:', updateQuery);
+    console.log('🔍 updateEquipment - Parámetros de actualización:', params);
+
+    await executeQuery(updateQuery, params);
+
+    console.log(`✅ updateEquipment - Equipo ${id} actualizado correctamente`);
+
+    // Obtener el equipo actualizado
+    const updatedEquipment = await executeQuery('SELECT * FROM equipment WHERE id = ?', [id]);
 
     res.json({
       success: true,
-      message: 'Equipo actualizado correctamente'
+      message: 'Equipo actualizado correctamente',
+      equipment: updatedEquipment[0]
     });
 
   } catch (error) {
-    console.error('Error actualizando equipo:', error);
+    console.error('❌ Error al actualizar equipo:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });

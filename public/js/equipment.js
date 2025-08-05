@@ -692,12 +692,12 @@ class Equipment {
                     </h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div>
-                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Marca</label>
-                            <input type="text" name="brand" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Marca *</label>
+                            <input type="text" name="brand" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
                         </div>
                         <div>
-                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Modelo</label>
-                            <input type="text" name="model" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Modelo *</label>
+                            <input type="text" name="model" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease;">
                         </div>
                     </div>
                     <div style="margin-top: 16px;">
@@ -726,8 +726,8 @@ class Equipment {
                         </div>
                     </div>
                     <div style="margin-top: 16px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Detalles de Ubicación *</label>
-                        <textarea name="location_details" required rows="2" placeholder="Especificaciones adicionales de ubicación" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease; resize: vertical;"></textarea>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Detalles de Ubicación</label>
+                        <textarea name="location_details" rows="2" placeholder="Especificaciones adicionales de ubicación (opcional)" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease; resize: vertical;"></textarea>
                     </div>
                 </div>
                 
@@ -821,7 +821,7 @@ class Equipment {
             const formData = new FormData(form);
             
             // Validación básica
-            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to', 'location_details'];
+            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to'];
             const missingFields = [];
             
             requiredFields.forEach(field => {
