@@ -77,7 +77,7 @@ const getAllEquipment = async (req, res) => {
       LEFT JOIN states s ON e.state_id = s.id
       ${req.user.role === 'consultant' ? 'LEFT JOIN assignments a ON e.id = a.equipment_id AND a.returned_at IS NULL' : ''}
       ${whereClause}
-      ORDER BY e.created_at DESC
+      ORDER BY e.order_index ASC, e.created_at DESC
       LIMIT ? OFFSET ?
     `;
 
