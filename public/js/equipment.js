@@ -18,7 +18,7 @@ class Equipment {
         this.importData = null;
         this.validationResults = null;
         this.columnMapping = {};
-        
+
         // Mapeo de estados para conversión
         this.stateMapping = {
             'direccion': 1,
@@ -52,22 +52,22 @@ class Equipment {
             console.warn('⚠️ Equipment ya fue inicializado, se previene doble inicialización.');
             return;
         }
-        
+
         // Verificar si el usuario está autenticado antes de inicializar
         if (!window.Auth || !window.Auth.isAuthenticated) {
             console.log('⛔ Usuario no autenticado, Equipment no se inicializa automáticamente');
             return;
         }
-        
+
         window.equipmentInitialized = true;
         console.log('🔧 Inicializando Equipment...');
-        
+
         // Limpiar estado antes de inicializar
         this.cleanState();
-        
+
         // Configurar event listeners
         this.setupEventListeners();
-        
+
         // Cargar datos solo si el usuario está autenticado
         this.loadFilterData();
         // Usar debounce para la carga inicial de equipos
@@ -75,14 +75,14 @@ class Equipment {
             this._debouncedLoadEquipmentList = this.debounce(() => this.loadEquipmentList(), 1000);
         }
         this._debouncedLoadEquipmentList();
-        
+
         console.log('✅ Equipment inicializado correctamente');
     }
 
     // Nueva función para limpiar estado
     cleanState() {
         console.log('🧹 Limpiando estado de Equipment...');
-        
+
         // Resetear filtros
         this.filters = {
             search: '',
@@ -90,39 +90,39 @@ class Equipment {
             status: '',
             state: ''
         };
-        
+
         // Resetear paginación
         this.currentPage = 1;
-        
+
         // Limpiar inputs del DOM si existen
         const searchInput = document.getElementById('search-equipment');
         if (searchInput) {
             searchInput.value = '';
         }
-        
+
         const typeStatusFilter = document.getElementById('filter-type-status');
         if (typeStatusFilter) {
             typeStatusFilter.value = '';
         }
-        
+
         const stateFilter = document.getElementById('filter-state');
         if (stateFilter) {
             stateFilter.value = '';
         }
-        
+
         // Limpiar chips de filtros activos
         const activeFiltersContainer = document.getElementById('active-filters');
         if (activeFiltersContainer) {
             activeFiltersContainer.innerHTML = '';
         }
-        
+
         console.log('✅ Estado limpiado');
     }
 
     setupEventListeners() {
         // Nuevos event listeners para filtros compactos (incluye búsqueda)
         this.setupCompactFilters();
-        
+
         // Event listeners para botones
         const newEquipmentBtn = document.getElementById('new-equipment-btn');
         if (newEquipmentBtn) {
@@ -143,33 +143,30 @@ class Equipment {
     // Nueva función para configurar filtros compactos
     setupCompactFilters() {
         console.log('🔧 Configurando filtros compactos...');
-        
         // Búsqueda (ahora en la sección de filtros)
         const searchInput = document.getElementById('search-equipment');
         if (searchInput) {
             console.log('✅ Campo de búsqueda encontrado, configurando event listener...');
-            
             // Crear debounce manual para búsqueda
             let searchTimeout;
             searchInput.addEventListener('input', (e) => {
-                console.log('🔍 Evento input detectado en búsqueda:', e.target.value);
-                
+                console.log('🔍 [DEBUG] Evento input en búsqueda:', e.target.value);
                 // Limpiar timeout anterior
                 if (searchTimeout) {
                     clearTimeout(searchTimeout);
                 }
-                
                 // Configurar nuevo timeout
                 searchTimeout = setTimeout(() => {
-                    console.log('⏰ Ejecutando búsqueda con debounce...');
+                    console.log('⏰ [DEBUG] Ejecutando búsqueda con debounce. Valor:', e.target.value);
                     this.filters.search = e.target.value;
                     this.currentPage = 1;
+                    console.log('🔍 [DEBUG] Filtros actuales antes de buscar:', JSON.stringify(this.filters));
                     this.loadEquipmentList();
                     this.updateActiveFilters();
                 }, 300);
             });
         } else {
-            console.error('❌ Campo de búsqueda no encontrado');
+            console.error('❌ [DEBUG] Campo de búsqueda no encontrado');
         }
 
         // Filtro combinado Tipo + Estado
@@ -177,7 +174,7 @@ class Equipment {
         if (filterTypeStatus) {
             console.log('✅ Filtro tipo/estado encontrado, configurando event listener...');
             filterTypeStatus.addEventListener('change', (e) => {
-                console.log('🔍 Evento change detectado en filtro tipo/estado:', e.target.value);
+                console.log('🔍 [DEBUG] Evento change en filtro tipo/estado:', e.target.value);
                 const value = e.target.value;
                 if (value.startsWith('type:')) {
                     this.filters.type = value.replace('type:', '');
@@ -190,11 +187,12 @@ class Equipment {
                     this.filters.status = '';
                 }
                 this.currentPage = 1;
+                console.log('🔍 [DEBUG] Filtros actuales antes de buscar:', JSON.stringify(this.filters));
                 this.loadEquipmentList();
                 this.updateActiveFilters();
             });
         } else {
-            console.error('❌ Filtro tipo/estado no encontrado');
+            console.error('❌ [DEBUG] Filtro tipo/estado no encontrado');
         }
 
         // Filtro de Estado/Región
@@ -202,16 +200,16 @@ class Equipment {
         if (filterState) {
             console.log('✅ Filtro estado encontrado, configurando event listener...');
             filterState.addEventListener('change', (e) => {
-                console.log('🔍 Evento change detectado en filtro estado:', e.target.value);
+                console.log('🔍 [DEBUG] Evento change en filtro estado:', e.target.value);
                 this.filters.state = e.target.value;
                 this.currentPage = 1;
+                console.log('🔍 [DEBUG] Filtros actuales antes de buscar:', JSON.stringify(this.filters));
                 this.loadEquipmentList();
                 this.updateActiveFilters();
             });
         } else {
-            console.error('❌ Filtro estado no encontrado');
+            console.error('❌ [DEBUG] Filtro estado no encontrado');
         }
-        
         console.log('✅ Configuración de filtros completada');
     }
 
@@ -306,7 +304,7 @@ class Equipment {
                 if (stateSelect) stateSelect.value = '';
                 break;
         }
-        
+
         this.currentPage = 1;
         this.loadEquipmentList();
         this.updateActiveFilters();
@@ -350,12 +348,13 @@ class Equipment {
         try {
             const tbody = document.getElementById('equipment-tbody');
             const countElement = document.getElementById('equipment-count');
-            
+
             // Mostrar loading
             tbody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando equipos...</td></tr>';
-            
+
             // Construir parámetros de filtro con mapeo de estados
             const filterParams = { ...this.filters };
+            console.log('🔍 [DEBUG] Filtros antes de preparar params:', JSON.stringify(filterParams));
             if (filterParams.state) {
                 const stateId = this.getStateId(filterParams.state);
                 if (stateId) {
@@ -363,19 +362,23 @@ class Equipment {
                     delete filterParams.state; // Eliminar el string y usar el número
                 }
             }
-            
+            console.log('🔍 [DEBUG] Params para API:', {
+                page: this.currentPage,
+                limit: this.itemsPerPage,
+                ...filterParams
+            });
+
             const params = new URLSearchParams({
                 page: this.currentPage,
                 limit: this.itemsPerPage,
                 ...filterParams
             });
 
-            console.log('🔍 Cargando equipos con parámetros:', params.toString());
+            console.log('🔍 [DEBUG] URL final para API:', `/equipment?${params}`);
 
             const response = await API.get(`/equipment?${params}`);
-            
-            console.log('✅ Respuesta del servidor:', response);
-            
+            console.log('✅ [DEBUG] Respuesta del servidor:', response);
+
             if (response.equipment) {
                 console.log('✅ Equipos encontrados:', response.equipment.length);
                 this.renderEquipmentTable(response.equipment);
@@ -392,10 +395,10 @@ class Equipment {
             }
         } catch (error) {
             console.error('❌ Error cargando equipos:', error);
-            
+
             // Siempre usar la nueva función auxiliar para manejar errores
             this.handleEquipmentError(error, 'carga de equipos');
-            
+
             this.renderEquipmentTable([]);
         }
     }
@@ -411,7 +414,7 @@ class Equipment {
     // Renderizar tabla de equipos
     renderEquipmentTable(equipment) {
         const tbody = document.getElementById('equipment-tbody');
-        
+
         if (!equipment || equipment.length === 0) {
             tbody.innerHTML = `
                 <tr>
@@ -512,14 +515,14 @@ class Equipment {
     // Renderizar paginación
     renderPagination(pagination) {
         const paginationElement = document.getElementById('equipment-pagination');
-        
+
         if (!pagination || pagination.totalPages <= 1) {
             paginationElement.innerHTML = '';
             return;
         }
 
         const { currentPage, totalPages, total } = pagination;
-        
+
         let paginationHTML = `
             <div class="pagination-info">
                 Mostrando ${((currentPage - 1) * this.itemsPerPage) + 1} - ${Math.min(currentPage * this.itemsPerPage, total)} de ${total} equipos
@@ -598,7 +601,7 @@ class Equipment {
     async loadEquipmentStats() {
         try {
             const response = await API.get('/equipment/stats');
-            
+
             if (response.success) {
                 this.updateEquipmentStats(response.data);
             } else {
@@ -648,17 +651,17 @@ class Equipment {
     // Mostrar formulario de creación/edición
     async showCreateForm(equipmentId = null) {
         console.log('🔍 showCreateForm llamado con equipmentId:', equipmentId);
-        
+
         // Crear modal dinámico mejorado
         this.showModalDynamically(equipmentId);
-        
+
         console.log('✅ showCreateForm completado');
     }
 
     // Función mejorada para mostrar modal dinámicamente
     showModalDynamically(equipmentId) {
         console.log('🔍 showModalDynamically llamado con equipmentId:', equipmentId);
-        
+
         // Crear un nuevo modal completamente independiente
         const dynamicModal = document.createElement('div');
         dynamicModal.id = 'dynamic-equipment-modal';
@@ -675,7 +678,7 @@ class Equipment {
             justify-content: center;
             backdrop-filter: blur(2px);
         `;
-        
+
         // Crear el contenido del modal desde cero
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
@@ -690,7 +693,7 @@ class Equipment {
             z-index: 10000000;
             padding: 0;
         `;
-        
+
         // Crear contenido del modal mejorado
         modalContent.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; border-bottom: 1px solid #e1e5e9; background: #f8fafc; border-radius: 12px 12px 0 0;">
@@ -798,15 +801,15 @@ class Equipment {
                 </div>
             </form>
         `;
-        
+
         // Agregar event listeners mejorados
         const closeBtn = modalContent.querySelector('#dynamic-close-btn');
         const cancelBtn = modalContent.querySelector('#dynamic-cancel-btn');
         const form = modalContent.querySelector('#dynamic-equipment-form');
-        
+
         closeBtn.onclick = () => this.closeDynamicModal();
         cancelBtn.onclick = () => this.closeDynamicModal();
-        
+
         // Mejorar focus y hover states
         const inputs = modalContent.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
@@ -819,34 +822,34 @@ class Equipment {
                 input.style.boxShadow = 'none';
             });
         });
-        
+
         form.onsubmit = (e) => {
             e.preventDefault();
             this.saveDynamicEquipment(form, equipmentId);
         };
-        
+
         // Agregar overlay para cerrar al hacer clic fuera
         dynamicModal.onclick = (e) => {
             if (e.target === dynamicModal) {
                 this.closeDynamicModal();
             }
         };
-        
+
         // Agregar al body
         document.body.appendChild(dynamicModal);
         dynamicModal.appendChild(modalContent);
-        
+
         // Guardar referencia para poder cerrarlo
         this.dynamicModal = dynamicModal;
-        
+
         // Cargar estados dinámicamente
         this.loadStatesForModal();
-        
+
         // Cargar datos si es edición
         if (equipmentId) {
             this.loadEquipmentDataForDynamicModal(equipmentId);
         }
-        
+
         console.log('🚀 Modal dinámico mejorado creado y mostrado');
     }
 
@@ -857,7 +860,7 @@ class Equipment {
             if (response.equipment) {
                 const equipment = response.equipment;
                 const form = document.getElementById('dynamic-equipment-form');
-                
+
                 // Llenar formulario con datos del equipo
                 Object.keys(equipment).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
@@ -868,7 +871,7 @@ class Equipment {
             }
         } catch (error) {
             console.error('Error cargando datos del equipo:', error);
-            
+
             // Usar la nueva función auxiliar para manejar errores
             this.handleEquipmentError(error, 'carga de datos del equipo');
         }
@@ -878,26 +881,26 @@ class Equipment {
     async saveDynamicEquipment(form, equipmentId = null) {
         try {
             const formData = new FormData(form);
-            
+
             // Validación básica
             const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to'];
             const missingFields = [];
-            
+
             requiredFields.forEach(field => {
                 if (!formData.get(field)) {
                     missingFields.push(field);
                 }
             });
-            
+
             if (missingFields.length > 0) {
                 UI.showNotification('Por favor complete todos los campos requeridos', 'error');
                 return;
             }
-            
+
             // Procesar valores correctamente
             const stateIdValue = formData.get('state_id');
             const assignedToValue = formData.get('assigned_to');
-            
+
             const equipmentData = {
                 inventory_number: formData.get('inventory_number'),
                 name: formData.get('name'),
@@ -922,18 +925,18 @@ class Equipment {
 
             // Determinar si es creación o edición
             let response;
-            
+
             if (equipmentId) {
                 response = await API.put(`/equipment/${equipmentId}`, equipmentData);
             } else {
                 response = await API.post('/equipment', equipmentData);
             }
-            
+
             // El servidor devuelve directamente el objeto con message y equipment
             if (response.message) {
                 UI.showNotification(response.message, 'success');
                 this.closeDynamicModal();
-                
+
                 // Usar la nueva función para refrescar la lista
                 setTimeout(() => {
                     this.refreshEquipmentList();
@@ -943,10 +946,10 @@ class Equipment {
             }
         } catch (error) {
             console.error('Error guardando equipo:', error);
-            
+
             // Usar la nueva función auxiliar para manejar errores
             const errorHandled = this.handleEquipmentError(error, 'guardado de equipo');
-            
+
             // Si es un error de autenticación, cerrar el modal
             if (!errorHandled) {
                 this.closeDynamicModal();
@@ -1001,19 +1004,19 @@ class Equipment {
     async deleteEquipment(equipmentId) {
         // Convertir ID a número entero
         const id = parseInt(equipmentId, 10);
-        
+
         console.log('🔍 deleteEquipment llamado con ID:', equipmentId);
         console.log('🔍 ID convertido a número:', id);
         console.log('🔍 Equipment object:', window.Equipment);
         console.log('🔍 deleteEquipment method:', window.Equipment?.deleteEquipment);
-        
+
         // Validar que el ID sea un número válido
         if (isNaN(id) || id <= 0) {
             console.error('❌ ID inválido:', equipmentId);
             UI.showNotification('ID de equipo inválido', 'error');
             return;
         }
-        
+
         try {
             // Verificar que UI está disponible
             if (!UI || !UI.showConfirmDialog) {
@@ -1021,39 +1024,39 @@ class Equipment {
                 alert('Error: UI no está disponible');
                 return;
             }
-            
+
             console.log('✅ UI.showConfirmDialog disponible, mostrando diálogo...');
-            
+
             // Mostrar diálogo de confirmación
             const confirmed = await UI.showConfirmDialog(
                 '¿Estás seguro de que quieres eliminar este equipo?',
                 'Esta acción no se puede deshacer. El equipo será eliminado permanentemente de la base de datos.'
             );
-            
+
             console.log('🔍 Resultado del diálogo de confirmación:', confirmed);
-            
+
             if (!confirmed) {
                 console.log('❌ Usuario canceló la eliminación');
                 return; // Usuario canceló la acción
             }
-            
+
             console.log('✅ Usuario confirmó, procediendo con eliminación...');
-            
+
             // Mostrar loading
             UI.showNotification('Eliminando equipo...', 'info');
-            
+
             // Realizar petición de eliminación con ID convertido
             const response = await API.delete(`/equipment/${id}`);
-            
+
             console.log('🔍 Respuesta del servidor:', response);
-            
+
             if (response.message) {
                 // Mostrar mensaje de éxito
                 UI.showNotification(response.message, 'success');
-                
+
                 // Recargar la lista de equipos
                 await this.loadEquipmentList();
-                
+
                 // Actualizar estadísticas si están disponibles
                 if (typeof this.loadEquipmentStats === 'function') {
                     await this.loadEquipmentStats();
@@ -1061,13 +1064,13 @@ class Equipment {
             } else {
                 throw new Error('Respuesta inválida del servidor');
             }
-            
+
         } catch (error) {
             console.error('❌ Error eliminando equipo:', error);
-            
+
             // Mostrar mensaje de error específico
             let errorMessage = 'Error eliminando equipo';
-            
+
             if (error.message) {
                 if (error.message.includes('404')) {
                     errorMessage = 'El equipo no fue encontrado';
@@ -1082,7 +1085,7 @@ class Equipment {
                     errorMessage = 'Error interno del servidor';
                 }
             }
-            
+
             UI.showNotification(errorMessage, 'error');
         }
     }
@@ -1093,10 +1096,10 @@ class Equipment {
         modal.style.display = 'flex';
         this.currentStep = 1;
         this.showImportStep(1);
-        
+
         // Agregar event listeners para cerrar el modal
         this.setupImportModalListeners();
-        
+
         // Disparar evento para que los handlers se inicialicen
         document.dispatchEvent(new Event('importModalShown'));
     }
@@ -1105,15 +1108,15 @@ class Equipment {
     setupImportModalListeners() {
         const modal = document.getElementById('import-modal');
         if (!modal) return;
-        
+
         // Remover event listeners existentes para evitar duplicados
         const newModal = modal.cloneNode(true);
         modal.parentNode.replaceChild(newModal, modal);
-        
+
         // Obtener referencias actualizadas
         const updatedModal = document.getElementById('import-modal');
         const closeBtn = updatedModal.querySelector('.modal-close');
-        
+
         // Cerrar con el botón X
         if (closeBtn) {
             closeBtn.addEventListener('click', (e) => {
@@ -1122,14 +1125,14 @@ class Equipment {
                 this.closeImportModal();
             });
         }
-        
+
         // Cerrar haciendo clic en el overlay
         updatedModal.addEventListener('click', (e) => {
             if (e.target === updatedModal) {
                 this.closeImportModal();
             }
         });
-        
+
         // Cerrar con ESC
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
@@ -1138,7 +1141,7 @@ class Equipment {
             }
         };
         document.addEventListener('keydown', handleEscape);
-        
+
         // Event listener para subida de archivo
         const fileInput = document.getElementById('excel-file');
         if (fileInput) {
@@ -1149,12 +1152,12 @@ class Equipment {
                 }
             });
         }
-        
+
         console.log('✅ Event listeners del modal de importación configurados');
     }
 
     // Manejar subida de archivo
-        async handleFileUpload(file) {
+    async handleFileUpload(file) {
         try {
             console.log('🚀 INICIANDO PROCESO DE IMPORTACIÓN');
             console.log('📁 Subiendo archivo:', file.name, 'Tamaño:', file.size);
@@ -1174,8 +1177,8 @@ class Equipment {
             console.log('🌐 Headers de autenticación:', ConfigUtils.getAuthHeaders());
 
             const response = await API.post('/equipment/upload-excel', formData);
-            
-                        console.log('📊 Respuesta del servidor:', response);
+
+            console.log('📊 Respuesta del servidor:', response);
 
             if (response.success) {
                 this.excelData = response.data;
@@ -1190,10 +1193,10 @@ class Equipment {
             }
         } catch (error) {
             console.error('❌ Error procesando archivo:', error);
-            
+
             // Mostrar mensaje de error más específico
             let errorMessage = 'Error procesando archivo Excel';
-            
+
             if (error.message.includes('400')) {
                 errorMessage = 'El archivo no es válido. Verifique que sea un archivo Excel (.xlsx, .xls)';
             } else if (error.message.includes('413')) {
@@ -1207,7 +1210,7 @@ class Equipment {
             } else if (error.message.includes('No se proporcionó ningún archivo')) {
                 errorMessage = 'Error: No se pudo procesar el archivo. Verifique que esté autenticado y el archivo sea válido';
             }
-            
+
             UI.showNotification(errorMessage, 'error');
         }
     }
@@ -1235,9 +1238,9 @@ class Equipment {
                 <td>
                     <select class="column-mapping" data-field="${field.key}">
                         <option value="">Seleccionar columna</option>
-                        ${this.excelData.columns.map(col => 
-                            `<option value="${col}">${col}</option>`
-                        ).join('')}
+                        ${this.excelData.columns.map(col =>
+                `<option value="${col}">${col}</option>`
+            ).join('')}
                     </select>
                 </td>
                 <td>${field.label}</td>
@@ -1266,7 +1269,7 @@ class Equipment {
             console.log('🔍 INICIANDO VALIDACIÓN DE DATOS');
             const mapping = this.getMapping();
             console.log('🗺️ Mapeo obtenido:', mapping);
-            
+
             const validationData = {
                 mapping: mapping,
                 data: this.excelData.data
@@ -1275,7 +1278,7 @@ class Equipment {
 
             const response = await API.post('/equipment/validate-import', validationData);
             console.log('📊 Respuesta de validación:', response);
-            
+
             if (response.success) {
                 this.validationResults = response.data;
                 console.log('✅ Resultados de validación:', this.validationResults);
@@ -1301,7 +1304,7 @@ class Equipment {
         if (errorCount) errorCount.textContent = this.validationResults.errors?.length || 0;
 
         if (errorsContainer && this.validationResults.errors) {
-            errorsContainer.innerHTML = this.validationResults.errors.map(error => 
+            errorsContainer.innerHTML = this.validationResults.errors.map(error =>
                 `<div class="error-item">${error}</div>`
             ).join('');
         }
@@ -1314,7 +1317,7 @@ class Equipment {
             console.log('📊 Datos de mapeo:', this.getMapping());
             console.log('📋 Datos a importar:', this.excelData.data.length, 'filas');
             console.log('✅ Resultados de validación:', this.validationResults);
-            
+
             const importData = {
                 mapping: this.getMapping(),
                 data: this.excelData.data,
@@ -1324,25 +1327,25 @@ class Equipment {
             console.log('📦 Datos de importación:', importData);
             console.log('🌐 URL de importación:', '/equipment/import');
             console.log('🔍 Headers de autenticación:', ConfigUtils.getAuthHeaders());
-            
+
             const response = await API.post('/equipment/import', importData);
-            
+
             console.log('📡 Respuesta del servidor:', response);
-            
+
             if (response.success) {
                 console.log('✅ Importación exitosa:', response.data);
-                
+
                 UI.showNotification(
-                    `Importación completada: ${response.data.imported} equipos`, 
+                    `Importación completada: ${response.data.imported} equipos`,
                     'success'
                 );
-                
+
                 console.log('🔒 Cerrando modal...');
                 this.closeImportModal();
-                
+
                 console.log('🔄 Recargando lista de equipos...');
                 await this.loadEquipmentList();
-                
+
                 console.log('✅ Proceso de importación completado');
             } else {
                 throw new Error(response.message || 'Error en importación');
@@ -1357,25 +1360,25 @@ class Equipment {
     async downloadTemplate() {
         try {
             console.log('📥 Descargando plantilla Excel...');
-            
+
             const response = await API.get('/equipment/template', { responseType: 'blob' });
-            
+
             console.log('✅ Plantilla descargada:', response);
-            
-            const blob = new Blob([response], { 
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+
+            const blob = new Blob([response], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = 'plantilla-equipos.xlsx';
-            
+
             console.log('📥 Descargando archivo:', link.download);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
+
             UI.showNotification('Plantilla descargada exitosamente', 'success');
             console.log('✅ Plantilla descargada exitosamente');
         } catch (error) {
@@ -1391,7 +1394,7 @@ class Equipment {
             console.log('📊 Filtros actuales:', this.filters);
             console.log('🔍 Estado de autenticación:', ConfigUtils.isAuthenticated());
             console.log('🔍 Token disponible:', !!ConfigUtils.getAuthToken());
-            
+
             // Filtrar solo los parámetros válidos para la consulta
             const queryParams = {};
             if (this.filters.search) queryParams.search = this.filters.search;
@@ -1404,7 +1407,7 @@ class Equipment {
                     queryParams.state_id = stateId;
                 }
             }
-            
+
             console.log('🔍 Parámetros filtrados:', queryParams);
             console.log('🔍 Tipos de parámetros:', {
                 search: typeof queryParams.search,
@@ -1412,34 +1415,34 @@ class Equipment {
                 status: typeof queryParams.status,
                 state_id: typeof queryParams.state_id
             });
-            
+
             const params = new URLSearchParams(queryParams);
             console.log('🔗 Parámetros de consulta:', params.toString());
-            
+
             // Construir la URL solo si hay parámetros
             const exportUrl = params.toString() ? `/equipment/export?${params}` : '/equipment/export';
             console.log('🔗 URL completa:', exportUrl);
-            
+
             console.log('📡 Realizando petición a la API...');
             const response = await API.get(exportUrl, { responseType: 'blob' });
-            
+
             console.log('✅ Respuesta recibida:', response);
             console.log('📦 Tipo de respuesta:', typeof response);
             console.log('📏 Tamaño del blob:', response.size);
             console.log('🎯 Tipo MIME:', response.type);
-            
+
             const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
-            
+
             console.log('📥 Descargando archivo:', link.download);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
+
             UI.showNotification('Exportación completada', 'success');
             console.log('✅ Exportación completada exitosamente');
         } catch (error) {
@@ -1455,7 +1458,7 @@ class Equipment {
         document.querySelectorAll('.import-step').forEach(el => {
             el.classList.remove('active');
         });
-        
+
         // Mostrar paso actual
         const currentStep = document.getElementById(`import-step-${step}`);
         if (currentStep) {
@@ -1479,7 +1482,7 @@ class Equipment {
             this.validateImportData();
             return; // La validación maneja el siguiente paso
         }
-        
+
         this.currentStep++;
         this.showImportStep(this.currentStep);
     }
@@ -1495,50 +1498,50 @@ class Equipment {
         const modal = document.getElementById('import-modal');
         if (modal) {
             modal.style.display = 'none';
-            
+
             // Limpiar estado del modal
             this.currentStep = 1;
             this.excelData = null;
             this.mapping = {};
             this.validationResults = null;
-            
+
             // Resetear pasos de importación
             document.querySelectorAll('.import-step').forEach(el => {
                 el.classList.remove('active');
             });
-            
+
             // Mostrar primer paso
             const firstStep = document.getElementById('import-step-1');
             if (firstStep) {
                 firstStep.classList.add('active');
             }
-            
+
             // Resetear botones
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             const confirmBtn = document.getElementById('confirm-btn');
-            
+
             if (prevBtn) prevBtn.style.display = 'none';
             if (nextBtn) nextBtn.style.display = 'block';
             if (confirmBtn) confirmBtn.style.display = 'none';
-            
+
             // Limpiar archivo seleccionado
             const fileInput = document.getElementById('excel-file');
             if (fileInput) {
                 fileInput.value = '';
             }
-            
+
             // Limpiar mapeo de columnas
             const mappingTbody = document.getElementById('mapping-tbody');
             if (mappingTbody) {
                 mappingTbody.innerHTML = '';
             }
-            
+
             // Limpiar resultados de validación
             const validCount = document.getElementById('valid-count');
             const errorCount = document.getElementById('error-count');
             const errorsContainer = document.getElementById('validation-errors');
-            
+
             if (validCount) validCount.textContent = '0';
             if (errorCount) errorCount.textContent = '0';
             if (errorsContainer) errorsContainer.innerHTML = '';
@@ -1607,10 +1610,10 @@ class Equipment {
             console.log('✅ Lista de equipos actualizada');
         } catch (error) {
             console.error('❌ Error refrescando lista:', error);
-            
+
             // Usar la nueva función auxiliar para manejar errores
             this.handleEquipmentError(error, 'refresco de lista de equipos');
-            
+
             // No mostrar notificación de error al usuario
             // Solo log para debugging
             // La creación del equipo fue exitosa, este error es solo para la recarga
@@ -1630,7 +1633,7 @@ class Equipment {
                     if (defaultOption) {
                         stateSelect.appendChild(defaultOption);
                     }
-                    
+
                     // Agregar las opciones de estados
                     response.data.forEach(state => {
                         const option = document.createElement('option');
@@ -1642,10 +1645,10 @@ class Equipment {
             }
         } catch (error) {
             console.error('Error cargando estados:', error);
-            
+
             // Usar la nueva función auxiliar para manejar errores
             this.handleEquipmentError(error, 'carga de estados');
-            
+
             // Fallback a estados estáticos si falla la carga
             const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
             if (stateSelect) {
@@ -1664,9 +1667,9 @@ class Equipment {
     // Función auxiliar para manejar errores sin logout automático
     handleEquipmentError(error, context = 'operación') {
         console.error(`Error en ${context}:`, error);
-        
+
         let errorMessage = `Error en ${context}`;
-        
+
         if (error.message.includes('401')) {
             errorMessage = 'Sesión expirada. Por favor inicie sesión nuevamente.';
             // No ejecutar logout automático, solo mostrar el mensaje
@@ -1681,14 +1684,14 @@ class Equipment {
         } else {
             errorMessage = error.message || `Error desconocido en ${context}.`;
         }
-        
+
         UI.showNotification(errorMessage, 'error');
         return true; // Indicar que el error fue manejado
     }
 }
 
 // Función global de respaldo para eliminar equipo
-window.deleteEquipmentGlobal = function(equipmentId) {
+window.deleteEquipmentGlobal = function (equipmentId) {
     console.log('🔍 deleteEquipmentGlobal llamado con ID:', equipmentId);
     if (window.Equipment && window.Equipment.deleteEquipment) {
         return window.Equipment.deleteEquipment(equipmentId);
@@ -1700,7 +1703,7 @@ window.deleteEquipmentGlobal = function(equipmentId) {
 };
 
 // Función global de respaldo para editar equipo
-window.editEquipmentGlobal = function(equipmentId) {
+window.editEquipmentGlobal = function (equipmentId) {
     console.log('🔍 editEquipmentGlobal llamado con ID:', equipmentId);
     if (window.Equipment && window.Equipment.showCreateForm) {
         return window.Equipment.showCreateForm(equipmentId);
@@ -1714,21 +1717,21 @@ window.editEquipmentGlobal = function(equipmentId) {
 // Inicializar módulo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Creando instancia de Equipment...');
-    
+
     // Crear instancia de Equipment
     window.Equipment = new Equipment();
-    
+
     // Solo inicializar Equipment si el usuario está autenticado
     if (window.Auth && window.Auth.isAuthenticated) {
         console.log('🔧 Usuario autenticado, inicializando Equipment...');
-        
+
         if (window.Equipment && typeof window.Equipment.init === 'function') {
             try {
                 window.Equipment.init();
                 console.log('✅ Equipment inicializado correctamente');
             } catch (error) {
                 console.error('❌ Error durante la inicialización de Equipment:', error);
-                
+
                 // Intentar reinicializar después de un delay
                 setTimeout(() => {
                     console.log('🔄 Intentando reinicialización...');
@@ -1746,11 +1749,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.log('⛔ Usuario no autenticado, Equipment no se inicializa automáticamente');
     }
-    
+
     // Hacer métodos disponibles globalmente para compatibilidad
     const methodsToBind = [
         'showCreateForm',
-        'viewEquipment', 
+        'viewEquipment',
         'deleteEquipment',
         'goToPage',
         'clearFilters',
@@ -1760,15 +1763,15 @@ document.addEventListener('DOMContentLoaded', () => {
         'refreshList',
         'cleanState'  // Agregar el nuevo método
     ];
-    
+
     methodsToBind.forEach(method => {
         if (window.Equipment[method]) {
             window.Equipment[method] = window.Equipment[method].bind(window.Equipment);
         }
     });
-    
+
     console.log('✅ Equipment inicializado y métodos disponibles globalmente');
     console.log('🔍 Métodos disponibles:', methodsToBind);
 });
 
- 
+
