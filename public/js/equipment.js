@@ -430,7 +430,7 @@ class Equipment {
         }
 
         tbody.innerHTML = equipment.map(item => `
-            <tr>
+            <tr id="equipment-row-${item.id}">
                 <td>
                     <strong>${item.inventory_number}</strong>
                 </td>
@@ -459,7 +459,7 @@ class Equipment {
                 </td>
                 <td>
                     <div class="table-actions-cell">
-                        <button class="action-btn view" onclick="Equipment.viewEquipment(${item.id})" title="Ver detalles">
+                        <button class="action-btn view" onclick="Equipment.toggleRowVisibility(${item.id}, this)" title="Ocultar fila">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="action-btn edit" onclick="safeEquipmentCall('showCreateForm', ${item.id})" title="Editar">
@@ -472,6 +472,28 @@ class Equipment {
                 </td>
             </tr>
         `).join('');
+    }
+
+    // Alternar visibilidad de la fila de la tabla (debe ser static y fuera de renderEquipmentTable)
+    static toggleRowVisibility(equipmentId, btn) {
+        const row = document.getElementById(`equipment-row-${equipmentId}`);
+        if (!row) return;
+        // Si está visible, ocultar
+        if (row.style.display !== 'none') {
+            row.style.display = 'none';
+            if (btn && btn.querySelector('i')) {
+                btn.querySelector('i').classList.remove('fa-eye');
+                btn.querySelector('i').classList.add('fa-eye-slash');
+            }
+            btn.title = 'Mostrar fila';
+        } else {
+            row.style.display = '';
+            if (btn && btn.querySelector('i')) {
+                btn.querySelector('i').classList.remove('fa-eye-slash');
+                btn.querySelector('i').classList.add('fa-eye');
+            }
+            btn.title = 'Ocultar fila';
+        }
     }
 
     // Renderizar paginación
