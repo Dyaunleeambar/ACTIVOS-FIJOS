@@ -499,6 +499,55 @@ class Equipment {
             </tr>
             `;
         }).join('');
+
+        // --- Drag & Drop con SortableJS ---
+        console.log('Preparando SortableJS', {Sortable: window.Sortable, tbody});
+        if (window.Sortable && tbody) {
+            // Destruir instancia previa si existe
+            if (tbody._sortableInstance) {
+                tbody._sortableInstance.destroy();
+                tbody._sortableInstance = null;
+            }
+            const self = this;
+            tbody._sortableInstance = Sortable.create(tbody, {
+                // handle: '.drag-handle-col', // Descomenta para restringir solo al handle
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async function (evt) {
+                    console.log('Drag terminado', evt);
+
+                    // Obtener nuevo orden de IDs
+                    const newOrder = Array.from(tbody.children).map(row => {
+                        const idMatch = row.id && row.id.match(/^equipment-row-(\d+)$/);
+                        return idMatch ? parseInt(idMatch[1], 10) : null;
+                    }).filter(Boolean);
+                    // Reordenar this.equipment según newOrder SOLO para la página actual
+                    const startIdx = (self.currentPage - 1) * self.itemsPerPage;
+                    const endIdx = startIdx + self.itemsPerPage;
+                    const currentPageEquip = self.equipment.slice(startIdx, endIdx);
+                    const reordered = [];
+                    newOrder.forEach(id => {
+                        const found = currentPageEquip.find(eq => eq.id === id);
+                        if (found) reordered.push(found);
+                    });
+                    // Opcional: feedback visual
+                    tbody.classList.add('sortable-updated');
+                    setTimeout(() => tbody.classList.remove('sortable-updated'), 300);
+
+                    // Persistir nuevo orden en el backend
+                    try {
+                        await API.post('/equipment/reorder', { order: newOrder });
+                        // Opcional: mostrar mensaje de éxito
+                        console.log('✅ Orden guardado en backend');
+                    } catch (err) {
+                        // Opcional: revertir el orden en UI si falla
+                        alert('No se pudo guardar el nuevo orden en el servidor.');
+                        console.error('❌ Error al guardar orden:', err);
+                    }
+                }
+            });
+        }
+        // --- Fin Drag & Drop ---
     }
 
     // Alternar visibilidad de la fila de la tabla (debe ser static y fuera de renderEquipmentTable)
@@ -1784,5 +1833,3 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Equipment inicializado y métodos disponibles globalmente');
     console.log('🔍 Métodos disponibles:', methodsToBind);
 });
-
-

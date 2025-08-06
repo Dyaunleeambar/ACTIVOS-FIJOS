@@ -602,37 +602,6 @@ const getEquipmentByState = async (req, res) => {
   }
 };
 
-// Configuración de multer para subida de archivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'equipment-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['.xlsx', '.xls'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowedTypes.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten archivos Excel (.xlsx, .xls)'), false);
-    }
-  },
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  }
-});
-
 // Subir archivo Excel
 const uploadExcel = async (req, res) => {
   try {
@@ -1072,7 +1041,36 @@ const getAssignedEquipment = async (req, res) => {
   }
 };
 
+// Reordenar equipos
+const reorderEquipment = async (req, res) => {
+  try {
+    const { order } = req.body; // array de IDs en el nuevo orden
+    if (!Array.isArray(order) || order.length === 0) {
+      return res.status(400).json({ error: 'El array de orden es requerido.' });
+    }
+
+    // Construir el CASE para actualizar todos en una sola consulta
+    let caseStatements = '';
+    const ids = [];
+    order.forEach((id, idx) => {
+      caseStatements += `WHEN id = ? THEN ? `;
+      ids.push(id, idx + 1);
+    });
+
+    const sql = `UPDATE equipment SET order_index = CASE ${caseStatements} END WHERE id IN (${order.map(() => '?').join(',')})`;
+    // Usar executeUpdate en vez de executeQuery para UPDATE
+    const result = await require('../config/database-sqlite').executeUpdate(sql, [...ids, ...order]);
+    console.log('Resultado de UPDATE:', result);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al reordenar equipos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
+  reorderEquipment,
   getAllEquipment,
   getEquipmentById,
   createEquipment,
@@ -1086,4 +1084,4 @@ module.exports = {
   downloadTemplate,
   getEquipmentStats,
   getAssignedEquipment
-}; 
+};

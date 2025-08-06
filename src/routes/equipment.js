@@ -57,6 +57,13 @@ router.get('/export',
   equipmentController.exportToExcel
 );
 
+// POST /api/equipment/reorder - Reordenar equipos
+router.post('/reorder', 
+  authenticateToken, 
+  authorizeRole(['admin', 'manager']), 
+  equipmentController.reorderEquipment
+);
+
 // GET /api/equipment/template - Descargar plantilla Excel
 router.get('/template', 
   authenticateToken, 
