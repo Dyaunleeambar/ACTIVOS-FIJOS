@@ -352,7 +352,12 @@ const updateEquipment = async (req, res) => {
 
     const missingFields = [];
     for (const [field, label] of Object.entries(requiredFields)) {
-      if (!req.body[field] || req.body[field].trim() === '') {
+      const value = req.body[field];
+      if (
+        value === undefined ||
+        value === null ||
+        (typeof value === 'string' && value.trim() === '')
+      ) {
         missingFields.push(label);
       }
     }
