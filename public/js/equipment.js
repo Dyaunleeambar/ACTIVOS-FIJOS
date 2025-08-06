@@ -432,19 +432,30 @@ class Equipment {
             return;
         }
 
-        // Agregar encabezado de índice si no existe
+        // Agregar encabezado de handle y de índice si no existen
         const thead = tbody.parentElement.querySelector('thead tr');
-        if (thead && !thead.querySelector('.index-col')) {
-            const th = document.createElement('th');
-            th.textContent = 'N°';
-            th.className = 'index-col';
-            thead.insertBefore(th, thead.firstChild);
+        if (thead) {
+            if (!thead.querySelector('.drag-handle-col')) {
+                const thHandle = document.createElement('th');
+                thHandle.innerHTML = '<i class="fas fa-grip-vertical" title="Reordenar"></i>';
+                thHandle.className = 'drag-handle-col';
+                thead.insertBefore(thHandle, thead.firstChild);
+            }
+            if (!thead.querySelector('.index-col')) {
+                const thIndex = document.createElement('th');
+                thIndex.textContent = 'N°';
+                thIndex.className = 'index-col';
+                thead.insertBefore(thIndex, thead.children[1] || null);
+            }
         }
 
         tbody.innerHTML = equipment.map((item, i) => {
             const index = (this.currentPage - 1) * this.itemsPerPage + i + 1;
             return `
-            <tr id="equipment-row-${item.id}">
+            <tr id="equipment-row-${item.id}" draggable="true" class="draggable-row">
+                <td class="drag-handle-col" style="cursor: grab; text-align: center; width: 32px;">
+                    <i class="fas fa-grip-vertical" title="Arrastrar para reordenar"></i>
+                </td>
                 <td class="index-col">${index}</td>
                 <td>
                     <strong>${item.inventory_number}</strong>
