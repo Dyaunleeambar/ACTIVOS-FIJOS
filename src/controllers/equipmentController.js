@@ -152,6 +152,7 @@ const getEquipmentById = async (req, res) => {
         e.status,
         e.state_id,
         e.assigned_to,
+        e.location_details,
         e.created_at,
         e.updated_at,
         s.name as state_name
