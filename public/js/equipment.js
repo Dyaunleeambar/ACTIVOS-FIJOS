@@ -415,7 +415,7 @@ class Equipment {
         if (!equipment || equipment.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center">
+                    <td colspan="9" class="text-center">
                         <div style="padding: 40px;">
                             <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
                             <p>No se encontraron equipos</p>
@@ -429,8 +429,20 @@ class Equipment {
             return;
         }
 
-        tbody.innerHTML = equipment.map(item => `
+        // Agregar encabezado de índice si no existe
+        const thead = tbody.parentElement.querySelector('thead tr');
+        if (thead && !thead.querySelector('.index-col')) {
+            const th = document.createElement('th');
+            th.textContent = 'N°';
+            th.className = 'index-col';
+            thead.insertBefore(th, thead.firstChild);
+        }
+
+        tbody.innerHTML = equipment.map((item, i) => {
+            const index = (this.currentPage - 1) * this.itemsPerPage + i + 1;
+            return `
             <tr id="equipment-row-${item.id}">
+                <td class="index-col">${index}</td>
                 <td>
                     <strong>${item.inventory_number}</strong>
                 </td>
@@ -471,7 +483,8 @@ class Equipment {
                     </div>
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // Alternar visibilidad de la fila de la tabla (debe ser static y fuera de renderEquipmentTable)
