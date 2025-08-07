@@ -156,7 +156,10 @@ const App = {
                     }
                     break;
                 case 'equipment':
-                    // Verificar que Equipment esté disponible y esperar si es necesario
+                    // Verificar que Equipment esté disponible y esperar si es necesario                    
+                    if (window.Equipment && typeof window.Equipment.init === 'function') {
+                        window.Equipment.init();
+                    }
                     if (window.Equipment && window.Equipment.loadEquipmentList) {
                         console.log('📊 Cargando equipos desde App.loadPageData...');
                         await window.Equipment.loadEquipmentList();
@@ -368,6 +371,12 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => {
     // La aplicación se inicializará cuando Auth.showApp() sea llamado
     console.log('📱 Aplicación lista para inicializar');
+    // Inicialización automática de Equipment si el usuario está autenticado y la clase está disponible
+    if (window.Auth && window.Auth.isAuthenticated) {
+        if (window.Equipment && typeof window.Equipment.init === 'function') {
+            window.Equipment.init();
+        }
+    }
 });
 
 // Exportar aplicación

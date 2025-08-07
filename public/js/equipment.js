@@ -266,21 +266,26 @@ class Equipment {
             });
         }
 
-        // Crear chips para cada filtro activo
+        // Renderizar chips visualmente y asignar event listeners
         activeFilters.forEach(filter => {
             const chip = document.createElement('div');
             chip.className = 'filter-chip';
             chip.innerHTML = `
                 <span>${filter.label}</span>
-                <button class="remove-chip" onclick="Equipment.removeFilter('${filter.type}')" title="Remover filtro">
+                <button class="remove-chip" type="button" title="Remover filtro">
                     <i class="fas fa-times"></i>
                 </button>
             `;
+            // Asignar event listener CSP-compliant
+            chip.querySelector('.remove-chip').addEventListener('click', () => {
+                this.removeFilter(filter.type);
+            });
             activeFiltersContainer.appendChild(chip);
         });
     }
 
-    // Función para remover filtros individuales
+
+
     removeFilter(filterType) {
         switch (filterType) {
             case 'search':
@@ -422,7 +427,7 @@ class Equipment {
                         <div style="padding: 40px;">
                             <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
                             <p>No se encontraron equipos</p>
-                            <button class="btn btn-secondary" onclick="editEquipmentGlobal()">
+                            <button class="btn btn-secondary" id="add-first-equipment-btn">
                                 <i class="fas fa-plus"></i> Agregar primer equipo
                             </button>
                         </div>
@@ -485,13 +490,13 @@ class Equipment {
                 </td>
                 <td>
                     <div class="table-actions-cell">
-                        <button class="action-btn view" onclick="Equipment.toggleRowVisibility(${item.id}, this)" title="Ocultar fila">
+                        <button class="action-btn view" data-action="toggle-row" data-id="${item.id}" title="Ocultar fila">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn edit" onclick="safeEquipmentCall('showCreateForm', ${item.id})" title="Editar">
+                        <button class="action-btn edit" data-action="edit" data-id="${item.id}" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn delete" onclick="deleteEquipmentGlobal(${item.id})" title="Eliminar">
+                        <button class="action-btn delete" data-action="delete" data-id="${item.id}" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -499,6 +504,32 @@ class Equipment {
             </tr>
             `;
         }).join('');
+
+        // Asignar event listeners a los botones de acción
+        tbody.querySelectorAll('.action-btn').forEach(btn => {
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id');
+            if (action === 'toggle-row') {
+                btn.addEventListener('click', (e) => {
+                    this.toggleRowVisibility && this.toggleRowVisibility(Number(id), btn);
+                });
+            } else if (action === 'edit') {
+                btn.addEventListener('click', (e) => {
+                    window.safeEquipmentCall && window.safeEquipmentCall('showCreateForm', Number(id));
+                });
+            } else if (action === 'delete') {
+                btn.addEventListener('click', (e) => {
+                    window.deleteEquipmentGlobal && window.deleteEquipmentGlobal(Number(id));
+                });
+            }
+        });
+        // Asignar event listener al botón "Agregar primer equipo"
+        const addBtn = document.getElementById('add-first-equipment-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                window.editEquipmentGlobal && window.editEquipmentGlobal();
+            });
+        }
 
         // --- Drag & Drop con SortableJS ---
         console.log('Preparando SortableJS', {Sortable: window.Sortable, tbody});
@@ -554,21 +585,22 @@ class Equipment {
     static toggleRowVisibility(equipmentId, btn) {
         const row = document.getElementById(`equipment-row-${equipmentId}`);
         if (!row) return;
+        const icon = btn && btn.querySelector('i');
         // Si está visible, ocultar
         if (row.style.display !== 'none') {
             row.style.display = 'none';
-            if (btn && btn.querySelector('i')) {
-                btn.querySelector('i').classList.remove('fa-eye');
-                btn.querySelector('i').classList.add('fa-eye-slash');
+            if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             }
-            btn.title = 'Mostrar fila';
+            btn.setAttribute('title', 'Mostrar fila');
         } else {
             row.style.display = '';
-            if (btn && btn.querySelector('i')) {
-                btn.querySelector('i').classList.remove('fa-eye-slash');
-                btn.querySelector('i').classList.add('fa-eye');
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
-            btn.title = 'Ocultar fila';
+            btn.setAttribute('title', 'Ocultar fila');
         }
     }
 
@@ -1781,33 +1813,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Crear instancia de Equipment
     window.Equipment = new Equipment();
 
-    // Solo inicializar Equipment si el usuario está autenticado
-    if (window.Auth && window.Auth.isAuthenticated) {
-        console.log('🔧 Usuario autenticado, inicializando Equipment...');
-
-        if (window.Equipment && typeof window.Equipment.init === 'function') {
-            try {
-                window.Equipment.init();
-                console.log('✅ Equipment inicializado correctamente');
-            } catch (error) {
-                console.error('❌ Error durante la inicialización de Equipment:', error);
-
-                // Intentar reinicializar después de un delay
-                setTimeout(() => {
-                    console.log('🔄 Intentando reinicialización...');
-                    try {
-                        window.Equipment.init();
-                        console.log('✅ Equipment reinicializado correctamente');
-                    } catch (retryError) {
-                        console.error('❌ Error en reinicialización:', retryError);
-                    }
-                }, 1000);
+    function tryInitEquipment() {
+        if (window.Auth && window.Auth.isAuthenticated && window.Equipment && typeof window.Equipment.init === 'function') {
+            if (!window.Equipment._alreadyInitialized) {
+                try {
+                    window.Equipment.init();
+                    window.Equipment._alreadyInitialized = true;
+                    console.log('✅ Equipment inicializado correctamente');
+                } catch (error) {
+                    console.error('❌ Error durante la inicialización de Equipment:', error);
+                    setTimeout(tryInitEquipment, 1000);
+                }
             }
         } else {
-            console.error('❌ Error: Equipment o método init no disponible');
+            // Si Auth o método init aún no están listos, reintentar pronto
+            setTimeout(tryInitEquipment, 200);
         }
-    } else {
-        console.log('⛔ Usuario no autenticado, Equipment no se inicializa automáticamente');
+    }
+
+    // Intentar inicializar inmediatamente (por si Auth ya está listo)
+    tryInitEquipment();
+
+    // Observar cambios en Auth.isAuthenticated si Auth existe
+    if (window.Auth) {
+        let lastAuth = !!window.Auth.isAuthenticated;
+        setInterval(() => {
+            if (!window.Equipment._alreadyInitialized && window.Auth.isAuthenticated && !lastAuth) {
+                tryInitEquipment();
+            }
+            lastAuth = !!window.Auth.isAuthenticated;
+        }, 300);
     }
 
     // Hacer métodos disponibles globalmente para compatibilidad
