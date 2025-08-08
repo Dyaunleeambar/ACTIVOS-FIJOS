@@ -1,58 +1,109 @@
-const { executeQuery } = require('../config/database');
+const { executeQuery } = require('../config/database-sqlite');
 
-// Obtener estadísticas del dashboard
+// Obtener estadísticas del dashboard (datos reales)
 const getDashboardStats = async (req, res) => {
   try {
-    // Para pruebas, usar datos simulados
-    const mockData = {
-      stats: {
-        totalEquipment: 25,
-        activeEquipment: 20,
-        disposalProposals: 2
-      },
-      equipmentByType: {
-        totalLaptops: 8,
-        totalPcs: 12,
-        totalMonitors: 15,
-        totalPrinters: 5,
-        totalSims: 20,
-        totalRadios: 10
-      },
-      alerts: [
-        {
-          type: 'warning',
-          message: '3 equipos requieren mantenimiento preventivo',
-          time: 'hace 2 horas',
-          icon: 'fas fa-tools'
-        },
-        {
-          type: 'warning',
-          message: '1 propuesta de baja pendiente de aprobación',
-          time: 'hace 4 horas',
-          icon: 'fas fa-exclamation-triangle'
-        },
-        {
-          type: 'success',
-          message: 'Sistema funcionando correctamente',
-          time: 'hace 0 minutos',
-          icon: 'fas fa-check-circle'
-        }
-      ],
-      security: {
-        securityEquipment: 15,
-        accessLogs: 12,
-        updatedCredentials: 3,
-        securityAlerts: 0
-      }
+    // Ámbito por rol
+    const user = req.user || {};
+    const isManager = user.role === 'manager';
+    const isConsultant = user.role === 'consultant';
+
+    const whereParts = [];
+    const params = [];
+    let extraJoin = '';
+
+    if (isManager) {
+      whereParts.push('e.state_id = ?');
+      params.push(user.state_id);
+    } else if (isConsultant) {
+      extraJoin = 'LEFT JOIN assignments a ON e.id = a.equipment_id AND a.returned_at IS NULL';
+      whereParts.push('a.user_id = ?');
+      params.push(user.id);
+    }
+
+    const whereClause = whereParts.length ? `WHERE ${whereParts.join(' AND ')}` : '';
+
+    // 1) Total de equipos
+    const totalQuery = `
+      SELECT COUNT(*) AS total
+      FROM equipment e
+      ${extraJoin}
+      ${whereClause}
+    `;
+    const totalResult = await executeQuery(totalQuery, params);
+    const totalEquipment = totalResult?.[0]?.total || 0;
+
+    // 2) Equipos activos
+    const activeQuery = `
+      SELECT COUNT(*) AS total
+      FROM equipment e
+      ${extraJoin}
+      ${whereClause}
+      ${whereClause ? ' AND' : 'WHERE'} e.status = 'active'
+    `;
+    const activeResult = await executeQuery(activeQuery, params);
+    const activeEquipment = activeResult?.[0]?.total || 0;
+
+    // 3) Propuestas de baja (temporal: equipos con status = 'disposed')
+    const disposedQuery = `
+      SELECT COUNT(*) AS total
+      FROM equipment e
+      ${extraJoin}
+      ${whereClause}
+      ${whereClause ? ' AND' : 'WHERE'} e.status = 'disposed'
+    `;
+    const disposedResult = await executeQuery(disposedQuery, params);
+    const disposalProposals = disposedResult?.[0]?.total || 0;
+
+    // 4) Por tipo (resumen simple para tarjetas/mini-widgets)
+    const typeQuery = `
+      SELECT type, COUNT(*) AS total
+      FROM equipment e
+      ${extraJoin}
+      ${whereClause}
+      GROUP BY type
+    `;
+    const typeRows = await executeQuery(typeQuery, params);
+    const typeTotals = (typeRows || []).reduce((acc, row) => {
+      const t = row.type || 'other';
+      acc[t] = row.total || 0;
+      return acc;
+    }, {});
+
+    const equipmentByType = {
+      totalLaptops: typeTotals['laptop'] || 0,
+      totalPcs: typeTotals['desktop'] || 0,
+      totalMonitors: typeTotals['monitor'] || 0,
+      totalPrinters: typeTotals['printer'] || 0,
+      totalSims: typeTotals['sim_chip'] || 0,
+      totalRadios: typeTotals['radio_communication'] || 0
     };
 
-    res.json(mockData);
+    // 5) Alertas básicas (opcional, manteniendo signature actual)
+    const alerts = [];
+    if (disposalProposals > 0) {
+      alerts.push({
+        type: 'warning',
+        message: `${disposalProposals} propuesta${disposalProposals !== 1 ? 's' : ''} de baja` ,
+        time: 'ahora',
+        icon: 'fas fa-exclamation-triangle'
+      });
+    }
+    alerts.push({ type: 'success', message: 'Sistema funcionando correctamente', time: 'ahora', icon: 'fas fa-check-circle' });
+
+    // 6) Métricas de seguridad simples (placeholder compatible)
+    const security = { securityEquipment: 0, accessLogs: 0, updatedCredentials: 0, securityAlerts: 0 };
+
+    return res.json({
+      stats: { totalEquipment, activeEquipment, disposalProposals },
+      equipmentByType,
+      alerts,
+      security
+    });
 
   } catch (error) {
     console.error('Error al obtener estadísticas del dashboard:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor'
-    });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 

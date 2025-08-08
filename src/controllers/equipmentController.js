@@ -982,6 +982,19 @@ const exportToExcel = async (req, res) => {
       }
     }
 
+    // Incluir solo estos IDs si llegan (para "solo página actual")
+    let includeIds = [];
+    if (req.query.include_ids) {
+      includeIds = String(req.query.include_ids)
+        .split(',')
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => Number.isInteger(n) && n > 0);
+      if (includeIds.length > 0) {
+        whereConditions.push(`e.id IN (${includeIds.map(() => '?').join(',')})`);
+        params.push(...includeIds);
+      }
+    }
+
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
     // Paginación si current_page

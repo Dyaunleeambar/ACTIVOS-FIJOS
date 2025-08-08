@@ -1568,10 +1568,18 @@ class Equipment {
                 }
             }
 
-            // Alcance: página actual
+            // Alcance: página actual → enviar IDs visibles de la página actual
             if (options.mode === 'current_page') {
-                queryParams.page = this.currentPage;
-                queryParams.limit = this.itemsPerPage;
+                let hiddenRows = [];
+                try { hiddenRows = JSON.parse(localStorage.getItem('hiddenEquipmentRows') || '[]'); } catch (_) {}
+                const includeIds = (this.equipment || [])
+                    .filter(item => !hiddenRows.includes(item.id))
+                    .map(item => item.id);
+                if (includeIds.length === 0) {
+                    UI.showNotification('No hay filas visibles para exportar en la página actual', 'warning');
+                    return;
+                }
+                queryParams.include_ids = includeIds.join(',');
             }
 
             // Excluir filas ocultas si corresponde
