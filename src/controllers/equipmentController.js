@@ -858,86 +858,161 @@ const confirmImport = async (req, res) => {
   }
 };
 
-// Exportar a Excel
+// Exportar a Excel (personalizable)
 const exportToExcel = async (req, res) => {
   try {
     console.log('🚀 Iniciando exportación a Excel...');
     console.log('📊 Query parameters:', req.query);
     console.log('🔍 Headers:', req.headers);
     
-    const { state_id, type, status, search } = req.query;
+    const {
+      state_id,
+      type,
+      status,
+      search,
+      export_mode: exportModeRaw,
+      columns: columnsRaw,
+      exclude_ids: excludeIdsRaw,
+      page: pageRaw,
+      limit: limitRaw
+    } = req.query;
 
-    console.log('📋 Parámetros extraídos:', { state_id, type, status, search });
+    // Normalizar opciones
+    const exportMode = ['all', 'filtered', 'current_page'].includes(String(exportModeRaw))
+      ? String(exportModeRaw)
+      : 'filtered';
+
+    // Parse columnas solicitadas (whitelist)
+    const allowedColumns = {
+      inventory_number: { db: 'e.inventory_number', label: 'Número de Inventario' },
+      name:             { db: 'e.name',              label: 'Nombre del Equipo' },
+      type:             { db: 'e.type',              label: 'Tipo' },
+      brand:            { db: 'e.brand',             label: 'Marca' },
+      model:            { db: 'e.model',             label: 'Modelo' },
+      specifications:   { db: 'e.specifications',    label: 'Especificaciones' },
+      status:           { db: 'e.status',            label: 'Estado' },
+      state_name:       { db: 's.name AS state_name',label: 'Estado/Región' },
+      assigned_to:      { db: 'e.assigned_to',       label: 'Asignado a' },
+      location_details: { db: 'e.location_details',  label: 'Detalles de Ubicación' },
+      created_at:       { db: 'e.created_at',        label: 'Fecha de Creación' }
+    };
+
+    const defaultColumnOrder = [
+      'inventory_number','name','type','brand','model','specifications','status','state_name','assigned_to','location_details','created_at'
+    ];
+
+    const requestedColumns = (columnsRaw || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .filter(col => Object.prototype.hasOwnProperty.call(allowedColumns, col));
+
+    const selectedColumns = requestedColumns.length > 0 ? requestedColumns : defaultColumnOrder;
 
     // Construir query con filtros
-    let whereConditions = [];
-    let params = [];
+    const whereConditions = [];
+    const params = [];
 
-    if (state_id) {
+    // Restringir por rol
+    let extraJoins = '';
+    if (req.user && req.user.role === 'manager') {
       whereConditions.push('e.state_id = ?');
-      params.push(state_id);
+      params.push(req.user.state_id);
+    } else if (req.user && req.user.role === 'consultant') {
+      extraJoins = 'LEFT JOIN assignments a ON e.id = a.equipment_id AND a.returned_at IS NULL';
+      whereConditions.push('a.user_id = ?');
+      params.push(req.user.id);
     }
 
-    if (type) {
-      whereConditions.push('e.type = ?');
-      params.push(type);
+    // Aplicar filtros salvo que sea modo 'all'
+    if (exportMode !== 'all') {
+      if (state_id) {
+        whereConditions.push('e.state_id = ?');
+        params.push(state_id);
+      }
+      if (type) {
+        whereConditions.push('e.type = ?');
+        params.push(type);
+      }
+      if (status) {
+        whereConditions.push('e.status = ?');
+        params.push(status);
+      }
+      if (search) {
+        whereConditions.push('(e.inventory_number LIKE ? OR e.name LIKE ?)');
+        params.push(`%${search}%`, `%${search}%`);
+      }
     }
 
-    if (status) {
-      whereConditions.push('e.status = ?');
-      params.push(status);
-    }
-
-    if (search) {
-      whereConditions.push('(e.inventory_number LIKE ? OR e.name LIKE ?)');
-      params.push(`%${search}%`, `%${search}%`);
+    // Excluir IDs si llegan
+    let excludeIds = [];
+    if (excludeIdsRaw) {
+      excludeIds = String(excludeIdsRaw)
+        .split(',')
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => Number.isInteger(n) && n > 0);
+      if (excludeIds.length > 0) {
+        whereConditions.push(`e.id NOT IN (${excludeIds.map(() => '?').join(',')})`);
+        params.push(...excludeIds);
+      }
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-    
-    console.log('🔍 Where clause:', whereClause);
-    console.log('📊 Parámetros de consulta:', params);
+
+    // Paginación si current_page
+    let limitOffsetClause = '';
+    if (exportMode === 'current_page') {
+      const pageNum = Math.max(1, parseInt(pageRaw || '1', 10) || 1);
+      const limitNum = Math.max(1, Math.min(1000, parseInt(limitRaw || '20', 10) || 20));
+      const offset = (pageNum - 1) * limitNum;
+      limitOffsetClause = 'LIMIT ? OFFSET ?';
+      params.push(limitNum, offset);
+    }
+
+    // Selección de columnas DB mínima requerida (siempre seleccionar superset para facilidad)
+    const baseSelect = `
+      e.inventory_number,
+      e.name,
+      e.type,
+      e.brand,
+      e.model,
+      e.specifications,
+      e.status,
+      s.name AS state_name,
+      e.assigned_to,
+      e.location_details,
+      e.created_at
+    `;
 
     const query = `
       SELECT 
-        e.inventory_number,
-        e.name,
-        e.type,
-        e.brand,
-        e.model,
-        e.specifications,
-        e.status,
-        s.name as state_name,
-        e.assigned_to,
-        e.created_at
+        ${baseSelect}
       FROM equipment e
       LEFT JOIN states s ON e.state_id = s.id
+      ${extraJoins || ''}
       ${whereClause}
       ORDER BY e.created_at DESC
+      ${limitOffsetClause}
     `;
 
     console.log('📝 Query final:', query);
+    console.log('📝 Parámetros:', params);
 
     const equipment = await executeQuery(query, params);
-    
     console.log('✅ Equipos encontrados:', equipment.length);
 
     // Crear workbook
     const workbook = XLSX.utils.book_new();
-    
-    // Preparar datos para Excel
-    const excelData = equipment.map(item => ({
-      'Número de Inventario': item.inventory_number,
-      'Nombre del Equipo': item.name,
-      'Tipo': item.type,
-      'Marca': item.brand || '',
-      'Modelo': item.model || '',
-      'Especificaciones': item.specifications || '',
-      'Estado': item.status,
-      'Estado/Región': item.state_name || '',
-      'Asignado a': item.assigned_to || '',
-      'Fecha de Creación': item.created_at
-    }));
+
+    // Preparar datos para Excel respetando el orden de columnas seleccionado
+    const excelData = equipment.map(item => {
+      const row = {};
+      selectedColumns.forEach(colKey => {
+        const label = allowedColumns[colKey].label;
+        row[label] = item[colKey] ?? '';
+      });
+      return row;
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipos');
@@ -947,7 +1022,6 @@ const exportToExcel = async (req, res) => {
 
     // Configurar headers para descarga
     const filename = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
-    
     console.log('📦 Generando archivo Excel:', filename);
     console.log('📏 Tamaño del buffer:', buffer.length);
 
@@ -956,7 +1030,6 @@ const exportToExcel = async (req, res) => {
     res.setHeader('Content-Length', buffer.length);
 
     res.send(buffer);
-    
     console.log('✅ Exportación completada exitosamente');
 
   } catch (error) {

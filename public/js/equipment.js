@@ -19,6 +19,21 @@ class Equipment {
         this.validationResults = null;
         this.columnMapping = {};
 
+        // Columnas disponibles para exportación (clave alineada con backend)
+        this.availableExportColumns = [
+            { key: 'inventory_number', label: 'Número de Inventario' },
+            { key: 'name', label: 'Nombre del Equipo' },
+            { key: 'type', label: 'Tipo' },
+            { key: 'brand', label: 'Marca' },
+            { key: 'model', label: 'Modelo' },
+            { key: 'specifications', label: 'Especificaciones' },
+            { key: 'status', label: 'Estado' },
+            { key: 'state_name', label: 'Estado/Región' },
+            { key: 'assigned_to', label: 'Asignado a' },
+            { key: 'location_details', label: 'Detalles de Ubicación' },
+            { key: 'created_at', label: 'Fecha de Creación' }
+        ];
+
         // Mapeo de estados para conversión
         this.stateMapping = {
             'direccion': 1,
@@ -1506,48 +1521,62 @@ class Equipment {
     }
 
     // Exportar a Excel
-    async exportToExcel() {
-        try {
-            console.log('🚀 Iniciando exportación a Excel...');
-            console.log('📊 Filtros actuales:', this.filters);
-            console.log('🔍 Estado de autenticación:', ConfigUtils.isAuthenticated());
-            console.log('🔍 Token disponible:', !!ConfigUtils.getAuthToken());
+    async exportToExcel(options = null) {
+        // Si no se pasan opciones, abrir modal de configuración
+        if (!options) {
+            return this.showExportModal();
+        }
 
-            // Filtrar solo los parámetros válidos para la consulta
+        try {
+            console.log('🚀 Iniciando exportación a Excel con opciones:', options);
+            console.log('📊 Filtros actuales:', this.filters);
+
+            // Base de parámetros según modo
             const queryParams = {};
-            if (this.filters.search) queryParams.search = this.filters.search;
-            if (this.filters.type) queryParams.type = this.filters.type;
-            if (this.filters.status) queryParams.status = this.filters.status;
-            if (this.filters.state) {
-                // Convertir string de estado a número
-                const stateId = this.getStateId(this.filters.state);
-                if (stateId) {
-                    queryParams.state_id = stateId;
+
+            if (options.mode !== 'all') {
+                if (this.filters.search) queryParams.search = this.filters.search;
+                if (this.filters.type) queryParams.type = this.filters.type;
+                if (this.filters.status) queryParams.status = this.filters.status;
+                if (this.filters.state) {
+                    const stateId = this.getStateId(this.filters.state);
+                    if (stateId) {
+                        queryParams.state_id = stateId;
+                    }
                 }
             }
 
-            console.log('🔍 Parámetros filtrados:', queryParams);
-            console.log('🔍 Tipos de parámetros:', {
-                search: typeof queryParams.search,
-                type: typeof queryParams.type,
-                status: typeof queryParams.status,
-                state_id: typeof queryParams.state_id
-            });
+            // Alcance: página actual
+            if (options.mode === 'current_page') {
+                queryParams.page = this.currentPage;
+                queryParams.limit = this.itemsPerPage;
+            }
+
+            // Excluir filas ocultas si corresponde
+            if (options.includeHidden === false) {
+                try {
+                    const hiddenRows = JSON.parse(localStorage.getItem('hiddenEquipmentRows') || '[]');
+                    if (Array.isArray(hiddenRows) && hiddenRows.length > 0) {
+                        queryParams.exclude_ids = hiddenRows.join(',');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ No fue posible leer filas ocultas desde localStorage');
+                }
+            }
+
+            // Columnas seleccionadas
+            if (Array.isArray(options.columns) && options.columns.length > 0) {
+                queryParams.columns = options.columns.join(',');
+            }
+
+            // Modo de exportación
+            queryParams.export_mode = options.mode || 'filtered';
 
             const params = new URLSearchParams(queryParams);
-            console.log('🔗 Parámetros de consulta:', params.toString());
-
-            // Construir la URL solo si hay parámetros
             const exportUrl = params.toString() ? `/equipment/export?${params}` : '/equipment/export';
             console.log('🔗 URL completa:', exportUrl);
 
-            console.log('📡 Realizando petición a la API...');
             const response = await API.get(exportUrl, { responseType: 'blob' });
-
-            console.log('✅ Respuesta recibida:', response);
-            console.log('📦 Tipo de respuesta:', typeof response);
-            console.log('📏 Tamaño del blob:', response.size);
-            console.log('🎯 Tipo MIME:', response.type);
 
             const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const url = window.URL.createObjectURL(blob);
@@ -1555,19 +1584,111 @@ class Equipment {
             link.href = url;
             link.download = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
 
-            console.log('📥 Descargando archivo:', link.download);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
 
             UI.showNotification('Exportación completada', 'success');
-            console.log('✅ Exportación completada exitosamente');
         } catch (error) {
             console.error('❌ Error exportando:', error);
-            console.error('❌ Stack trace:', error.stack);
             UI.showNotification('Error en exportación', 'error');
         }
+    }
+
+    // Modal de exportación con opciones
+    showExportModal() {
+        // Cargar preferencias previas
+        let savedPrefs = null;
+        try {
+            const allPrefs = JSON.parse(localStorage.getItem('exportPreferences') || '{}');
+            savedPrefs = allPrefs && allPrefs.equipment ? allPrefs.equipment : null;
+        } catch (e) {}
+
+        const defaultSelected = ['inventory_number', 'name', 'type', 'brand', 'model', 'status', 'state_name', 'assigned_to'];
+        const selectedColumns = savedPrefs?.columns && savedPrefs.columns.length > 0 ? savedPrefs.columns : defaultSelected;
+        const selectedMode = savedPrefs?.mode || 'filtered';
+        const includeHiddenDefault = savedPrefs?.includeHidden ?? false;
+
+        const columnsHTML = this.availableExportColumns.map(col => `
+            <label class="checkbox-item">
+                <input type="checkbox" name="export-columns" value="${col.key}" ${selectedColumns.includes(col.key) ? 'checked' : ''}>
+                <span>${col.label}</span>
+            </label>
+        `).join('');
+
+        const content = `
+            <div class="export-settings" style="display:grid; gap:16px;">
+                <div>
+                    <h4 style="margin:0 0 8px;">Alcance</h4>
+                    <div class="radio-group" style="display:flex; gap:16px; align-items:center;">
+                        <label class="radio-item">
+                            <input type="radio" name="export-mode" value="filtered" ${selectedMode === 'filtered' ? 'checked' : ''}>
+                            <span>Vista actual (búsqueda y filtros)</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="export-mode" value="current_page" ${selectedMode === 'current_page' ? 'checked' : ''}>
+                            <span>Solo página actual</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="export-mode" value="all" ${selectedMode === 'all' ? 'checked' : ''}>
+                            <span>Todo el inventario</span>
+                        </label>
+                    </div>
+                    <label class="checkbox-item" style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                        <input type="checkbox" id="include-hidden-rows" ${includeHiddenDefault ? 'checked' : ''}>
+                        <span>Incluir filas ocultas</span>
+                    </label>
+                </div>
+                <div>
+                    <h4 style="margin:0 0 8px;">Columnas a exportar</h4>
+                    <div class="columns-grid" style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:8px;">
+                        ${columnsHTML}
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button class="btn btn-secondary" type="button" id="select-all-columns">Seleccionar todas</button>
+                        <button class="btn btn-outline" type="button" id="deselect-all-columns">Deseleccionar todas</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modal = window.Modal.create(content, {
+            title: 'Exportar Equipos',
+            footerButtons: '<button class="btn btn-primary" id="confirm-export">Exportar</button>'
+        });
+
+        // Handlers del modal
+        const root = modal.element;
+        const selectAllBtn = root.querySelector('#select-all-columns');
+        const deselectAllBtn = root.querySelector('#deselect-all-columns');
+        const confirmBtn = root.querySelector('#confirm-export');
+
+        const getSelectedColumns = () => Array.from(root.querySelectorAll('input[name="export-columns"]:checked')).map(i => i.value);
+        const getSelectedMode = () => (root.querySelector('input[name="export-mode"]:checked')?.value || 'filtered');
+        const getIncludeHidden = () => root.querySelector('#include-hidden-rows')?.checked ?? false;
+
+        if (selectAllBtn) selectAllBtn.addEventListener('click', () => {
+            root.querySelectorAll('input[name="export-columns"]').forEach(i => i.checked = true);
+        });
+        if (deselectAllBtn) deselectAllBtn.addEventListener('click', () => {
+            root.querySelectorAll('input[name="export-columns"]').forEach(i => i.checked = false);
+        });
+        if (confirmBtn) confirmBtn.addEventListener('click', async () => {
+            const mode = getSelectedMode();
+            const columns = getSelectedColumns();
+            const includeHidden = getIncludeHidden();
+
+            // Guardar preferencias
+            try {
+                const allPrefs = JSON.parse(localStorage.getItem('exportPreferences') || '{}');
+                allPrefs.equipment = { mode, columns, includeHidden };
+                localStorage.setItem('exportPreferences', JSON.stringify(allPrefs));
+            } catch (e) {}
+
+            modal.close();
+            await this.exportToExcel({ mode, columns, includeHidden });
+        });
     }
 
     // Navegación de pasos de importación
