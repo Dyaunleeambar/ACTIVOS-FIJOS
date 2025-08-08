@@ -815,6 +815,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  z-index: 0;
 }
 
 .modal-container {
@@ -822,11 +823,12 @@
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
-  background: var(--color-background);
+  background: var(--color-background-primary);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   animation: modalSlideIn 0.3s ease-out;
+  z-index: 1;
 }
 
 @keyframes modalSlideIn {

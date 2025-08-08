@@ -574,6 +574,23 @@ const getEquipmentByState = async (req, res) => {
 
     const equipment = await executeQuery(query, params);
 
+    // Si no hay resultados, retornar un Excel mínimo con headers para feedback positivo
+    if (!equipment || equipment.length === 0) {
+      const workbook = XLSX.utils.book_new();
+      const emptyRow = {};
+      selectedColumns.forEach(colKey => {
+        emptyRow[allowedColumns[colKey].label] = '';
+      });
+      const worksheet = XLSX.utils.json_to_sheet([emptyRow]);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Equipos');
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      const filename = `equipos-${new Date().toISOString().split('T')[0]}.xlsx`;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', buffer.length);
+      return res.send(buffer);
+    }
+
     // Obtener total de registros
     const countQuery = `
       SELECT COUNT(*) as total
@@ -938,9 +955,17 @@ const exportToExcel = async (req, res) => {
         whereConditions.push('e.status = ?');
         params.push(status);
       }
-      if (search) {
-        whereConditions.push('(e.inventory_number LIKE ? OR e.name LIKE ?)');
-        params.push(`%${search}%`, `%${search}%`);
+      if (search && String(search).trim()) {
+        const s = `%${String(search).trim()}%`;
+        // Alinear con getAllEquipment: buscar en inventario, nombre, marca, modelo, responsable
+        whereConditions.push(`(
+          e.inventory_number LIKE ? OR
+          e.name LIKE ? OR
+          e.brand LIKE ? OR
+          e.model LIKE ? OR
+          e.assigned_to LIKE ?
+        )`);
+        params.push(s, s, s, s, s);
       }
     }
 

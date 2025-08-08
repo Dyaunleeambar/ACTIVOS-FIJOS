@@ -401,6 +401,8 @@ class Equipment {
 
             if (response.equipment) {
                 console.log('✅ Equipos encontrados:', response.equipment.length);
+                // Guardar la página actual en memoria para cálculos robustos (exportación página actual)
+                this.equipment = Array.isArray(response.equipment) ? response.equipment : [];
                 this.renderEquipmentTable(response.equipment);
                 this.renderPagination(response.pagination);
                 this.updateEquipmentCount(response.pagination.total);
@@ -1531,6 +1533,26 @@ class Equipment {
             console.log('🚀 Iniciando exportación a Excel con opciones:', options);
             console.log('📊 Filtros actuales:', this.filters);
 
+            // Validaciones previas para evitar archivos vacíos inesperados
+            if (options.mode === 'current_page') {
+                // Contar usando datos en memoria (más fiable que inspección del DOM)
+                let hiddenRows = [];
+                try { hiddenRows = JSON.parse(localStorage.getItem('hiddenEquipmentRows') || '[]'); } catch (_) {}
+                const visibleDataCount = (this.equipment || []).filter(item => !hiddenRows.includes(item.id)).length;
+                if (visibleDataCount === 0) {
+                    UI.showNotification('No hay filas visibles para exportar en la página actual', 'warning');
+                    return;
+                }
+            }
+            if (options.mode === 'filtered') {
+                const countEl = document.getElementById('equipment-count');
+                const totalCount = countEl ? parseInt(countEl.textContent || '0', 10) : null;
+                if (Number.isInteger(totalCount) && totalCount === 0) {
+                    UI.showNotification('No hay resultados para exportar con los filtros actuales', 'warning');
+                    return;
+                }
+            }
+
             // Base de parámetros según modo
             const queryParams = {};
 
@@ -1618,34 +1640,34 @@ class Equipment {
         `).join('');
 
         const content = `
-            <div class="export-settings" style="display:grid; gap:16px;">
-                <div>
-                    <h4 style="margin:0 0 8px;">Alcance</h4>
-                    <div class="radio-group" style="display:flex; gap:16px; align-items:center;">
-                        <label class="radio-item">
+            <div class="export-settings" style="display:grid; gap:24px;">
+                <div style="background: var(--color-background-secondary); border:1px solid var(--color-border); border-radius: var(--border-radius-lg); padding: 16px;">
+                    <h4 style="margin:0 0 12px; color: var(--color-text-primary); font-weight:600;">Alcance</h4>
+                    <div class="radio-group" style="display:flex; gap:16px; align-items:center; color: var(--color-text-primary);">
+                        <label class="radio-item" style="display:flex; gap:8px; align-items:center;">
                             <input type="radio" name="export-mode" value="filtered" ${selectedMode === 'filtered' ? 'checked' : ''}>
                             <span>Vista actual (búsqueda y filtros)</span>
                         </label>
-                        <label class="radio-item">
+                        <label class="radio-item" style="display:flex; gap:8px; align-items:center;">
                             <input type="radio" name="export-mode" value="current_page" ${selectedMode === 'current_page' ? 'checked' : ''}>
                             <span>Solo página actual</span>
                         </label>
-                        <label class="radio-item">
+                        <label class="radio-item" style="display:flex; gap:8px; align-items:center;">
                             <input type="radio" name="export-mode" value="all" ${selectedMode === 'all' ? 'checked' : ''}>
                             <span>Todo el inventario</span>
                         </label>
                     </div>
-                    <label class="checkbox-item" style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                    <label class="checkbox-item" style="margin-top:12px; display:flex; gap:8px; align-items:center; color: var(--color-text-primary);">
                         <input type="checkbox" id="include-hidden-rows" ${includeHiddenDefault ? 'checked' : ''}>
                         <span>Incluir filas ocultas</span>
                     </label>
                 </div>
-                <div>
-                    <h4 style="margin:0 0 8px;">Columnas a exportar</h4>
-                    <div class="columns-grid" style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:8px;">
+                <div style="background: var(--color-background-secondary); border:1px solid var(--color-border); border-radius: var(--border-radius-lg); padding: 16px;">
+                    <h4 style="margin:0 0 12px; color: var(--color-text-primary); font-weight:600;">Columnas a exportar</h4>
+                    <div class="columns-grid" style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; color: var(--color-text-primary);">
                         ${columnsHTML}
                     </div>
-                    <div style="display:flex; gap:8px; margin-top:8px;">
+                    <div style="display:flex; gap:8px; margin-top:12px;">
                         <button class="btn btn-secondary" type="button" id="select-all-columns">Seleccionar todas</button>
                         <button class="btn btn-outline" type="button" id="deselect-all-columns">Deseleccionar todas</button>
                     </div>

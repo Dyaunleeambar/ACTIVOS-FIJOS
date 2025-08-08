@@ -30,17 +30,24 @@ class Modal extends Component {
   }
 
   setupEventListeners() {
-    // Botón de cerrar
-    const closeBtn = this.element.querySelector('[data-modal-close]');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.close());
+    // Botones de cerrar (pueden existir múltiples)
+    const closeBtns = this.element.querySelectorAll('[data-modal-close]');
+    if (closeBtns && closeBtns.length) {
+      closeBtns.forEach(btn => btn.addEventListener('click', () => this.close()));
     }
 
-    // Overlay para cerrar
+    // Overlay para cerrar (si existe)
     const overlay = this.element.querySelector('.modal-overlay');
     if (overlay) {
       overlay.addEventListener('click', () => this.close());
     }
+    // Cerrar haciendo clic fuera del contenido aunque no exista overlay
+    this.element.addEventListener('click', (e) => {
+      const content = this.element.querySelector('.modal-container');
+      if (content && !content.contains(e.target)) {
+        this.close();
+      }
+    });
 
     // Escape key
     document.addEventListener('keydown', (e) => {
@@ -52,6 +59,7 @@ class Modal extends Component {
 
   open() {
     this.element.style.display = 'flex';
+    this.element.classList.add('show');
     this.isOpen = true;
     document.body.style.overflow = 'hidden';
     
@@ -64,13 +72,21 @@ class Modal extends Component {
 
   close() {
     this.element.style.display = 'none';
+    this.element.classList.remove('show');
     this.isOpen = false;
     document.body.style.overflow = '';
+    // Si el modal fue creado dinámicamente, eliminarlo del DOM para evitar fugas
+    if (this.element && this.element.dataset && this.element.dataset.dynamic === 'true') {
+      try {
+        this.element.parentNode && this.element.parentNode.removeChild(this.element);
+      } catch (_) {}
+    }
   }
 
   static create(content, options = {}) {
     const modal = document.createElement('div');
     modal.className = 'modal';
+    modal.dataset.dynamic = 'true';
     modal.innerHTML = `
       <div class="modal-overlay"></div>
       <div class="modal-container">
