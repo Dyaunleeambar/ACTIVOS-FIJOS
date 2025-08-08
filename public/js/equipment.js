@@ -418,6 +418,13 @@ class Equipment {
 
     // Renderizar tabla de equipos
     renderEquipmentTable(equipment) {
+        // Restaurar filas ocultas desde localStorage
+        let hiddenRows = [];
+        try {
+            hiddenRows = JSON.parse(localStorage.getItem('hiddenEquipmentRows') || '[]');
+        } catch (e) {
+            hiddenRows = [];
+        }
         const tbody = document.getElementById('equipment-tbody');
 
         if (!equipment || equipment.length === 0) {
@@ -454,10 +461,12 @@ class Equipment {
             }
         }
 
+        // Renderizado correcto de filas respetando el estado de oculto
         tbody.innerHTML = equipment.map((item, i) => {
             const index = (this.currentPage - 1) * this.itemsPerPage + i + 1;
+            const isHidden = hiddenRows.includes(item.id);
             return `
-            <tr id="equipment-row-${item.id}" draggable="true" class="draggable-row">
+            <tr id="equipment-row-${item.id}" draggable="true" class="draggable-row" style="display: ${isHidden ? 'none' : ''}">
                 <td class="drag-handle-col" style="cursor: grab; text-align: center; width: 32px;">
                     <i class="fas fa-grip-vertical" title="Arrastrar para reordenar"></i>
                 </td>
@@ -490,8 +499,8 @@ class Equipment {
                 </td>
                 <td>
                     <div class="table-actions-cell">
-                        <button class="action-btn view" data-action="toggle-row" data-id="${item.id}" title="Ocultar fila">
-                            <i class="fas fa-eye"></i>
+                        <button class="action-btn view" data-action="toggle-row" data-id="${item.id}" title="${isHidden ? 'Mostrar fila' : 'Ocultar fila'}">
+                            <i class="fas ${isHidden ? 'fa-eye-slash' : 'fa-eye'}"></i>
                         </button>
                         <button class="action-btn edit" data-action="edit" data-id="${item.id}" title="Editar">
                             <i class="fas fa-edit"></i>
@@ -509,11 +518,7 @@ class Equipment {
         tbody.querySelectorAll('.action-btn').forEach(btn => {
             const action = btn.getAttribute('data-action');
             const id = btn.getAttribute('data-id');
-            if (action === 'toggle-row') {
-                btn.addEventListener('click', (e) => {
-                    this.toggleRowVisibility && this.toggleRowVisibility(Number(id), btn);
-                });
-            } else if (action === 'edit') {
+            if (action === 'edit') {
                 btn.addEventListener('click', (e) => {
                     window.safeEquipmentCall && window.safeEquipmentCall('showCreateForm', Number(id));
                 });
@@ -581,14 +586,33 @@ class Equipment {
         // --- Fin Drag & Drop ---
     }
 
-    // Alternar visibilidad de la fila de la tabla (debe ser static y fuera de renderEquipmentTable)
-    static toggleRowVisibility(equipmentId, btn) {
+    // Mostrar todas las filas ocultas y limpiar localStorage
+    showAllRows() {
+        // Limpiar cualquier persistencia de filas ocultas
+        localStorage.removeItem('hiddenEquipmentRows');
+        // Forzar recarga completa de la tabla desde la fuente de datos
+        if (typeof this.loadEquipmentList === 'function') {
+            this.loadEquipmentList();
+        }
+    }
+
+    // Alias para compatibilidad con el handler global
+    refreshList() {
+        this.showAllRows();
+    }
+
+
+    // Alternar visibilidad de la fila de la tabla con persistencia en localStorage
+    toggleRowVisibility(equipmentId, btn) {
         const row = document.getElementById(`equipment-row-${equipmentId}`);
         if (!row) return;
         const icon = btn && btn.querySelector('i');
-        // Si está visible, ocultar
+        // Leer estado actual de filas ocultas
+        let hiddenRows = JSON.parse(localStorage.getItem('hiddenEquipmentRows') || '[]');
+        
         if (row.style.display !== 'none') {
             row.style.display = 'none';
+            if (!hiddenRows.includes(equipmentId)) hiddenRows.push(equipmentId);
             if (icon) {
                 icon.classList.remove('fa-eye');
                 icon.classList.add('fa-eye-slash');
@@ -596,12 +620,14 @@ class Equipment {
             btn.setAttribute('title', 'Mostrar fila');
         } else {
             row.style.display = '';
+            hiddenRows = hiddenRows.filter(id => id !== equipmentId);
             if (icon) {
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
             }
             btn.setAttribute('title', 'Ocultar fila');
         }
+        localStorage.setItem('hiddenEquipmentRows', JSON.stringify(hiddenRows));
     }
 
     // Renderizar paginación
@@ -1640,10 +1666,14 @@ class Equipment {
         }
     }
 
-    // Actualizar lista
+    // Actualizar lista: también restaura filas ocultas
     refreshList() {
-        this.loadEquipmentList();
-        this.loadEquipmentStats();
+        // Limpia la persistencia de filas ocultas y recarga la tabla
+        this.showAllRows();
+        // Actualiza estadísticas si están disponibles
+        if (typeof this.loadEquipmentStats === 'function') {
+            this.loadEquipmentStats();
+        }
     }
 
     // Utilidades
@@ -1809,8 +1839,7 @@ window.editEquipmentGlobal = function (equipmentId) {
 // Inicializar módulo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Creando instancia de Equipment...');
-
-    // Crear instancia de Equipment
+    // Crear instancia de Equipment (una sola vez)
     window.Equipment = new Equipment();
 
     function tryInitEquipment() {

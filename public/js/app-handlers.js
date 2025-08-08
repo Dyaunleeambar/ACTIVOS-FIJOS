@@ -14,8 +14,9 @@ const AppHandlers = {
     // Manejador general para atributos data-action
     setupGlobalHandlers: function() {
         document.addEventListener('click', function(e) {
-            const action = e.target.getAttribute('data-action');
-            if (!action) return;
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            const action = target.getAttribute('data-action');
             
             e.preventDefault();
             console.log('🔧 Ejecutando acción global:', action);
@@ -23,7 +24,7 @@ const AppHandlers = {
             switch (action) {
                 // Navegación de páginas
                 case 'show-page':
-                    const page = e.target.getAttribute('data-page');
+                    const page = target.getAttribute('data-page');
                     if (page && window.UI && window.UI.showPage) {
                         window.UI.showPage(page);
                     } else {
@@ -72,6 +73,15 @@ const AppHandlers = {
                     }
                     break;
                 
+                case 'toggle-row': {
+                    const id = Number(target.getAttribute('data-id'));
+                    if (window.Equipment && typeof window.Equipment.toggleRowVisibility === 'function') {
+                        window.Equipment.toggleRowVisibility(id, target);
+                    } else {
+                        console.error('❌ Equipment.toggleRowVisibility no disponible en la instancia global');
+                    }
+                    break;
+                }
                 default:
                     console.log('⚠️ Acción global no reconocida:', action);
             }
