@@ -197,28 +197,39 @@ const App = {
         }
     },
     
-    // Esperar a que Equipment esté disponible
+    // Esperar a que Equipment esté disponible (event-driven + fallback)
     waitForEquipment: function() {
         return new Promise((resolve) => {
+            // Resolución inmediata si ya está listo
+            if (window.Equipment && typeof window.Equipment.loadEquipmentList === 'function') {
+                return resolve();
+            }
+
+            // Escuchar evento explícito de readiness
+            const onReady = () => {
+                document.removeEventListener('equipment-ready', onReady);
+                resolve();
+            };
+            document.addEventListener('equipment-ready', onReady, { once: true });
+
+            // Fallback con polling y timeout ampliado
             let attempts = 0;
-            const maxAttempts = 10;
-            
+            const maxAttempts = 30; // ~15s a 500ms
             const checkEquipment = () => {
                 attempts++;
-                console.log(`🔍 Verificando Equipment (intento ${attempts}/${maxAttempts})...`);
-                
-                if (window.Equipment && window.Equipment.loadEquipmentList) {
-                    console.log('✅ Equipment disponible');
+                if (window.Equipment && typeof window.Equipment.loadEquipmentList === 'function') {
+                    document.removeEventListener('equipment-ready', onReady);
                     resolve();
-                } else if (attempts >= maxAttempts) {
-                    console.error('❌ Equipment no se pudo inicializar después de múltiples intentos');
-                    resolve();
-                } else {
-                    console.log('⏳ Equipment no disponible, esperando...');
-                    setTimeout(checkEquipment, 500);
+                    return;
                 }
+                if (attempts >= maxAttempts) {
+                    console.warn('⚠️ Equipment no se detectó a tiempo (timeout). Continuando sin bloquear.');
+                    document.removeEventListener('equipment-ready', onReady);
+                    resolve();
+                    return;
+                }
+                setTimeout(checkEquipment, 500);
             };
-            
             checkEquipment();
         });
     },

@@ -211,6 +211,14 @@ document.addEventListener('DOMContentLoaded', function() {
     waitForEquipment();
 });
 
+// También escuchar evento explícito de readiness para inicializar al instante
+document.addEventListener('equipment-ready', function() {
+    if (!ImportModalHandlers.initialized) {
+        console.log('✅ Evento equipment-ready recibido, inicializando ImportModalHandlers...');
+        ImportModalHandlers.init();
+    }
+});
+
 // También inicializar cuando se muestre el modal (por si se carga dinámicamente)
 document.addEventListener('importModalShown', function() {
     console.log('🔧 Modal mostrado, inicializando handlers...');

@@ -512,7 +512,7 @@ class Equipment {
                 </td>
                 <td>
                     <div>
-                        <div>${item.state_name || 'N/A'}</div>
+                        <div title="${(item.location_details || '').replace(/\"/g,'&quot;')}">${item.state_name || 'N/A'}</div>
                     </div>
                 </td>
                 <td>
@@ -798,7 +798,7 @@ class Equipment {
     }
 
     // Función mejorada para mostrar modal dinámicamente
-    showModalDynamically(equipmentId) {
+    async showModalDynamically(equipmentId) {
         console.log('🔍 showModalDynamically llamado con equipmentId:', equipmentId);
 
         // Crear un nuevo modal completamente independiente
@@ -968,24 +968,24 @@ class Equipment {
                                 <small style="color:#666;">Si se ingresa, se usará como inventario con prefijo SIM-</small>
                             </div>
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Responsable *</label>
-                                <input type="text" name="sims_responsable" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Responsable</label>
+                            <input type="text" name="sims_responsable" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
                             </div>
                             <div>
                                 <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Número de la línea Roaming</label>
                                 <input type="text" name="sims_roaming" placeholder="Opcional" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
                             </div>
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado *</label>
-                                <select name="sims_status" required style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado</label>
+                            <select name="sims_status" style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
                                     <option value="active">Activo</option>
                                     <option value="out_of_service">Fuera de servicio</option>
                                 </select>
                             </div>
                         </div>
                         <div style="margin-top: 16px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Detalles de Ubicación *</label>
-                            <textarea name="sims_location" required rows="2" style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;"></textarea>
+                            <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Detalles de Ubicación</label>
+                            <textarea name="sims_location" rows="2" style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;"></textarea>
                         </div>
                     </div>
 
@@ -997,21 +997,23 @@ class Equipment {
                         </h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Número de inventario *</label>
-                                <input type="text" name="radio_inventory" required placeholder="Ej: RAD-0001" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Número de inventario</label>
+                                <input type="text" name="radio_inventory" placeholder="Ej: RAD-0001; RAD-0002" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
                                 <small style="color:#666;">Se recomienda prefijo RAD-</small>
                             </div>
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Responsable *</label>
-                                <input type="text" name="radio_responsable" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Responsable</label>
+                                <input type="text" name="radio_responsable" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
                             </div>
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Ubicación *</label>
-                                <input type="text" name="radio_location" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado/Región</label>
+                                <select name="radio_state_id" style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
+                                    <option value="">Seleccionar estado</option>
+                                </select>
                             </div>
                             <div>
-                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado *</label>
-                                <select name="radio_status" required style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado</label>
+                                <select name="radio_status" style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
                                     <option value="active">Activo</option>
                                     <option value="out_of_service">Fuera de servicio</option>
                                 </select>
@@ -1123,6 +1125,25 @@ class Equipment {
 
         // Cargar estados dinámicamente
         this.loadStatesForModal();
+        // Cargar estados para select de radios en comunicaciones
+        try {
+            const response = await API.get('/states');
+            const radiosStateSelect = modalContent.querySelector('select[name="radio_state_id"]');
+            if (response && response.data && radiosStateSelect) {
+                // Mantener primera opción
+                const keep = radiosStateSelect.querySelector('option[value=""]');
+                radiosStateSelect.innerHTML = '';
+                if (keep) radiosStateSelect.appendChild(keep);
+                response.data.forEach(state => {
+                    const opt = document.createElement('option');
+                    opt.value = state.id;
+                    opt.textContent = state.name;
+                    radiosStateSelect.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.warn('No se pudieron cargar estados para radios');
+        }
 
         // Cargar datos si es edición
         if (equipmentId) {
@@ -1303,6 +1324,7 @@ class Equipment {
         const radioResponsable = form.querySelector('input[name="radio_responsable"]').value.trim();
         const radioLocation = form.querySelector('input[name="radio_location"]').value.trim();
         const radioStatus = form.querySelector('select[name="radio_status"]').value;
+        const radioStateId = form.querySelector('select[name="radio_state_id"]').value;
         const radioBaja = form.querySelector('#radio_proponerBaja').checked;
 
         let anySaved = false;
@@ -1340,6 +1362,7 @@ class Equipment {
                     type: 'radio_communication',
                     status: radioStatus || 'active',
                     assigned_to: radioResponsable || undefined,
+                    state_id: radioStateId ? parseInt(radioStateId) : undefined,
                     location_details: radioLocation || undefined,
                     proponerBaja: !!radioBaja
                 };
@@ -2319,4 +2342,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('✅ Equipment inicializado y métodos disponibles globalmente');
     console.log('🔍 Métodos disponibles:', methodsToBind);
+    // Notificar al resto de módulos que Equipment ya está listo
+    try {
+        window.isEquipmentReady = true;
+        document.dispatchEvent(new Event('equipment-ready'));
+    } catch (e) {
+        console.warn('⚠️ No se pudo despachar evento equipment-ready:', e);
+    }
 });

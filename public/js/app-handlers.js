@@ -65,13 +65,26 @@ const AppHandlers = {
                     }
                     break;
                 
-                case 'refresh-list':
-                    if (window.Equipment && window.Equipment.refreshList) {
-                        window.Equipment.refreshList();
-                    } else {
-                        console.error('❌ Equipment.refreshList no disponible');
+                case 'refresh-list': {
+                    const invokeRefresh = () => {
+                        if (window.Equipment && typeof window.Equipment.refreshList === 'function') {
+                            window.Equipment.refreshList();
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    if (!invokeRefresh()) {
+                        console.warn('⏳ Equipment.refreshList no disponible aún, esperando equipment-ready...');
+                        const handler = () => {
+                            if (invokeRefresh()) {
+                                document.removeEventListener('equipment-ready', handler);
+                            }
+                        };
+                        document.addEventListener('equipment-ready', handler);
                     }
                     break;
+                }
                 
                 case 'toggle-row': {
                     const id = Number(target.getAttribute('data-id'));
