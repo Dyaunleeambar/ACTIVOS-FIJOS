@@ -50,6 +50,22 @@ router.get('/stats', authenticateToken, equipmentController.getEquipmentStats);
 // GET /api/equipment - Obtener todos los equipos
 router.get('/', authenticateToken, equipmentController.getAllEquipment);
 
+// GET /api/equipment/by-inventory/:inventory - Obtener equipo por inventory_number
+router.get('/by-inventory/:inventory', authenticateToken, async (req, res) => {
+  try {
+    const { inventory } = req.params;
+    const rows = await require('../config/database-sqlite').executeQuery(
+      'SELECT *, proposed_disposal as proponerBaja FROM equipment WHERE inventory_number = ?',
+      [inventory]
+    );
+    if (!rows || rows.length === 0) return res.status(404).json({ error: 'No encontrado' });
+    res.json({ equipment: rows[0] });
+  } catch (err) {
+    console.error('❌ Error en by-inventory:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // GET /api/equipment/export - Exportar equipos a Excel (DEBE IR ANTES DE /:id)
 router.get('/export', 
   authenticateToken, 

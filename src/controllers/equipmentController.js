@@ -213,27 +213,32 @@ const createEquipment = async (req, res) => {
       location_details
     });
 
-    // Validación de campos obligatorios
-    const requiredFields = {
-      inventory_number: 'Número de inventario',
-      name: 'Nombre del equipo',
-      type: 'Tipo',
-      brand: 'Marca',
-      model: 'Modelo',
-      status: 'Estado',
-      state_id: 'Estado/Región',
-      assigned_to: 'Responsable del equipo'
-    };
+    // Validación de campos obligatorios (dinámica por tipo)
+    const isCommunication = type === 'sim_chip' || type === 'radio_communication';
+    // En comunicaciones: permitir que TODOS los campos sean opcionales salvo inventory_number y type
+    const requiredFieldsList = isCommunication
+      ? ['inventory_number', 'type']
+      : ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to', 'brand', 'model'];
 
     const missingFields = [];
-    for (const [field, label] of Object.entries(requiredFields)) {
+    for (const field of requiredFieldsList) {
       const value = req.body[field];
       if (
         value === undefined ||
         value === null ||
         (typeof value === 'string' && value.trim() === '')
       ) {
-        missingFields.push(label);
+        const labelMap = {
+          inventory_number: 'Número de inventario',
+          name: 'Nombre del equipo',
+          type: 'Tipo',
+          brand: 'Marca',
+          model: 'Modelo',
+          status: 'Estado',
+          state_id: 'Estado/Región',
+          assigned_to: 'Responsable del equipo'
+        };
+        missingFields.push(labelMap[field] || field);
       }
     }
 
@@ -263,6 +268,13 @@ const createEquipment = async (req, res) => {
     console.log('✅ createEquipment - Número de inventario válido, procediendo con inserción');
 
     // Insertar nuevo equipo
+    // Nombre efectivo para comunicaciones si no se envía
+    const effectiveName = (name && String(name).trim().length > 0)
+      ? String(name).trim()
+      : (isCommunication
+          ? (type === 'sim_chip' ? `Línea SIM ${inventory_number}` : type === 'radio_communication' ? `Radio ${inventory_number}` : 'Equipo')
+          : name);
+
     const insertQuery = `
       INSERT INTO equipment (
         inventory_number, name, type, brand, model, specifications,
@@ -272,8 +284,8 @@ const createEquipment = async (req, res) => {
 
     // Filtrar valores undefined y convertirlos a null
     const params = [
-      inventory_number, name, type, brand, model, specifications || null,
-      status, state_id, assigned_to, location_details || null,
+      inventory_number, effectiveName, type, brand, model, specifications || null,
+      status || 'active', state_id || null, assigned_to || null, location_details || null,
       proponerBaja ? 1 : 0
     ];
 
@@ -344,27 +356,31 @@ const updateEquipment = async (req, res) => {
       });
     }
 
-    // Validación de campos obligatorios
-    const requiredFields = {
-      inventory_number: 'Número de inventario',
-      name: 'Nombre del equipo',
-      type: 'Tipo',
-      brand: 'Marca',
-      model: 'Modelo',
-      status: 'Estado',
-      state_id: 'Estado/Región',
-      assigned_to: 'Responsable del equipo'
-    };
+    // Validación de campos obligatorios (dinámica por tipo)
+    const isCommunicationUpdate = type === 'sim_chip' || type === 'radio_communication';
+    const requiredFieldsListUpdate = isCommunicationUpdate
+      ? ['inventory_number', 'type']
+      : ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to', 'brand', 'model'];
 
     const missingFields = [];
-    for (const [field, label] of Object.entries(requiredFields)) {
+    for (const field of requiredFieldsListUpdate) {
       const value = req.body[field];
       if (
         value === undefined ||
         value === null ||
         (typeof value === 'string' && value.trim() === '')
       ) {
-        missingFields.push(label);
+        const labelMap = {
+          inventory_number: 'Número de inventario',
+          name: 'Nombre del equipo',
+          type: 'Tipo',
+          brand: 'Marca',
+          model: 'Modelo',
+          status: 'Estado',
+          state_id: 'Estado/Región',
+          assigned_to: 'Responsable del equipo'
+        };
+        missingFields.push(labelMap[field] || field);
       }
     }
 
@@ -387,6 +403,13 @@ const updateEquipment = async (req, res) => {
     }
 
     // Actualizar equipo
+    // Nombre efectivo para comunicaciones si no se envía
+    const effectiveName = (name && String(name).trim().length > 0)
+      ? String(name).trim()
+      : (isCommunicationUpdate
+          ? (type === 'sim_chip' ? `Línea SIM ${inventory_number}` : type === 'radio_communication' ? `Radio ${inventory_number}` : 'Equipo')
+          : name);
+
     const updateQuery = `
       UPDATE equipment SET 
         inventory_number = ?, 
@@ -405,8 +428,8 @@ const updateEquipment = async (req, res) => {
     `;
 
     const params = [
-      inventory_number, name, type, brand, model, specifications || null,
-      status, state_id, assigned_to, location_details || null,
+      inventory_number, effectiveName, type, brand, model, specifications || null,
+      status || 'active', state_id || null, assigned_to || null, location_details || null,
       proponerBaja ? 1 : 0,
       id
     ];

@@ -835,7 +835,15 @@ class Equipment {
                 <h2 id="dynamic-modal-title" style="margin: 0; color: #333; font-size: 20px; font-weight: 600;">${equipmentId ? 'Editar Equipo' : 'Nuevo Equipo'}</h2>
                 <button id="dynamic-close-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 8px; border-radius: 6px; transition: all 0.2s ease;">&times;</button>
             </div>
-            <form id="dynamic-equipment-form" style="padding: 32px; display: grid; gap: 24px;">
+            <form id="dynamic-equipment-form" style="padding: 0; display: block;">
+                <!-- Tabs Header -->
+                <div style="display:flex; border-bottom:1px solid #e1e5e9; background:#fff;">
+                    <button type="button" class="tab-btn active" data-tab="it" style="flex:1; padding:14px 16px; border:none; background:#fff; cursor:pointer; font-weight:600;">Informática</button>
+                    <button type="button" class="tab-btn" data-tab="comms" style="flex:1; padding:14px 16px; border:none; background:#fff; cursor:pointer; font-weight:600;">Comunicaciones</button>
+                </div>
+
+                <!-- TAB: Informática -->
+                <div id="tab-it" class="tab-panel active" style="padding: 32px; display: grid; gap: 24px;">
                 <!-- Información Básica -->
                 <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
                     <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
@@ -927,7 +935,7 @@ class Equipment {
                         <textarea name="location_details" rows="2" placeholder="Especificaciones adicionales de ubicación (opcional)" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s ease; resize: vertical;"></textarea>
                     </div>
                 </div>
-                
+
                 <!-- Checkbox proponerBaja -->
                 <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0 4px;">
                     <input type="checkbox" id="proponerBaja" name="proponerBaja" style="width: 18px; height: 18px; accent-color: #3b82f6; margin-right: 8px;">
@@ -935,9 +943,88 @@ class Equipment {
                 </div>
                 <div style="display: flex; gap: 12px; justify-content: flex-end; padding: 24px; border-top: 1px solid #e1e5e9; background: #f8fafc; border-radius: 0 0 12px 12px; margin-top: 24px;">
                     <button type="button" id="dynamic-cancel-btn" style="padding: 12px 24px; border: 2px solid #e1e5e9; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">Cancelar</button>
-                    <button type="submit" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
+                    <button type="submit" data-tab-submit="it" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
                         <i class="fas fa-save" style="margin-right: 8px;"></i>Guardar Equipo
                     </button>
+                </div>
+                </div>
+
+                <!-- TAB: Comunicaciones -->
+                <div id="tab-comms" class="tab-panel" style="display:none; padding: 32px; display: grid; gap: 24px;">
+                    <!-- Contenedor SIMs -->
+                    <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
+                        <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 4px; height: 16px; background: #3b82f6; border-radius: 2px;"></span>
+                            Líneas SIMs
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Número de la línea SIMs</label>
+                                <input type="text" name="sims_number" placeholder="Ej: 0414-1234567" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                                <small style="color:#666;">Si se ingresa, se usará como inventario con prefijo SIM-</small>
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Responsable *</label>
+                                <input type="text" name="sims_responsable" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Número de la línea Roaming</label>
+                                <input type="text" name="sims_roaming" placeholder="Opcional" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado *</label>
+                                <select name="sims_status" required style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
+                                    <option value="active">Activo</option>
+                                    <option value="out_of_service">Fuera de servicio</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Detalles de Ubicación *</label>
+                            <textarea name="sims_location" required rows="2" style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor Radios -->
+                    <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 24px; background: #f8fafc;">
+                        <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 4px; height: 16px; background: #3b82f6; border-radius: 2px;"></span>
+                            Radios
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Número de inventario *</label>
+                                <input type="text" name="radio_inventory" required placeholder="Ej: RAD-0001" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                                <small style="color:#666;">Se recomienda prefijo RAD-</small>
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Responsable *</label>
+                                <input type="text" name="radio_responsable" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Ubicación *</label>
+                                <input type="text" name="radio_location" required style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">Estado *</label>
+                                <select name="radio_status" required style="width:100%; padding:12px; border:2px solid #e1e5e9; border-radius:6px;">
+                                    <option value="active">Activo</option>
+                                    <option value="out_of_service">Fuera de servicio</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:12px;">
+                            <input type="checkbox" id="radio_proponerBaja" name="radio_proponerBaja" style="width:18px; height:18px; accent-color:#3b82f6;">
+                            <label for="radio_proponerBaja" style="font-size:15px; color:#333;">Proponer este radio como baja (opcional)</label>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end; padding: 24px; border-top: 1px solid #e1e5e9; background: #f8fafc; border-radius: 0 0 12px 12px;">
+                        <button type="button" id="dynamic-cancel-btn-comm" style="padding:12px 24px; border:2px solid #e1e5e9; background:#fff; border-radius:6px; cursor:pointer; font-size:14px; font-weight:500;">Cancelar</button>
+                        <button type="button" id="dynamic-save-comm" data-tab-submit="comms" style="padding:12px 24px; background:#3b82f6; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:500;">
+                            <i class="fas fa-save" style="margin-right:8px;"></i>Guardar Comunicaciones
+                        </button>
+                    </div>
                 </div>
             </form>
         `;
@@ -945,10 +1032,32 @@ class Equipment {
         // Agregar event listeners mejorados
         const closeBtn = modalContent.querySelector('#dynamic-close-btn');
         const cancelBtn = modalContent.querySelector('#dynamic-cancel-btn');
+        const commCancelBtn = modalContent.querySelector('#dynamic-cancel-btn-comm');
+        const saveCommBtn = modalContent.querySelector('#dynamic-save-comm');
         const form = modalContent.querySelector('#dynamic-equipment-form');
+        const tabButtons = modalContent.querySelectorAll('.tab-btn');
+        const tabIt = modalContent.querySelector('#tab-it');
+        const tabComms = modalContent.querySelector('#tab-comms');
 
         closeBtn.onclick = () => this.closeDynamicModal();
         cancelBtn.onclick = () => this.closeDynamicModal();
+        commCancelBtn.onclick = () => this.closeDynamicModal();
+
+        // Tabs switching
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const target = btn.getAttribute('data-tab');
+                if (target === 'it') {
+                    tabIt.style.display = 'grid';
+                    tabComms.style.display = 'none';
+                } else {
+                    tabIt.style.display = 'none';
+                    tabComms.style.display = 'grid';
+                }
+            });
+        });
 
         // Mejorar focus y hover states
         const inputs = modalContent.querySelectorAll('input, select, textarea');
@@ -980,6 +1089,19 @@ class Equipment {
             }
             this.saveDynamicEquipment(form, equipmentId);
         };
+
+        // Guardar Comunicaciones
+        if (saveCommBtn) {
+            saveCommBtn.addEventListener('click', async () => {
+                try {
+                    // Validar SIMs y/o Radios por separado
+                    await this.saveCommunications(form);
+                } catch (err) {
+                    console.error('Error guardando comunicaciones:', err);
+                    UI.showNotification('Error guardando comunicaciones', 'error');
+                }
+            });
+        }
 
         // Agregar overlay para cerrar al hacer clic fuera
         dynamicModal.onclick = (e) => {
@@ -1028,6 +1150,31 @@ class Equipment {
                         bajaCheckbox.checked = Boolean(equipment.proponerBaja);
                     }
                 }
+                // Opcional: si el equipo es SIM o Radio, precargar en pestaña comunicaciones
+                if (equipment.type === 'sim_chip') {
+                    const sn = form.querySelector('input[name="sims_number"]');
+                    const sr = form.querySelector('input[name="sims_responsable"]');
+                    const srm = form.querySelector('input[name="sims_roaming"]');
+                    const ss = form.querySelector('select[name="sims_status"]');
+                    const sl = form.querySelector('textarea[name="sims_location"]');
+                    if (sn) sn.value = String(equipment.inventory_number || '').replace(/^SIM-/, '');
+                    if (sr) sr.value = equipment.assigned_to || '';
+                    if (srm) srm.value = '';
+                    if (ss) ss.value = equipment.status || 'active';
+                    if (sl) sl.value = equipment.location_details || '';
+                }
+                if (equipment.type === 'radio_communication') {
+                    const ri = form.querySelector('input[name="radio_inventory"]');
+                    const rr = form.querySelector('input[name="radio_responsable"]');
+                    const rl = form.querySelector('input[name="radio_location"]');
+                    const rs = form.querySelector('select[name="radio_status"]');
+                    const rb = form.querySelector('#radio_proponerBaja');
+                    if (ri) ri.value = equipment.inventory_number || '';
+                    if (rr) rr.value = equipment.assigned_to || '';
+                    if (rl) rl.value = equipment.location_details || '';
+                    if (rs) rs.value = equipment.status || 'active';
+                    if (rb) rb.checked = Boolean(equipment.proponerBaja);
+                }
             }
         } catch (error) {
             console.error('Error cargando datos del equipo:', error);
@@ -1043,7 +1190,7 @@ class Equipment {
             const formData = new FormData(form);
 
             // Validación básica
-            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'state_id', 'assigned_to'];
+            const requiredFields = ['inventory_number', 'name', 'type', 'status', 'assigned_to'];
             const missingFields = [];
 
             requiredFields.forEach(field => {
@@ -1069,6 +1216,7 @@ class Equipment {
                 model: formData.get('model') || null,
                 specifications: formData.get('specifications') || null,
                 status: formData.get('status'),
+                // Para comunicaciones permitimos no enviar state_id; aquí lo conservamos si fue provisto
                 state_id: stateIdValue && stateIdValue.trim() !== '' ? parseInt(stateIdValue) : null,
                 assigned_to: assignedToValue && assignedToValue.trim() !== '' ? assignedToValue.trim() : null,
                 location_details: formData.get('location_details') || null
@@ -1136,6 +1284,99 @@ class Equipment {
             document.body.removeChild(this.dynamicModal);
             this.dynamicModal = null;
             console.log('🚀 Modal dinámico cerrado');
+        }
+    }
+
+    // Guardar Comunicaciones (SIMs y/o Radios) de forma independiente
+    async saveCommunications(form) {
+        const simsNumber = form.querySelector('input[name="sims_number"]').value.trim();
+        const simsResponsable = form.querySelector('input[name="sims_responsable"]').value.trim();
+        const simsRoaming = form.querySelector('input[name="sims_roaming"]').value.trim();
+        const simsStatus = form.querySelector('select[name="sims_status"]').value;
+        const simsLocation = form.querySelector('textarea[name="sims_location"]').value.trim();
+
+        const radioInventory = form.querySelector('input[name="radio_inventory"]').value.trim();
+        const radioResponsable = form.querySelector('input[name="radio_responsable"]').value.trim();
+        const radioLocation = form.querySelector('input[name="radio_location"]').value.trim();
+        const radioStatus = form.querySelector('select[name="radio_status"]').value;
+        const radioBaja = form.querySelector('#radio_proponerBaja').checked;
+
+        let anySaved = false;
+
+        // Guardar SIM si se especificó alguno de sus campos clave
+        if (simsNumber || simsRoaming || simsResponsable || simsLocation) {
+            // Regla: si no hay número de SIM, no crear ni actualizar
+            if (!simsNumber) {
+                UI.showNotification('No se creó/actualizó la SIM: ingrese Número de la línea SIMs.', 'warning');
+            } else {
+                const inv = simsNumber.startsWith('SIM-') ? simsNumber : `SIM-${simsNumber}`;
+                const simPayload = {
+                    inventory_number: inv,
+                    name: `Línea SIM ${inv}`,
+                    type: 'sim_chip',
+                    brand: null,
+                    model: null,
+                    specifications: simsRoaming ? `roaming:${simsRoaming}` : null,
+                    status: simsStatus || 'active',
+                    state_id: null,
+                    assigned_to: simsResponsable || null,
+                    location_details: simsLocation || null
+                };
+                await this.upsertEquipmentByInventory(inv, simPayload);
+                anySaved = true;
+            }
+        }
+
+        // Guardar Radio si se especificó número de inventario (obligatorio para radios)
+        if (radioInventory) {
+            const invR = radioInventory.startsWith('RAD-') ? radioInventory : `RAD-${radioInventory}`;
+            const radioPayload = {
+                inventory_number: invR,
+                name: `Radio ${invR}`,
+                type: 'radio_communication',
+                brand: null,
+                model: null,
+                specifications: null,
+                status: radioStatus || 'active',
+                state_id: null,
+                assigned_to: radioResponsable || null,
+                location_details: radioLocation || null,
+                proponerBaja: !!radioBaja
+            };
+
+            await this.upsertEquipmentByInventory(invR, radioPayload);
+            anySaved = true;
+        }
+
+        if (!anySaved) {
+            UI.showNotification('No hay datos para guardar en Comunicaciones', 'warning');
+            return;
+        }
+
+        UI.showNotification('Comunicaciones guardadas', 'success');
+        this.closeDynamicModal();
+        setTimeout(() => this.refreshEquipmentList(), 500);
+    }
+
+    // Upsert por inventory_number
+    async upsertEquipmentByInventory(inventoryNumber, payload) {
+        try {
+            // Intentar obtener el equipo por inventory_number usando endpoint dedicado
+            let found = null;
+            try {
+                const byInv = await API.get(`/equipment/by-inventory/${encodeURIComponent(inventoryNumber)}`);
+                found = byInv && byInv.equipment ? byInv.equipment : null;
+            } catch (_) {
+                found = null;
+            }
+            if (found) {
+                await API.put(`/equipment/${found.id}`, payload);
+            } else {
+                await API.post('/equipment', payload);
+            }
+        } catch (error) {
+            console.error('Error en upsertEquipmentByInventory:', error);
+            throw error;
         }
     }
 
