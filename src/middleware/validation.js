@@ -43,7 +43,8 @@ const validateUpdateUser = [
 // Validaciones para equipos
 const validateCreateEquipment = [
   body('inventory_number').notEmpty().withMessage('Número de inventario es requerido'),
-  body('name').notEmpty().withMessage('Nombre del equipo es requerido'),
+  // Nombre opcional para permitir comunicaciones sin nombre explícito
+  body('name').optional().notEmpty().withMessage('Nombre del equipo no puede estar vacío si se envía'),
   body('type').isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
   body('brand').optional().isString().withMessage('Marca debe ser texto'),
   body('model').optional().isString().withMessage('Modelo debe ser texto'),

@@ -34,6 +34,11 @@ const getAllEquipment = async (req, res) => {
     if (type) {
       whereConditions.push('e.type = ?');
       params.push(type);
+    } else {
+      // Excluir comunicaciones por defecto del listado
+      if (req.query.include_comms !== '1') {
+        whereConditions.push("e.type NOT IN ('sim_chip','radio_communication')");
+      }
     }
 
     if (status) {
@@ -71,6 +76,16 @@ const getAllEquipment = async (req, res) => {
         e.assigned_to,
         e.location_details,
         e.proposed_disposal as proponerBaja,
+        (
+          SELECT COUNT(1) FROM equipment c 
+          WHERE c.type = 'sim_chip' 
+            AND COALESCE(c.assigned_to,'') = COALESCE(e.assigned_to,'')
+        ) as sims_count,
+        (
+          SELECT COUNT(1) FROM equipment c 
+          WHERE c.type = 'radio_communication' 
+            AND COALESCE(c.assigned_to,'') = COALESCE(e.assigned_to,'')
+        ) as radios_count,
         e.created_at,
         e.updated_at,
         s.name as state_name

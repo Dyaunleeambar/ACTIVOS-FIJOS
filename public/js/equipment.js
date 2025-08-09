@@ -482,6 +482,9 @@ class Equipment {
         tbody.innerHTML = equipment.map((item, i) => {
             const index = (this.currentPage - 1) * this.itemsPerPage + i + 1;
             const isHidden = hiddenRows.includes(item.id);
+            const isSim = item.type === 'sim_chip';
+            const isRadio = item.type === 'radio_communication';
+            const typeBadge = isSim ? '<span class="badge badge-sim" title="SIM">SIM</span>' : (isRadio ? '<span class="badge badge-radio" title="Radio">RAD</span>' : '');
             return `
             <tr id="equipment-row-${item.id}" draggable="true" class="draggable-row" style="display: ${isHidden ? 'none' : ''}">
                 <td class="drag-handle-col" style="cursor: grab; text-align: center; width: 32px;">
@@ -489,12 +492,13 @@ class Equipment {
                 </td>
                 <td class="index-col">${index}</td>
                 <td>
-                    <strong>${item.inventory_number}</strong>
+                    <strong>${item.inventory_number}</strong> ${typeBadge}
                 </td>
                 <td>
                     <div>
                         <div style="font-weight: 500;">${item.name}</div>
                         <small style="color: #666;">${item.brand || ''} ${item.model || ''}</small>
+                        ${(item.sims_count > 0 || item.radios_count > 0) ? `<div class="inline-badges" style="margin-top:4px;">${item.sims_count > 0 ? `<span class="badge badge-sim">${item.sims_count} SIM</span>` : ''} ${item.radios_count > 0 ? `<span class="badge badge-radio">${item.radios_count} RAD</span>` : ''}</div>` : ''}
                     </div>
                 </td>
                 <td>
@@ -1314,13 +1318,10 @@ class Equipment {
                     inventory_number: inv,
                     name: `Línea SIM ${inv}`,
                     type: 'sim_chip',
-                    brand: null,
-                    model: null,
-                    specifications: simsRoaming ? `roaming:${simsRoaming}` : null,
+                    specifications: simsRoaming ? `roaming:${simsRoaming}` : undefined,
                     status: simsStatus || 'active',
-                    state_id: null,
-                    assigned_to: simsResponsable || null,
-                    location_details: simsLocation || null
+                    assigned_to: simsResponsable || undefined,
+                    location_details: simsLocation || undefined
                 };
                 await this.upsertEquipmentByInventory(inv, simPayload);
                 anySaved = true;
@@ -1329,23 +1330,23 @@ class Equipment {
 
         // Guardar Radio si se especificó número de inventario (obligatorio para radios)
         if (radioInventory) {
-            const invR = radioInventory.startsWith('RAD-') ? radioInventory : `RAD-${radioInventory}`;
-            const radioPayload = {
-                inventory_number: invR,
-                name: `Radio ${invR}`,
-                type: 'radio_communication',
-                brand: null,
-                model: null,
-                specifications: null,
-                status: radioStatus || 'active',
-                state_id: null,
-                assigned_to: radioResponsable || null,
-                location_details: radioLocation || null,
-                proponerBaja: !!radioBaja
-            };
+            // Soportar múltiples inventarios separados por ';'
+            const tokens = radioInventory.split(';').map(t => t.trim()).filter(t => t.length > 0);
+            for (const token of tokens) {
+                const invR = token.startsWith('RAD-') ? token : `RAD-${token}`;
+                const radioPayload = {
+                    inventory_number: invR,
+                    name: `Radio ${invR}`,
+                    type: 'radio_communication',
+                    status: radioStatus || 'active',
+                    assigned_to: radioResponsable || undefined,
+                    location_details: radioLocation || undefined,
+                    proponerBaja: !!radioBaja
+                };
 
-            await this.upsertEquipmentByInventory(invR, radioPayload);
-            anySaved = true;
+                await this.upsertEquipmentByInventory(invR, radioPayload);
+                anySaved = true;
+            }
         }
 
         if (!anySaved) {

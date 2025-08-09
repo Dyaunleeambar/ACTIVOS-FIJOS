@@ -23,23 +23,24 @@ const getDashboardStats = async (req, res) => {
 
     const whereClause = whereParts.length ? `WHERE ${whereParts.join(' AND ')}` : '';
 
-    // 1) Total de equipos
+    // 1) Total de equipos (excluye comunicaciones)
     const totalQuery = `
       SELECT COUNT(*) AS total
       FROM equipment e
       ${extraJoin}
       ${whereClause}
+      ${whereClause ? ' AND' : 'WHERE'} e.type NOT IN ('sim_chip','radio_communication')
     `;
     const totalResult = await executeQuery(totalQuery, params);
     const totalEquipment = totalResult?.[0]?.total || 0;
 
-    // 2) Equipos activos
+    // 2) Equipos activos (excluye comunicaciones)
     const activeQuery = `
       SELECT COUNT(*) AS total
       FROM equipment e
       ${extraJoin}
       ${whereClause}
-      ${whereClause ? ' AND' : 'WHERE'} e.status = 'active'
+      ${whereClause ? ' AND' : 'WHERE'} e.status = 'active' AND e.type NOT IN ('sim_chip','radio_communication')
     `;
     const activeResult = await executeQuery(activeQuery, params);
     const activeEquipment = activeResult?.[0]?.total || 0;
