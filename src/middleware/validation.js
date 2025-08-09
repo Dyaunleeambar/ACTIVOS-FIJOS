@@ -45,7 +45,7 @@ const validateCreateEquipment = [
   body('inventory_number').notEmpty().withMessage('Número de inventario es requerido'),
   // Nombre opcional para permitir comunicaciones sin nombre explícito
   body('name').optional().notEmpty().withMessage('Nombre del equipo no puede estar vacío si se envía'),
-  body('type').isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
+  body('type').isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'monitor', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
   body('brand').optional().isString().withMessage('Marca debe ser texto'),
   body('model').optional().isString().withMessage('Modelo debe ser texto'),
   body('specifications').optional().isString().withMessage('Especificaciones debe ser texto'),
@@ -69,7 +69,7 @@ const validateCreateEquipment = [
 const validateUpdateEquipment = [
   param('id').isInt().withMessage('ID debe ser un número entero'),
   body('name').optional().notEmpty().withMessage('Nombre del equipo no puede estar vacío'),
-  body('type').optional().isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
+  body('type').optional().isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'monitor', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
   body('brand').optional().isString().withMessage('Marca debe ser texto'),
   body('model').optional().isString().withMessage('Modelo debe ser texto'),
   body('specifications').optional().isString().withMessage('Especificaciones debe ser texto'),
@@ -158,7 +158,7 @@ const validateExportFilters = [
 // Validaciones para reportes
 const validateReportFilters = [
   query('state_id').optional().isInt().withMessage('ID de estado debe ser un número entero'),
-  query('type').optional().isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
+  query('type').optional().isIn(['desktop', 'laptop', 'printer', 'server', 'router', 'switch', 'monitor', 'radio_communication', 'sim_chip', 'roaming', 'other']).withMessage('Tipo de equipo inválido'),
   query('status').optional().isIn(['active', 'maintenance', 'out_of_service', 'disposed']).withMessage('Estado inválido'),
   query('start_date').optional().isISO8601().withMessage('Fecha de inicio debe ser válida'),
   query('end_date').optional().isISO8601().withMessage('Fecha de fin debe ser válida'),

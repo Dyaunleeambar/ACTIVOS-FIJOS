@@ -875,9 +875,8 @@ class Equipment {
                                 <option value="server">Servidor</option>
                                 <option value="router">Router</option>
                                 <option value="switch">Switch</option>
+                                <option value="monitor">Monitor</option>
                                 <option value="radio_communication">Radio Comunicación</option>
-                                <option value="sim_chip">Chip SIM</option>
-                                <option value="roaming">Roaming</option>
                                 <option value="other">Otro</option>
                             </select>
                         </div>
