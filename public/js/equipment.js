@@ -1049,19 +1049,25 @@ class Equipment {
         cancelBtn.onclick = () => this.closeDynamicModal();
         commCancelBtn.onclick = () => this.closeDynamicModal();
 
-        // Tabs switching
+        // Tabs switching: asegurar estado inicial correcto y evitar parpadeo
+        const activateTab = (tab) => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            if (tab === 'it') {
+                tabIt.style.display = 'grid';
+                tabComms.style.display = 'none';
+                modalContent.querySelector('.tab-btn[data-tab="it"]').classList.add('active');
+            } else {
+                tabIt.style.display = 'none';
+                tabComms.style.display = 'grid';
+                modalContent.querySelector('.tab-btn[data-tab="comms"]').classList.add('active');
+            }
+        };
+        // Estado inicial forzado
+        activateTab('it');
         tabButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                tabButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
                 const target = btn.getAttribute('data-tab');
-                if (target === 'it') {
-                    tabIt.style.display = 'grid';
-                    tabComms.style.display = 'none';
-                } else {
-                    tabIt.style.display = 'none';
-                    tabComms.style.display = 'grid';
-                }
+                activateTab(target);
             });
         });
 
@@ -1125,24 +1131,27 @@ class Equipment {
 
         // Cargar estados dinámicamente
         this.loadStatesForModal();
-        // Cargar estados para select de radios en comunicaciones
-        try {
-            const response = await API.get('/states');
-            const radiosStateSelect = modalContent.querySelector('select[name="radio_state_id"]');
-            if (response && response.data && radiosStateSelect) {
-                // Mantener primera opción
-                const keep = radiosStateSelect.querySelector('option[value=""]');
-                radiosStateSelect.innerHTML = '';
-                if (keep) radiosStateSelect.appendChild(keep);
-                response.data.forEach(state => {
-                    const opt = document.createElement('option');
-                    opt.value = state.id;
-                    opt.textContent = state.name;
-                    radiosStateSelect.appendChild(opt);
-                });
-            }
-        } catch (e) {
-            console.warn('No se pudieron cargar estados para radios');
+        // Cargar estados para select de radios en comunicaciones (usar mapeo consistente local)
+        const radiosStateSelect = modalContent.querySelector('select[name="radio_state_id"]');
+        if (radiosStateSelect) {
+            const keep = radiosStateSelect.querySelector('option[value=""]');
+            radiosStateSelect.innerHTML = '';
+            if (keep) radiosStateSelect.appendChild(keep);
+            const states = [
+                { id: 1, name: 'Dirección' },
+                { id: 2, name: 'Capital' },
+                { id: 3, name: 'Carabobo' },
+                { id: 4, name: 'Barinas' },
+                { id: 5, name: 'Anzoátegui' },
+                { id: 6, name: 'Bolívar' },
+                { id: 7, name: 'Zulia' }
+            ];
+            states.forEach(state => {
+                const opt = document.createElement('option');
+                opt.value = state.id;
+                opt.textContent = state.name;
+                radiosStateSelect.appendChild(opt);
+            });
         }
 
         // Cargar datos si es edición
@@ -1314,18 +1323,30 @@ class Equipment {
 
     // Guardar Comunicaciones (SIMs y/o Radios) de forma independiente
     async saveCommunications(form) {
-        const simsNumber = form.querySelector('input[name="sims_number"]').value.trim();
-        const simsResponsable = form.querySelector('input[name="sims_responsable"]').value.trim();
-        const simsRoaming = form.querySelector('input[name="sims_roaming"]').value.trim();
-        const simsStatus = form.querySelector('select[name="sims_status"]').value;
-        const simsLocation = form.querySelector('textarea[name="sims_location"]').value.trim();
+        // Helper seguro para leer valores evitando nulls
+        const safeVal = (selector) => {
+            const el = form.querySelector(selector);
+            if (!el) return '';
+            const v = (el.value ?? '').toString();
+            return v.trim();
+        };
+        const safeChecked = (selector) => {
+            const el = form.querySelector(selector);
+            return !!(el && el.checked);
+        };
 
-        const radioInventory = form.querySelector('input[name="radio_inventory"]').value.trim();
-        const radioResponsable = form.querySelector('input[name="radio_responsable"]').value.trim();
-        const radioLocation = form.querySelector('input[name="radio_location"]').value.trim();
-        const radioStatus = form.querySelector('select[name="radio_status"]').value;
-        const radioStateId = form.querySelector('select[name="radio_state_id"]').value;
-        const radioBaja = form.querySelector('#radio_proponerBaja').checked;
+        const simsNumber = safeVal('input[name="sims_number"]');
+        const simsResponsable = safeVal('input[name="sims_responsable"]');
+        const simsRoaming = safeVal('input[name="sims_roaming"]');
+        const simsStatus = safeVal('select[name="sims_status"]') || 'active';
+        const simsLocation = safeVal('textarea[name="sims_location"]');
+
+        const radioInventory = safeVal('input[name="radio_inventory"]');
+        const radioResponsable = safeVal('input[name="radio_responsable"]');
+        const radioLocation = safeVal('input[name="radio_location"]');
+        const radioStatus = safeVal('select[name="radio_status"]') || 'active';
+        const radioStateId = safeVal('select[name="radio_state_id"]');
+        const radioBaja = safeChecked('#radio_proponerBaja');
 
         let anySaved = false;
 
@@ -2191,44 +2212,31 @@ class Equipment {
     // Cargar estados para el modal
     async loadStatesForModal() {
         try {
-            const response = await API.get('/states');
-            if (response.data) {
-                const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
-                if (stateSelect) {
-                    // Mantener la opción por defecto
-                    const defaultOption = stateSelect.querySelector('option[value=""]');
-                    stateSelect.innerHTML = '';
-                    if (defaultOption) {
-                        stateSelect.appendChild(defaultOption);
-                    }
-
-                    // Agregar las opciones de estados
-                    response.data.forEach(state => {
-                        const option = document.createElement('option');
-                        option.value = state.id;
-                        option.textContent = state.name;
-                        stateSelect.appendChild(option);
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error cargando estados:', error);
-
-            // Usar la nueva función auxiliar para manejar errores
-            this.handleEquipmentError(error, 'carga de estados');
-
-            // Fallback a estados estáticos si falla la carga
             const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
             if (stateSelect) {
-                stateSelect.innerHTML = `
-                    <option value="">Seleccionar estado</option>
-                    <option value="1">Estado 1</option>
-                    <option value="2">Estado 2</option>
-                    <option value="3">Estado 3</option>
-                    <option value="4">Estado 4</option>
-                    <option value="5">Estado 5</option>
-                `;
+                const defaultOption = stateSelect.querySelector('option[value=""]');
+                stateSelect.innerHTML = '';
+                if (defaultOption) {
+                    stateSelect.appendChild(defaultOption);
+                }
+                const states = [
+                    { id: 1, name: 'Dirección' },
+                    { id: 2, name: 'Capital' },
+                    { id: 3, name: 'Carabobo' },
+                    { id: 4, name: 'Barinas' },
+                    { id: 5, name: 'Anzoátegui' },
+                    { id: 6, name: 'Bolívar' },
+                    { id: 7, name: 'Zulia' }
+                ];
+                states.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state.id;
+                    option.textContent = state.name;
+                    stateSelect.appendChild(option);
+                });
             }
+        } catch (error) {
+            console.error('Error configurando estados locales:', error);
         }
     }
 
