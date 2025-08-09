@@ -44,16 +44,16 @@ const getDashboardStats = async (req, res) => {
     const activeResult = await executeQuery(activeQuery, params);
     const activeEquipment = activeResult?.[0]?.total || 0;
 
-    // 3) Propuestas de baja (temporal: equipos con status = 'disposed')
-    const disposedQuery = `
+    // 3) Propuestas de baja reales (flag proposed_disposal)
+    const proposalsQuery = `
       SELECT COUNT(*) AS total
       FROM equipment e
       ${extraJoin}
       ${whereClause}
-      ${whereClause ? ' AND' : 'WHERE'} e.status = 'disposed'
+      ${whereClause ? ' AND' : 'WHERE'} e.proposed_disposal = 1
     `;
-    const disposedResult = await executeQuery(disposedQuery, params);
-    const disposalProposals = disposedResult?.[0]?.total || 0;
+    const proposalsResult = await executeQuery(proposalsQuery, params);
+    const disposalProposals = proposalsResult?.[0]?.total || 0;
 
     // 4) Por tipo (resumen simple para tarjetas/mini-widgets)
     const typeQuery = `

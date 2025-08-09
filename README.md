@@ -344,6 +344,42 @@ Para soporte técnico, contactar al departamento de IT.
 
 ---
 
+## 🛠️ Scripts de Diagnóstico y Troubleshooting
+
+El sistema incluye scripts avanzados para diagnóstico y auto-corrección de problemas comunes en la carga inicial y filtrado de equipos. Estos scripts ayudan a identificar y solucionar errores sin intervención manual.
+
+### Scripts disponibles
+- **public/js/diagnose-initial-load.js**: Diagnóstico de problemas de carga inicial de equipos. Permite verificar el flujo de inicialización, detectar si los datos no se cargan automáticamente y sugerir acciones correctivas.
+- **public/js/auto-fix-initial-load.js**: Script de auto-corrección que detecta y corrige automáticamente el problema de que no se cargan los equipos al entrar a la página.
+- **public/js/diagnose-filters.js**: Herramientas para verificar la correcta inicialización de filtros, elementos del DOM y event listeners relacionados con el filtrado de equipos.
+- **public/js/debug-filters.js**: Permite depurar la actualización de filtros y el correcto funcionamiento de los chips de filtros activos.
+
+### Ejemplo de uso en consola
+Puedes ejecutar funciones de diagnóstico desde la consola del navegador:
+
+```js
+// Diagnóstico de carga inicial
+diagnoseInitialLoad();
+
+// Forzar carga inicial
+diagnoseInitializationFlow();
+forceInitialLoad();
+
+// Diagnóstico de filtros
+diagnoseEquipmentInit();
+diagnoseDOMElements();
+diagnoseEventListeners();
+```
+
+### Troubleshooting recomendado
+- Si los equipos no se muestran tras iniciar el servidor, ejecuta `forceInitialLoad()`.
+- Si los filtros no funcionan, usa `diagnoseEquipmentInit()` y revisa la consola para detalles.
+- Para limpiar el estado de filtros y paginación, usa `Equipment.cleanState()` desde consola.
+
+Estos scripts están pensados para facilitar la depuración y mejorar la experiencia de desarrollo y soporte técnico.
+
+---
+
 **Versión**: 2.0.0  
 **Última actualización**: Agosto 2025  
 **Estado**: ✅ Funcional - Todas las funcionalidades principales implementadas y probadas

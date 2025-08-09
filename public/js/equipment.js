@@ -928,6 +928,11 @@ class Equipment {
                     </div>
                 </div>
                 
+                <!-- Checkbox proponerBaja -->
+                <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 0 4px;">
+                    <input type="checkbox" id="proponerBaja" name="proponerBaja" style="width: 18px; height: 18px; accent-color: #3b82f6; margin-right: 8px;">
+                    <label for="proponerBaja" style="font-size: 15px; color: #333; cursor: pointer; user-select: none;">Proponer este equipo como baja (opcional)</label>
+                </div>
                 <div style="display: flex; gap: 12px; justify-content: flex-end; padding: 24px; border-top: 1px solid #e1e5e9; background: #f8fafc; border-radius: 0 0 12px 12px; margin-top: 24px;">
                     <button type="button" id="dynamic-cancel-btn" style="padding: 12px 24px; border: 2px solid #e1e5e9; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">Cancelar</button>
                     <button type="submit" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
@@ -960,6 +965,19 @@ class Equipment {
 
         form.onsubmit = (e) => {
             e.preventDefault();
+            // Inyectar el valor del checkbox en el formulario antes de guardar
+            const proponerBajaCheckbox = form.querySelector('#proponerBaja');
+            if (proponerBajaCheckbox) {
+                // Crear o actualizar un input hidden para enviar el valor correctamente
+                let hiddenInput = form.querySelector('input[name="proponerBaja_hidden"]');
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'proponerBaja_hidden';
+                    form.appendChild(hiddenInput);
+                }
+                hiddenInput.value = proponerBajaCheckbox.checked ? 'true' : '';
+            }
             this.saveDynamicEquipment(form, equipmentId);
         };
 
@@ -1003,6 +1021,13 @@ class Equipment {
                         input.value = equipment[key] || '';
                     }
                 });
+                // Rellenar el checkbox proponerBaja si existe
+                if (typeof equipment.proponerBaja !== 'undefined') {
+                    const bajaCheckbox = form.querySelector('#proponerBaja');
+                    if (bajaCheckbox) {
+                        bajaCheckbox.checked = Boolean(equipment.proponerBaja);
+                    }
+                }
             }
         } catch (error) {
             console.error('Error cargando datos del equipo:', error);
@@ -1048,6 +1073,11 @@ class Equipment {
                 assigned_to: assignedToValue && assignedToValue.trim() !== '' ? assignedToValue.trim() : null,
                 location_details: formData.get('location_details') || null
             };
+            // Añadir proponerBaja si está presente
+            const proponerBajaHidden = formData.get('proponerBaja_hidden');
+            if (typeof proponerBajaHidden !== 'undefined') {
+                equipmentData.proponerBaja = proponerBajaHidden === 'true';
+            }
 
             // Debug: mostrar datos que se envían
             console.log('🔍 Datos que se envían al servidor:', equipmentData);

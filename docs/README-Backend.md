@@ -89,6 +89,45 @@ El sistema utiliza JWT para autenticación. Los tokens incluyen:
 - `DELETE /api/equipment/:id` - Eliminar equipo
 - `GET /api/equipment/state/:stateId` - Equipos por estado
 
+### **Dashboard**
+- `GET /api/dashboard/stats` - Estadísticas generales para dashboard
+- `GET /api/dashboard/equipment-type-stats` - Estadísticas por tipo de equipo
+- `GET /api/dashboard/charts` - Datos de gráficos del dashboard
+- `GET /api/dashboard/recent-activity` - Actividad reciente en el sistema
+
+### **Gestión de Estados**
+- `GET /api/states` - Listar todos los estados
+- `GET /api/states/:id` - Obtener estado por ID
+- `POST /api/states` - Crear nuevo estado (solo admin)
+- `PUT /api/states/:id` - Actualizar estado (solo admin)
+- `DELETE /api/states/:id` - Eliminar estado (solo admin)
+
+## 🛠️ Troubleshooting de Endpoints y Ejemplos
+
+Si experimentas problemas con los endpoints recientes (dashboard, estados):
+- Verifica que el token JWT sea válido y tenga permisos adecuados.
+- Usa herramientas como Postman o curl para probar los endpoints:
+
+```bash
+# Obtener estadísticas del dashboard
+curl -X GET http://localhost:3000/api/dashboard/stats -H "Authorization: Bearer <tu-token-jwt>"
+
+# Obtener todos los estados
+curl -X GET http://localhost:3000/api/states
+
+# Crear nuevo estado (requiere token admin)
+curl -X POST http://localhost:3000/api/states \
+  -H "Authorization: Bearer <tu-token-jwt>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Nueva Región", "code": "NRG"}'
+```
+
+Si recibes error 401/403:
+- Asegúrate de usar un token válido y que el usuario tenga el rol adecuado.
+
+Si recibes error 500:
+- Consulta los logs del backend (`logs/error.log`) para detalles.
+
 ## 🔧 **Comandos Disponibles**
 
 ### **Desarrollo**

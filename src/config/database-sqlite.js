@@ -102,18 +102,53 @@ const initializeDatabase = async () => {
                         state_id INTEGER,
                         assigned_to TEXT,
                         location_details TEXT,
+                        proposed_disposal INTEGER DEFAULT 0,
                         security_username TEXT,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (state_id) REFERENCES states (id)
                     )
                 `);
-                
-                db.close((err) => {
-                    if (err) {
-                        reject(err);
+
+                // Asegurar columna proposed_disposal para bases existentes
+                db.all("PRAGMA table_info(equipment)", (pragmaErr, columns) => {
+                    if (pragmaErr) {
+                        console.error('❌ Error leyendo esquema de equipment:', pragmaErr);
+                        // Intentar cerrar igualmente
+                        db.close((err) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve();
+                            }
+                        });
+                        return;
+                    }
+
+                    const hasProposed = Array.isArray(columns) && columns.some(c => c.name === 'proposed_disposal');
+                    if (!hasProposed) {
+                        db.run("ALTER TABLE equipment ADD COLUMN proposed_disposal INTEGER DEFAULT 0", (alterErr) => {
+                            if (alterErr) {
+                                console.error('❌ Error agregando columna proposed_disposal:', alterErr);
+                            } else {
+                                console.log('✅ Columna proposed_disposal agregada a equipment');
+                            }
+                            db.close((err) => {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    resolve();
+                                }
+                            });
+                        });
                     } else {
-                        resolve();
+                        db.close((err) => {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve();
+                            }
+                        });
                     }
                 });
             });

@@ -318,4 +318,45 @@ const productionConfig = {
 
 ---
 
+## 🛠️ Utilidades de Diagnóstico y Limpieza (Frontend)
+
+El frontend incluye scripts y funciones para depuración y solución automática de problemas:
+
+### Función `cleanState` en Equipment
+Permite limpiar todos los filtros, la paginación y los chips activos de la interfaz de equipos. Útil para restablecer la vista y depurar problemas de estado.
+
+```js
+// Limpiar filtros y paginación de equipos
+equipmentInstance.cleanState();
+// O desde consola global:
+Equipment.cleanState();
+```
+
+### Inicialización automática y troubleshooting
+- El sistema intenta inicializar automáticamente la lista de equipos al cargar la página. Si no se muestran datos, puedes forzar la carga ejecutando:
+  ```js
+  forceInitialLoad();
+  ```
+- Para diagnosticar problemas de inicialización, usa:
+  ```js
+  diagnoseInitialLoad();
+  diagnoseInitializationFlow();
+  ```
+- Para depurar filtros y elementos del DOM:
+  ```js
+  diagnoseEquipmentInit();
+  diagnoseDOMElements();
+  diagnoseEventListeners();
+  ```
+
+### Scripts relevantes
+- `public/js/diagnose-initial-load.js`
+- `public/js/auto-fix-initial-load.js`
+- `public/js/diagnose-filters.js`
+- `public/js/debug-filters.js`
+
+Consulta la sección de troubleshooting del README principal para ejemplos de uso y recomendaciones.
+
+---
+
 *Frontend - Sistema de Gestión de Medios Informáticos - Versión 1.0* 

@@ -70,6 +70,7 @@ const getAllEquipment = async (req, res) => {
         e.state_id,
         e.assigned_to,
         e.location_details,
+        e.proposed_disposal as proponerBaja,
         e.created_at,
         e.updated_at,
         s.name as state_name
@@ -153,6 +154,7 @@ const getEquipmentById = async (req, res) => {
         e.state_id,
         e.assigned_to,
         e.location_details,
+        e.proposed_disposal as proponerBaja,
         e.created_at,
         e.updated_at,
         s.name as state_name
@@ -194,7 +196,8 @@ const createEquipment = async (req, res) => {
       status = 'active',
       state_id,
       assigned_to,
-      location_details
+      location_details,
+      proponerBaja
     } = req.body;
 
     console.log('🔍 createEquipment - Datos recibidos:', {
@@ -263,14 +266,15 @@ const createEquipment = async (req, res) => {
     const insertQuery = `
       INSERT INTO equipment (
         inventory_number, name, type, brand, model, specifications,
-        status, state_id, assigned_to, location_details
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        status, state_id, assigned_to, location_details, proposed_disposal
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Filtrar valores undefined y convertirlos a null
     const params = [
       inventory_number, name, type, brand, model, specifications || null,
-      status, state_id, assigned_to, location_details || null
+      status, state_id, assigned_to, location_details || null,
+      proponerBaja ? 1 : 0
     ];
 
     console.log('🔍 createEquipment - Query de inserción:', insertQuery);
@@ -281,7 +285,7 @@ const createEquipment = async (req, res) => {
     console.log('✅ createEquipment - Equipo insertado, ID:', result.insertId);
 
     // Obtener el equipo creado
-    const newEquipment = await executeQuery('SELECT * FROM equipment WHERE id = ?', [result.insertId]);
+    const newEquipment = await executeQuery('SELECT *, proposed_disposal as proponerBaja FROM equipment WHERE id = ?', [result.insertId]);
 
     console.log('✅ createEquipment - Equipo creado exitosamente:', newEquipment[0]);
 
@@ -312,7 +316,8 @@ const updateEquipment = async (req, res) => {
       status,
       state_id,
       assigned_to,
-      location_details
+      location_details,
+      proponerBaja
     } = req.body;
 
     console.log('🔍 updateEquipment - Datos recibidos:', {
@@ -394,13 +399,16 @@ const updateEquipment = async (req, res) => {
         state_id = ?, 
         assigned_to = ?, 
         location_details = ?,
+        proposed_disposal = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
     const params = [
       inventory_number, name, type, brand, model, specifications || null,
-      status, state_id, assigned_to, location_details || null, id
+      status, state_id, assigned_to, location_details || null,
+      proponerBaja ? 1 : 0,
+      id
     ];
 
     console.log('🔍 updateEquipment - Query de actualización:', updateQuery);
@@ -411,7 +419,7 @@ const updateEquipment = async (req, res) => {
     console.log(`✅ updateEquipment - Equipo ${id} actualizado correctamente`);
 
     // Obtener el equipo actualizado
-    const updatedEquipment = await executeQuery('SELECT * FROM equipment WHERE id = ?', [id]);
+    const updatedEquipment = await executeQuery('SELECT *, proposed_disposal as proponerBaja FROM equipment WHERE id = ?', [id]);
 
     res.json({
       success: true,
