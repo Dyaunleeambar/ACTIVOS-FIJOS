@@ -662,39 +662,96 @@ class Equipment {
 
         const { currentPage, totalPages, total } = pagination;
 
+        const startIdx = ((currentPage - 1) * this.itemsPerPage) + 1;
+        const endIdx = Math.min(currentPage * this.itemsPerPage, total);
+
         let paginationHTML = `
             <div class="pagination-info">
-                Mostrando ${((currentPage - 1) * this.itemsPerPage) + 1} - ${Math.min(currentPage * this.itemsPerPage, total)} de ${total} equipos
+                Mostrando ${startIdx} - ${endIdx} de ${total} equipos · Página ${currentPage} de ${totalPages}
             </div>
         `;
 
         // Botón anterior
+        const prevTarget = Math.max(1, currentPage - 1);
         paginationHTML += `
-            <button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="Equipment.goToPage(${currentPage - 1})">
+            <button type="button" class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${prevTarget}">
                 <i class="fas fa-chevron-left"></i>
             </button>
         `;
 
-        // Números de página
+        // Números de página (ventana dinámica)
         const startPage = Math.max(1, currentPage - 2);
         const endPage = Math.min(totalPages, currentPage + 2);
 
         for (let i = startPage; i <= endPage; i++) {
             paginationHTML += `
-                <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="Equipment.goToPage(${i})">
+                <button type="button" class="pagination-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
                     ${i}
                 </button>
             `;
         }
 
         // Botón siguiente
+        const nextTarget = Math.min(totalPages, currentPage + 1);
         paginationHTML += `
-            <button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="Equipment.goToPage(${currentPage + 1})">
+            <button type="button" class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${nextTarget}">
                 <i class="fas fa-chevron-right"></i>
             </button>
         `;
 
+        // Selector de tamaño de página y salto directo
+        paginationHTML += `
+            <div class="pagination-tools" style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+                <label style="font-size:12px; color:#475569;">Filas por página</label>
+                <select id="items-per-page" style="padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <option value="10" ${this.itemsPerPage === 10 ? 'selected' : ''}>10</option>
+                    <option value="20" ${this.itemsPerPage === 20 ? 'selected' : ''}>20</option>
+                    <option value="50" ${this.itemsPerPage === 50 ? 'selected' : ''}>50</option>
+                </select>
+                <label style="font-size:12px; color:#475569; margin-left:12px;">Ir a página</label>
+                <input id="jump-to-page" type="number" min="1" max="${totalPages}" value="${currentPage}" style="width:64px; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px;"/>
+                <button id="jump-to-page-btn" class="pagination-btn">Ir</button>
+            </div>
+        `;
+
         paginationElement.innerHTML = paginationHTML;
+
+        // Enlazar controles dinámicos
+        // Delegación de clicks en botones de paginación con data-page
+        paginationElement.querySelectorAll('.pagination-btn[data-page]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetPage = parseInt(btn.getAttribute('data-page'), 10);
+                if (Number.isInteger(targetPage)) {
+                    this.goToPage(targetPage);
+                }
+            });
+        });
+        const sizeSelect = document.getElementById('items-per-page');
+        if (sizeSelect) {
+            sizeSelect.addEventListener('change', () => {
+                const newSize = parseInt(sizeSelect.value, 10) || this.itemsPerPage;
+                this.itemsPerPage = newSize;
+                this.currentPage = 1;
+                this.loadEquipmentList();
+            });
+        }
+
+        const jumpInput = document.getElementById('jump-to-page');
+        const jumpBtn = document.getElementById('jump-to-page-btn');
+        const doJump = () => {
+            const target = parseInt(jumpInput.value, 10);
+            if (Number.isInteger(target)) {
+                const safeTarget = Math.min(Math.max(1, target), totalPages);
+                this.goToPage(safeTarget);
+            }
+        };
+        if (jumpBtn) jumpBtn.addEventListener('click', doJump);
+        if (jumpInput) jumpInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doJump();
+            }
+        });
     }
 
     // Ir a página específica
@@ -1050,14 +1107,14 @@ class Equipment {
 
         // Tabs switching: asegurar estado inicial correcto y evitar parpadeo
         const activateTab = (tab) => {
-            tabButtons.forEach(b => b.classList.remove('active'));
+                tabButtons.forEach(b => b.classList.remove('active'));
             if (tab === 'it') {
-                tabIt.style.display = 'grid';
-                tabComms.style.display = 'none';
+                    tabIt.style.display = 'grid';
+                    tabComms.style.display = 'none';
                 modalContent.querySelector('.tab-btn[data-tab="it"]').classList.add('active');
-            } else {
-                tabIt.style.display = 'none';
-                tabComms.style.display = 'grid';
+                } else {
+                    tabIt.style.display = 'none';
+                    tabComms.style.display = 'grid';
                 modalContent.querySelector('.tab-btn[data-tab="comms"]').classList.add('active');
             }
         };
@@ -1131,11 +1188,11 @@ class Equipment {
         // Cargar estados dinámicamente
         this.loadStatesForModal();
         // Cargar estados para select de radios en comunicaciones (usar mapeo consistente local)
-        const radiosStateSelect = modalContent.querySelector('select[name="radio_state_id"]');
+            const radiosStateSelect = modalContent.querySelector('select[name="radio_state_id"]');
         if (radiosStateSelect) {
-            const keep = radiosStateSelect.querySelector('option[value=""]');
-            radiosStateSelect.innerHTML = '';
-            if (keep) radiosStateSelect.appendChild(keep);
+                const keep = radiosStateSelect.querySelector('option[value=""]');
+                radiosStateSelect.innerHTML = '';
+                if (keep) radiosStateSelect.appendChild(keep);
             const states = [
                 { id: 1, name: 'Dirección' },
                 { id: 2, name: 'Capital' },
@@ -1146,11 +1203,11 @@ class Equipment {
                 { id: 7, name: 'Zulia' }
             ];
             states.forEach(state => {
-                const opt = document.createElement('option');
-                opt.value = state.id;
-                opt.textContent = state.name;
-                radiosStateSelect.appendChild(opt);
-            });
+                    const opt = document.createElement('option');
+                    opt.value = state.id;
+                    opt.textContent = state.name;
+                    radiosStateSelect.appendChild(opt);
+                });
         }
 
         // Cargar datos si es edición
@@ -2211,13 +2268,13 @@ class Equipment {
     // Cargar estados para el modal
     async loadStatesForModal() {
         try {
-            const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
-            if (stateSelect) {
-                const defaultOption = stateSelect.querySelector('option[value=""]');
-                stateSelect.innerHTML = '';
-                if (defaultOption) {
-                    stateSelect.appendChild(defaultOption);
-                }
+                const stateSelect = this.dynamicModal.querySelector('select[name="state_id"]');
+                if (stateSelect) {
+                    const defaultOption = stateSelect.querySelector('option[value=""]');
+                    stateSelect.innerHTML = '';
+                    if (defaultOption) {
+                        stateSelect.appendChild(defaultOption);
+                    }
                 const states = [
                     { id: 1, name: 'Dirección' },
                     { id: 2, name: 'Capital' },
@@ -2228,11 +2285,11 @@ class Equipment {
                     { id: 7, name: 'Zulia' }
                 ];
                 states.forEach(state => {
-                    const option = document.createElement('option');
-                    option.value = state.id;
-                    option.textContent = state.name;
-                    stateSelect.appendChild(option);
-                });
+                        const option = document.createElement('option');
+                        option.value = state.id;
+                        option.textContent = state.name;
+                        stateSelect.appendChild(option);
+                    });
             }
         } catch (error) {
             console.error('Error configurando estados locales:', error);

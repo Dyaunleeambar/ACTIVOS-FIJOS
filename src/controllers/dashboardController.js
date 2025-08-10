@@ -73,7 +73,8 @@ const getDashboardStats = async (req, res) => {
 
     const equipmentByType = {
       totalLaptops: typeTotals['laptop'] || 0,
-      totalPcs: typeTotals['desktop'] || 0,
+      // PCs deben contabilizar también servidores
+      totalPcs: (typeTotals['desktop'] || 0) + (typeTotals['server'] || 0),
       totalMonitors: typeTotals['monitor'] || 0,
       totalPrinters: typeTotals['printer'] || 0,
       totalSims: typeTotals['sim_chip'] || 0,
