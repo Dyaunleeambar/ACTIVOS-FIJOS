@@ -81,25 +81,12 @@ const getDashboardStats = async (req, res) => {
       totalRadios: typeTotals['radio_communication'] || 0
     };
 
-    // 5) Alertas básicas (opcional, manteniendo signature actual)
-    const alerts = [];
-    if (disposalProposals > 0) {
-      alerts.push({
-        type: 'warning',
-        message: `${disposalProposals} propuesta${disposalProposals !== 1 ? 's' : ''} de baja` ,
-        time: 'ahora',
-        icon: 'fas fa-exclamation-triangle'
-      });
-    }
-    alerts.push({ type: 'success', message: 'Sistema funcionando correctamente', time: 'ahora', icon: 'fas fa-check-circle' });
-
-    // 6) Métricas de seguridad simples (placeholder compatible)
+    // 5) Métricas de seguridad simples (placeholder compatible)
     const security = { securityEquipment: 0, accessLogs: 0, updatedCredentials: 0, securityAlerts: 0 };
 
     return res.json({
       stats: { totalEquipment, activeEquipment, disposalProposals },
       equipmentByType,
-      alerts,
       security
     });
 
@@ -109,55 +96,7 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-// Obtener alertas del sistema
-const getSystemAlerts = async (user) => {
-  try {
-    const alerts = [];
-
-    // Alerta de propuestas de baja pendientes
-    let disposalQuery = `
-      SELECT COUNT(*) as count
-      FROM equipment e
-      WHERE e.status = 'disposed'
-    `;
-    params = [];
-
-    if (user.role === 'manager') {
-      disposalQuery += ' AND e.state_id = ?';
-      params.push(user.state_id);
-    } else if (user.role === 'consultant') {
-      disposalQuery += ' AND a.user_id = ?';
-      disposalQuery = disposalQuery.replace('FROM equipment e', 'FROM equipment e LEFT JOIN assignments a ON e.id = a.equipment_id AND a.returned_at IS NULL');
-      params.push(user.id);
-    }
-
-    const disposalResult = await executeQuery(disposalQuery, params);
-    const disposalCount = disposalResult[0].count;
-
-    if (disposalCount > 0) {
-      alerts.push({
-        type: 'warning',
-        message: `${disposalCount} propuesta${disposalCount > 1 ? 's' : ''} de baja pendiente${disposalCount > 1 ? 's' : ''} de aprobación`,
-        time: 'hace 4 horas',
-        icon: 'fas fa-exclamation-triangle'
-      });
-    }
-
-    // Alerta de sistema funcionando correctamente
-    alerts.push({
-      type: 'success',
-      message: 'Sistema funcionando correctamente',
-      time: 'hace 0 minutos',
-      icon: 'fas fa-check-circle'
-    });
-
-    return alerts;
-
-  } catch (error) {
-    console.error('Error al obtener alertas:', error);
-    return [];
-  }
-};
+// Se eliminó el generador de "alertas del sistema" del dashboard.
 
 // Obtener métricas de seguridad
 const getSecurityMetrics = async (user) => {

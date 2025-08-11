@@ -61,7 +61,7 @@ class Dashboard {
       dashboardPage.style.margin = '0';
       
       // Mejorar espaciado entre secciones
-      const sections = dashboardPage.querySelectorAll('.alerts-section, .dashboard-grid, .performance-metrics, .dashboard-charts, .security-metrics, .state-summary, .recent-activity, .quick-actions');
+      const sections = dashboardPage.querySelectorAll('.dashboard-grid, .performance-metrics, .dashboard-charts, .security-metrics, .state-summary, .recent-activity, .quick-actions');
       sections.forEach(section => {
         section.style.marginBottom = 'var(--spacing-8)';
         section.style.width = '100%';
@@ -185,26 +185,6 @@ class Dashboard {
         totalSims: 20,
         totalRadios: 10
       },
-      alerts: [
-        {
-          type: 'warning',
-          message: '3 equipos requieren mantenimiento preventivo',
-          time: 'hace 2 horas',
-          icon: 'fas fa-tools'
-        },
-        {
-          type: 'warning',
-          message: '1 propuesta de baja pendiente de aprobación',
-          time: 'hace 4 horas',
-          icon: 'fas fa-exclamation-triangle'
-        },
-        {
-          type: 'success',
-          message: 'Sistema funcionando correctamente',
-          time: 'hace 0 minutos',
-          icon: 'fas fa-check-circle'
-        }
-      ],
       security: {
         securityEquipment: 15,
         accessLogs: 12,
@@ -218,7 +198,6 @@ class Dashboard {
   updateDashboard(data) {
     this.updateStats(data.stats);
     this.updateEquipmentByType(data.equipmentByType);
-    this.updateAlerts(data.alerts);
     this.updateSecurityMetrics(data.security);
   }
 
@@ -257,23 +236,7 @@ class Dashboard {
     });
   }
 
-  // Actualizar alertas
-  updateAlerts(alerts) {
-    const container = document.getElementById('alerts-container');
-    if (!container) return;
-
-    container.innerHTML = alerts.map(alert => `
-      <div class="alert alert-${alert.type}">
-                <div class="alert-icon">
-                    <i class="${alert.icon}"></i>
-                </div>
-                <div class="alert-content">
-                    <div class="alert-message">${alert.message}</div>
-          <div class="alert-time">${alert.time}</div>
-                </div>
-            </div>
-        `).join('');
-  }
+  // Se removió la sección de "Alertas del Sistema" del dashboard.
 
   // Actualizar métricas de seguridad
   updateSecurityMetrics(security) {
