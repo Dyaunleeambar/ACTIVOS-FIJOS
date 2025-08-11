@@ -8,6 +8,23 @@ class Dashboard {
     this.init();
   }
 
+  // Animar conteo de números en KPIs
+  animateNumber(element, from, to, duration = 800) {
+    const start = performance.now();
+    const range = to - from;
+    const step = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      const value = Math.round(from + range * ease);
+      element.textContent = value;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
   // Detectar si es dispositivo de escritorio
   detectDesktop() {
     const width = window.innerWidth;
@@ -203,16 +220,40 @@ class Dashboard {
 
   // Actualizar estadísticas
   updateStats(stats) {
-        const elements = {
+    const elements = {
       'total-equipment': stats.totalEquipment,
       'active-equipment': stats.activeEquipment,
       'disposal-proposals': stats.disposalProposals
     };
 
     Object.entries(elements).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-        element.textContent = value;
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      // Animación de conteo respetando reduced-motion
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const current = parseInt(el.textContent.replace(/[^0-9-]/g, '')) || 0;
+
+      if (prefersReduced) {
+        el.textContent = value;
+      } else if (current !== value) {
+        this.animateNumber(el, current, value, 800);
+        // Efecto pulse sutil en el contenedor de la tarjeta
+        const cardBody = el.closest('.card-body');
+        if (cardBody) {
+          cardBody.classList.add('kpi-pulse');
+          setTimeout(() => cardBody.classList.remove('kpi-pulse'), 600);
+        }
+      }
+
+      // Actualizar delta si existe un span asociado
+      const deltaEl = document.getElementById(`${id}-delta`);
+      if (deltaEl) {
+        const delta = value - current;
+        deltaEl.textContent = `${delta > 0 ? '+' : ''}${delta}`;
+        deltaEl.classList.remove('positive', 'negative');
+        if (delta > 0) deltaEl.classList.add('positive');
+        if (delta < 0) deltaEl.classList.add('negative');
       }
     });
   }

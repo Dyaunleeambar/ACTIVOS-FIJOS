@@ -217,7 +217,7 @@
 
                 <!-- Estadísticas Principales -->
                 <div class="dashboard-grid">
-                     <div class="card card-stats">
+                     <div class="card card-stats card-kpi card-kpi--total">
                          <div class="card-body">
                              <div class="stats-icon">
                                  <i class="fas fa-desktop"></i>
@@ -225,11 +225,15 @@
                              <div class="stats-content">
                                  <h3 class="stats-number" id="total-equipment">25</h3>
                                  <p class="stats-label">Total de Equipos</p>
+                                 <div class="kpi-meta">
+                                     <span class="stats-delta" id="total-equipment-delta">0</span>
+                                     <a class="kpi-link" href="#equipment">Ver detalles</a>
+                                 </div>
                              </div>
                          </div>
                      </div>
 
-                     <div class="card card-stats">
+                     <div class="card card-stats card-kpi card-kpi--active">
                          <div class="card-body">
                              <div class="stats-icon">
                                  <i class="fas fa-check-circle"></i>
@@ -237,11 +241,15 @@
                              <div class="stats-content">
                                  <h3 class="stats-number" id="active-equipment">20</h3>
                                  <p class="stats-label">Equipos Activos</p>
+                                 <div class="kpi-meta">
+                                     <span class="stats-delta" id="active-equipment-delta">0</span>
+                                     <a class="kpi-link" href="#equipment">Ver detalles</a>
+                                 </div>
                              </div>
                          </div>
                      </div>
 
-                     <div class="card card-stats">
+                     <div class="card card-stats card-kpi card-kpi--disposal">
                          <div class="card-body">
                              <div class="stats-icon">
                                  <i class="fas fa-exclamation-triangle"></i>
@@ -249,6 +257,10 @@
                              <div class="stats-content">
                                  <h3 class="stats-number" id="disposal-proposals">2</h3>
                                  <p class="stats-label">Propuestas de Baja</p>
+                                 <div class="kpi-meta">
+                                     <span class="stats-delta" id="disposal-proposals-delta">0</span>
+                                     <a class="kpi-link" href="#disposal">Ver detalles</a>
+                                 </div>
                              </div>
                          </div>
                      </div>
