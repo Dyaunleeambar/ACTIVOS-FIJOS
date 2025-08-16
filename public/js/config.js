@@ -218,8 +218,14 @@ const ConfigUtils = {
 
 // Configuración de desarrollo
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    CONFIG.API_BASE_URL = 'http://localhost:3001/api';
-    console.log('🔧 Modo desarrollo detectado');
+    // En escenarios de desarrollo puro (Live Server, Vite, etc.) redirigimos a 3001
+    // pero si la app corre embebida en Electron (p.ej. puerto 3131) usamos el mismo origin
+    const devPortsThatNeedBackendProxy = new Set(['3000', '5500', '5501']);
+    if (devPortsThatNeedBackendProxy.has(window.location.port)) {
+        CONFIG.API_BASE_URL = 'http://localhost:3001/api';
+    } else {
+        CONFIG.API_BASE_URL = window.location.origin + '/api';
+    }
     console.log('📡 API URL:', CONFIG.API_BASE_URL);
 }
 

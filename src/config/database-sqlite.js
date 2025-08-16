@@ -1,8 +1,22 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 // Configuración de la base de datos SQLite
-const dbPath = path.join(__dirname, '../../data/sistema_gestion_medios.db');
+// En entorno escritorio (Electron) escribimos en APP_DATA_DIR; en dev usamos /data del proyecto
+const baseDataDir = process.env.APP_DATA_DIR
+    ? path.join(process.env.APP_DATA_DIR, 'data')
+    : path.join(__dirname, '../../data');
+
+try {
+    if (!fs.existsSync(baseDataDir)) {
+        fs.mkdirSync(baseDataDir, { recursive: true });
+    }
+} catch (e) {
+    console.error('❌ No se pudo crear el directorio de datos:', baseDataDir, e);
+}
+
+const dbPath = path.join(baseDataDir, 'sistema_gestion_medios.db');
 
 // Crear conexión a SQLite
 const createConnection = () => {
@@ -104,6 +118,7 @@ const initializeDatabase = async () => {
                         location_details TEXT,
                         proposed_disposal INTEGER DEFAULT 0,
                         security_username TEXT,
+                        order_index INTEGER DEFAULT 0,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (state_id) REFERENCES states (id)
@@ -126,13 +141,27 @@ const initializeDatabase = async () => {
                     }
 
                     const hasProposed = Array.isArray(columns) && columns.some(c => c.name === 'proposed_disposal');
-                    if (!hasProposed) {
-                        db.run("ALTER TABLE equipment ADD COLUMN proposed_disposal INTEGER DEFAULT 0", (alterErr) => {
-                            if (alterErr) {
-                                console.error('❌ Error agregando columna proposed_disposal:', alterErr);
-                            } else {
+                    const hasOrderIndex = Array.isArray(columns) && columns.some(c => c.name === 'order_index');
+
+                    const runMigrations = async () => {
+                        try {
+                            if (!hasProposed) {
+                                await new Promise((res, rej) => db.run(
+                                    "ALTER TABLE equipment ADD COLUMN proposed_disposal INTEGER DEFAULT 0",
+                                    (e) => e ? rej(e) : res()
+                                ));
                                 console.log('✅ Columna proposed_disposal agregada a equipment');
                             }
+                            if (!hasOrderIndex) {
+                                await new Promise((res, rej) => db.run(
+                                    "ALTER TABLE equipment ADD COLUMN order_index INTEGER DEFAULT 0",
+                                    (e) => e ? rej(e) : res()
+                                ));
+                                console.log('✅ Columna order_index agregada a equipment');
+                            }
+                        } catch (mErr) {
+                            console.error('❌ Error migrando columnas en equipment:', mErr);
+                        } finally {
                             db.close((err) => {
                                 if (err) {
                                     reject(err);
@@ -140,16 +169,10 @@ const initializeDatabase = async () => {
                                     resolve();
                                 }
                             });
-                        });
-                    } else {
-                        db.close((err) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve();
-                            }
-                        });
-                    }
+                        }
+                    };
+
+                    runMigrations();
                 });
             });
         });

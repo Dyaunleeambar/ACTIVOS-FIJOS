@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { executeQuery } = require('../config/database');
+const { executeQuery } = require('../config/database-sqlite');
 const { generateToken } = require('../middleware/auth');
 
 // Login de usuario
@@ -12,6 +12,7 @@ const login = async (req, res) => {
       SELECT id, username, email, full_name, role, state_id, password
       FROM users 
       WHERE username = ?
+      LIMIT 1
     `;
     const users = await executeQuery(userQuery, [username]);
 
@@ -24,7 +25,13 @@ const login = async (req, res) => {
     const user = users[0];
 
     // Verificar password
+    console.log('🔐 Intento de login para usuario:', user.username);
+    console.log('🔑 Hash de contraseña almacenado:', user.password);
+    console.log('🔑 Contraseña recibida:', password);
+    
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('✅ Resultado de comparación de contraseña:', isValidPassword);
+    
     if (!isValidPassword) {
       return res.status(401).json({
         error: 'Credenciales inválidas'

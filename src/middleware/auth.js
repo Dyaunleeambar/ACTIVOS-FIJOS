@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { executeQuery } = require('../config/database-sqlite');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'local-dev-secret';
+
 // Generar token JWT
 const generateToken = (user) => {
     const payload = {
@@ -10,7 +12,7 @@ const generateToken = (user) => {
         stateId: user.state_id
     };
     
-    return jwt.sign(payload, process.env.JWT_SECRET, {
+    return jwt.sign(payload, JWT_SECRET, {
         expiresIn: '24h'
     });
 };
@@ -31,7 +33,7 @@ const authenticateToken = async (req, res, next) => {
             });
         }
         
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
         console.log('🔍 authenticateToken - Token decodificado:', { userId: decoded.userId, role: decoded.role });
         
         // Verificar que el usuario existe

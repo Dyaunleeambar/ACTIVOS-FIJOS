@@ -16,10 +16,10 @@ cp env.example .env
 Edita el archivo `.env` con tus configuraciones:
 ```env
 # Configuración del Servidor
-PORT=3000
+PORT=3001
 NODE_ENV=development
 
-# Configuración de la Base de Datos
+# Configuración de la Base de Datos (MySQL opcional)
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=tu_password
@@ -30,6 +30,7 @@ DB_PORT=3306
 JWT_SECRET=tu-super-secret-jwt-key
 
 # Configuración del Frontend
+# FRONTEND_URL es opcional cuando se sirve el frontend estático desde /public
 FRONTEND_URL=http://localhost:3000
 ```
 
@@ -110,13 +111,13 @@ Si experimentas problemas con los endpoints recientes (dashboard, estados):
 
 ```bash
 # Obtener estadísticas del dashboard
-curl -X GET http://localhost:3000/api/dashboard/stats -H "Authorization: Bearer <tu-token-jwt>"
+curl -X GET http://localhost:3001/api/dashboard/stats -H "Authorization: Bearer <tu-token-jwt>"
 
 # Obtener todos los estados
-curl -X GET http://localhost:3000/api/states
+curl -X GET http://localhost:3001/api/states
 
 # Crear nuevo estado (requiere token admin)
-curl -X POST http://localhost:3000/api/states \
+curl -X POST http://localhost:3001/api/states \
   -H "Authorization: Bearer <tu-token-jwt>" \
   -H "Content-Type: application/json" \
   -d '{"name": "Nueva Región", "code": "NRG"}'
@@ -152,6 +153,8 @@ npm run convert-single <archivo.md>
 ```
 
 ## 🗄️ **Base de Datos**
+
+Nota: El proyecto funciona por defecto con SQLite mediante `src/config/database-sqlite.js`. MySQL es opcional para entornos que lo requieran y se gestiona desde `src/config/database.js`.
 
 ### **Tablas Principales:**
 - **users**: Usuarios del sistema
@@ -227,20 +230,20 @@ DB_PASSWORD=strong-database-password
 
 ### **Login:**
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "admin123"}'
 ```
 
 ### **Obtener Equipos:**
 ```bash
-curl -X GET http://localhost:3000/api/equipment \
+curl -X GET http://localhost:3001/api/equipment \
   -H "Authorization: Bearer <tu-token-jwt>"
 ```
 
 ### **Crear Equipo:**
 ```bash
-curl -X POST http://localhost:3000/api/equipment \
+curl -X POST http://localhost:3001/api/equipment \
   -H "Authorization: Bearer <tu-token-jwt>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -268,4 +271,11 @@ curl -X POST http://localhost:3000/api/equipment \
 
 ---
 
-*Backend - Sistema de Gestión de Medios Informáticos - Versión 1.0* 
+*Backend - Sistema de Gestión de Medios Informáticos - Versión 2.0*
+
+---
+
+Información clave:
+- El servidor por defecto usa el puerto `3001` según `src/server.js`.
+- CORS permite `http://localhost:3000`, `http://127.0.0.1:5500`, `http://localhost:5500` y `FRONTEND_URL` si está definido.
+- Para Electron se usa `PORT=3131` vía script `electron:dev`.

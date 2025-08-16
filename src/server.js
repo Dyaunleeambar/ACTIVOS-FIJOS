@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -33,6 +34,8 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            // Permitir atributos inline (onclick, etc.) para UI generada dinámicamente en escritorio
+            scriptSrcAttr: ["'unsafe-inline'"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:"],
             connectSrc: ["'self'"],
@@ -426,6 +429,25 @@ const initializeServer = async () => {
     console.log('🔧 Inicializando SQLite...');
     await initSQLite();
     
+    // Asegurar usuario admin en SQLite para entorno de escritorio
+    try {
+      const { executeQuery: sqliteQuery, executeUpdate: sqliteUpdate } = require('./config/database-sqlite');
+      const existingAdmin = await sqliteQuery('SELECT id FROM users WHERE username = ? LIMIT 1', ['admin']);
+      if (!existingAdmin || existingAdmin.length === 0) {
+        console.log('👤 Creando usuario admin por defecto en SQLite...');
+        const hashed = await bcrypt.hash('admin123', 10);
+        await sqliteUpdate(
+          'INSERT INTO users (username, email, full_name, password, role, state_id) VALUES (?, ?, ?, ?, ?, ?)',
+          ['admin', 'admin@sistema.com', 'Administrador', hashed, 'admin', 1]
+        );
+        console.log('✅ Usuario admin (admin/admin123) creado en SQLite');
+      } else {
+        console.log('✅ Usuario admin ya existe en SQLite');
+      }
+    } catch (e) {
+      console.error('❌ Error asegurando usuario admin en SQLite:', e);
+    }
+    
     console.log('✅ Servidor inicializado correctamente');
   } catch (error) {
     console.error('❌ Error inicializando servidor:', error);
@@ -442,18 +464,22 @@ app.listen(PORT, async () => {
     console.log(`🔧 API disponible en: http://localhost:${PORT}/api`);
     console.log(`💚 Salud del servidor: http://localhost:${PORT}/health`);
     
-    // Inicializar base de datos
-    try {
-        await updateDatabase();
-        await initializeDatabase();
-        
-        // Configurar usuario admin si no existe
-        const { setupAdminUser } = require('./config/setup-admin-user');
-        await setupAdminUser();
-        
-        console.log('✅ Base de datos inicializada correctamente');
-    } catch (error) {
-        console.error('❌ Error inicializando base de datos:', error);
+    // Inicializar base de datos MySQL solo si no estamos en modo escritorio/SQLite
+    if (!process.env.APP_DATA_DIR) {
+        try {
+            await updateDatabase();
+            await initializeDatabase();
+            
+            // Configurar usuario admin si no existe (MySQL)
+            const { setupAdminUser } = require('./config/setup-admin-user');
+            await setupAdminUser();
+            
+            console.log('✅ Base de datos (MySQL) inicializada correctamente');
+        } catch (error) {
+            console.error('❌ Error inicializando base de datos MySQL:', error);
+        }
+    } else {
+        console.log('🧩 Modo escritorio/SQLite detectado: omitiendo inicialización MySQL');
     }
 });
 

@@ -26,7 +26,7 @@ Sistema web para la gestión de activos informáticos de una empresa de servicio
 
 ### Backend
 - Node.js con Express.js
-- MySQL para base de datos
+- SQLite (por defecto, desarrollo) y MySQL (opcional/producción) para base de datos
 - JWT para autenticación
 - Helmet para seguridad
 - Winston para logging
@@ -40,7 +40,7 @@ Sistema web para la gestión de activos informáticos de una empresa de servicio
 ## 📋 Requisitos
 
 - Node.js (v14 o superior)
-- MySQL 8.0+
+- SQLite 3 (por defecto, sin configuración) y/o MySQL 8.0+ (opcional)
 - NPM o Yarn
 
 ## 🔧 Instalación
@@ -213,7 +213,16 @@ npm start
 ```bash
 npm start          # Iniciar servidor de producción
 npm run dev        # Iniciar servidor de desarrollo
-npm run convert-docs # Convertir documentación a PDF
+npm run convert-docs   # Convertir documentación a PDF
+npm run convert-single # Convertir un documento individual a PDF
+
+# Electron
+npm run electron:dev   # Ejecutar app Electron (puerto 3131)
+npm run electron:build # Construir instalador para Windows
+
+# Base de datos
+npm run init-db        # Inicializar base de datos
+npm run update-db      # Aplicar migraciones/actualizaciones
 ```
 
 ## 📊 Base de Datos

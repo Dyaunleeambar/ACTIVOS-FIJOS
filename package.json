@@ -2,10 +2,13 @@
   "name": "sistema-gestion-medios-informaticos",
   "version": "1.0.0",
   "description": "Sistema de Gestión de Medios Informáticos - Empresa de Servicios Electroenergéticos",
-  "main": "src/server.js",
+  "main": "electron/main.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "electron:dev": "electron .",
+    "electron:npx": "npx electron@30 .",
+    "electron:build": "electron-builder --win",
     "init-db": "node src/config/init-database.js",
     "update-db": "node src/config/update-database.js",
     "convert-docs": "node scripts/convert-docs-v2.js",
@@ -37,12 +40,45 @@
     "mysql2": "^3.6.5",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.7",
-    "puppeteer": "^21.5.2",
     "sqlite3": "^5.1.7",
     "winston": "^3.11.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "cross-env": "^7.0.3",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "puppeteer": "^21.5.2"
+  },
+  "postinstall": "electron-builder install-app-deps",
+  "build": {
+    "appId": "com.organizacion.medios",
+    "productName": "Sistema de Gestión de Medios",
+    "files": [
+      "public/**",
+      "src/**",
+      "electron/**",
+      "package.json"
+    ],
+    "extraResources": [
+      "data/**",
+      "uploads/**",
+      "templates/**",
+      "pdf-docs/**"
+    ],
+    "directories": {
+      "buildResources": "public"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "public/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
